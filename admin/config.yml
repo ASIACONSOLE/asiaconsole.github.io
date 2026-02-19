@@ -1,0 +1,29 @@
+backend:
+  name: github
+  repo: ASIACONSOLE/asiaconsole.github.io
+  branch: main
+  auth_endpoint: https://api.netlify.com/auth
+
+site_url: https://asiaconsole.com
+display_url: https://asiaconsole.com
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+publish_mode: simple
+
+collections:
+  - name: "site"
+    label: "Site İçerikleri"
+    files:
+      - file: "content/site.json"
+        label: "Genel Ayarlar"
+        name: "general"
+        fields:
+          - { label: "TR Başlık", name: "title_tr", widget: "string" }
+          - { label: "EN Title", name: "title_en", widget: "string" }
+          - { label: "TR Alt Başlık", name: "subtitle_tr", widget: "string" }
+          - { label: "EN Subtitle", name: "subtitle_en", widget: "string" }
+          - { label: "TR Hizmet Metni", name: "services_tr", widget: "text" }
+          - { label: "EN Services Text", name: "services_en", widget: "text" }
+          - { label: "E-posta", name: "email", widget: "string" }

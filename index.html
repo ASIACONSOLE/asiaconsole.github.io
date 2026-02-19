@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ASIA CONSOLE — Game & App Development</title>
+  <meta name="description" content="ASIA CONSOLE: oyun ve uygulama geliştirme stüdyosu. Kod, tasarım ve performans odaklı üretim." />
+
+  <style>
+    :root{
+      --bg0:#050712;
+      --bg1:#070a1a;
+      --card: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.12);
+      --text:#e8ecff;
+      --muted: rgba(232,236,255,.72);
+      --cyan:#38bdf8;
+      --violet:#a78bfa;
+      --amber:#fb923c;
+      --good:#34d399;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 22px;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(56,189,248,.18), transparent 60%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(167,139,250,.18), transparent 55%),
+                  radial-gradient(1100px 700px at 55% 90%, rgba(251,146,60,.10), transparent 60%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    /* Subtle star noise */
+    .noise{
+      pointer-events:none;
+      position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.25;
+      z-index:0;
+    }
+
+    /* Nav */
+    .nav{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(14px);
+      background: rgba(5,7,18,.55);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .nav-inner{
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 18px;
+      gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      text-decoration:none; color:var(--text);
+    }
+    .brand-badge{
+      width:38px; height:38px;
+      border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, rgba(56,189,248,.8), rgba(167,139,250,.7) 55%, rgba(251,146,60,.6));
+      box-shadow: 0 10px 30px rgba(56,189,248,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .brand-badge::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 180deg, transparent, rgba(255,255,255,.35), transparent);
+      animation: spin 6s linear infinite;
+      opacity:.8;
+    }
+    .brand-title{
+      display:flex; flex-direction:column; line-height:1.05;
+    }
+    .brand-title b{
+      letter-spacing:.14em;
+      font-size:14px;
+    }
+    .brand-title span{
+      font-size:12px; opacity:.72;
+    }
+
+    .nav-links{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .chip{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      text-decoration:none;
+      font-weight:600;
+      font-size:13px;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .chip:hover{ transform: translateY(-1px); border-color: rgba(56,189,248,.45); background: rgba(56,189,248,.10); }
+    .chip.primary{
+      border-color: rgba(167,139,250,.45);
+      background: rgba(167,139,250,.14);
+    }
+    .chip.primary:hover{ border-color: rgba(251,146,60,.55); background: rgba(251,146,60,.12); }
+
+    /* Hero */
+    .wrap{ max-width:1200px; margin:0 auto; padding:0 18px; position:relative; z-index:1; }
+    .hero{
+      position:relative;
+      padding:64px 0 28px;
+      min-height: calc(100vh - 64px);
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:24px;
+      align-items:center;
+    }
+
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      width:fit-content;
+      box-shadow: 0 10px 30px rgba(0,0,0,.22);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, var(--good), rgba(52,211,153,.2));
+      box-shadow: 0 0 0 6px rgba(52,211,153,.08), 0 0 24px rgba(52,211,153,.25);
+    }
+    .kicker span{ font-size:13px; color:var(--muted); }
+
+    h1{
+      margin:18px 0 14px;
+      font-size: clamp(40px, 5.2vw, 74px);
+      line-height:1.02;
+      letter-spacing:-.03em;
+    }
+    .grad{
+      background: linear-gradient(90deg, var(--cyan), var(--violet), var(--amber));
+      -webkit-background-clip: text;
+      background-clip:text;
+      color:transparent;
+      filter: drop-shadow(0 10px 30px rgba(56,189,248,.12));
+    }
+    .lead{
+      margin:0 0 22px;
+      color:var(--muted);
+      font-size: 17px;
+      line-height:1.65;
+      max-width: 58ch;
+    }
+
+    .hero-actions{
+      display:flex; gap:12px; flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .btn{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 16px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color:var(--text);
+      text-decoration:none;
+      font-weight:800;
+      letter-spacing:.02em;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-2px); border-color: rgba(56,189,248,.55); background: rgba(56,189,248,.12); }
+    .btn.primary{
+      border-color: rgba(56,189,248,.55);
+      background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(167,139,250,.18));
+    }
+    .btn.primary:hover{ border-color: rgba(251,146,60,.55); background: linear-gradient(135deg, rgba(251,146,60,.18), rgba(167,139,250,.20)); }
+
+    .meta{
+      display:flex; gap:16px; flex-wrap:wrap;
+      color:rgba(232,236,255,.68);
+      font-size:13px;
+    }
+    .meta b{ color:rgba(232,236,255,.92); }
+    .meta .pill{
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;
+      background: rgba(255,255,255,.03);
+    }
+
+    /* Right side "console" card */
+    .panel{
+      position:relative;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      transform: translateZ(0);
+    }
+    .panel::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background: radial-gradient(900px 300px at 30% 20%, rgba(56,189,248,.22), transparent 60%),
+                  radial-gradient(800px 300px at 70% 30%, rgba(167,139,250,.20), transparent 65%),
+                  radial-gradient(800px 300px at 50% 85%, rgba(251,146,60,.14), transparent 60%);
+      pointer-events:none;
+    }
+    .panel-head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      position:relative;
+    }
+    .traffic{
+      display:flex; gap:8px;
+    }
+    .traffic i{
+      width:10px; height:10px; border-radius:50%;
+      display:inline-block;
+      opacity:.9;
+    }
+    .traffic i:nth-child(1){ background:#ff5f56; }
+    .traffic i:nth-child(2){ background:#ffbd2e; }
+    .traffic i:nth-child(3){ background:#27c93f; }
+
+    .panel-head small{
+      color:rgba(232,236,255,.68);
+      font-weight:700;
+      letter-spacing:.08em;
+    }
+
+    .panel-body{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+      padding:16px;
+      position:relative;
+    }
+
+    /* Code box */
+    .codebox{
+      position:relative;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(2,6,23,.35);
+      overflow:hidden;
+    }
+    .codebox pre{
+      margin:0;
+      padding:16px 16px 16px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size:12.8px;
+      line-height:1.5;
+      color:rgba(232,236,255,.88);
+      max-height: 280px;
+      overflow:auto;
+      position:relative;
+      z-index:2;
+    }
+    .glowline{
+      position:absolute; left:-30%; top:0; bottom:0;
+      width:40%;
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,.25), transparent);
+      transform: skewX(-18deg);
+      animation: scan 4.2s ease-in-out infinite;
+      z-index:1;
+      opacity:.9;
+    }
+    .tagrow{
+      display:flex; flex-wrap:wrap; gap:10px;
+    }
+    .tag{
+      border-radius:999px;
+      padding:9px 11px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      font-size:12.5px;
+      color:rgba(232,236,255,.78);
+      font-weight:700;
+    }
+    .tag b{ color: rgba(232,236,255,.95); }
+
+    /* Sections */
+    .section{
+      padding:56px 0;
+    }
+    .section h2{
+      margin:0 0 10px;
+      font-size:28px;
+      letter-spacing:-.02em;
+    }
+    .section p{
+      margin:0 0 24px;
+      color:var(--muted);
+      line-height:1.7;
+      max-width: 72ch;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:16px;
+    }
+    .card{
+      position:relative;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      padding:20px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.28);
+      overflow:hidden;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .card:hover{
+      transform: translateY(-4px);
+      border-color: rgba(56,189,248,.45);
+      background: rgba(56,189,248,.08);
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background: radial-gradient(500px 200px at 20% 0%, rgba(56,189,248,.18), transparent 60%),
+                  radial-gradient(500px 200px at 80% 10%, rgba(167,139,250,.16), transparent 60%);
+      opacity:.7;
+      pointer-events:none;
+    }
+    .card > *{ position:relative; z-index:1; }
+    .card h3{
+      margin:0 0 10px;
+      font-size:16px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .card ul{
+      margin:0;
+      padding-left:18px;
+      color:rgba(232,236,255,.78);
+      line-height:1.7;
+    }
+
+    /* Showcase */
+    .showcase{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:stretch;
+    }
+    .big{
+      padding:22px;
+    }
+    .big .stats{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:16px;
+    }
+    .stat{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      background: rgba(2,6,23,.30);
+      padding:14px;
+    }
+    .stat b{ display:block; font-size:20px; }
+    .stat span{ color:rgba(232,236,255,.70); font-size:12.5px; }
+
+    .mini{
+      display:grid;
+      gap:16px;
+    }
+
+    /* Contact */
+    .contact{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:stretch;
+    }
+    .field{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(2,6,23,.25);
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+    }
+    textarea.field{ min-height:120px; resize:vertical; }
+
+    .note{
+      color:rgba(232,236,255,.62);
+      font-size:12.5px;
+      line-height:1.55;
+    }
+
+    footer{
+      padding:40px 0 30px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:rgba(232,236,255,.55);
+    }
+
+    /* Reveal animation */
+    .reveal{
+      opacity:0;
+      transform: translateY(14px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.show{
+      opacity:1;
+      transform:none;
+    }
+
+    /* Code rain canvas */
+    canvas#rain{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      opacity:.22;
+      pointer-events:none;
+      filter: blur(.1px);
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero{ grid-template-columns: 1fr; min-height:auto; padding:42px 0 18px; }
+      .showcase{ grid-template-columns: 1fr; }
+      .contact{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .meta{ gap:10px; }
+    }
+
+    @keyframes scan{
+      0%{ transform: translateX(-30%) skewX(-18deg); }
+      50%{ transform: translateX(240%) skewX(-18deg); }
+      100%{ transform: translateX(-30%) skewX(-18deg); }
+    }
+    @keyframes spin{
+      to{ transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="noise"></div>
+  <canvas id="rain"></canvas>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="ASIA CONSOLE">
+        <div class="brand-badge" aria-hidden="true"></div>
+        <div class="brand-title">
+          <b>ASIA CONSOLE</b>
+          <span>Game & App Development</span>
+        </div>
+      </a>
+
+      <div class="nav-links">
+        <a class="chip" href="#services">Servisler</a>
+        <a class="chip" href="#showcase">Vitrin</a>
+        <a class="chip" href="#stack">Teknoloji</a>
+        <a class="chip primary" href="#contact">İletişim</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top" class="wrap">
+    <section class="hero">
+      <div class="reveal">
+        <div class="kicker">
+          <i class="dot" aria-hidden="true"></i>
+          <span><b>Yeni nesil</b> oyun & uygulama geliştirme stüdyosu</span>
+        </div>
+
+        <h1>
+          Kod yaz. <span class="grad">Dünya kur.</span><br/>
+          Uygulama geliştir. Oyun tasarla.
+        </h1>
+
+        <p class="lead">
+          ASIA CONSOLE; mobil oyunlar, uygulamalar ve deneyimler üretir.
+          Hedefimiz: <b>akıcı performans</b>, <b>temiz mimari</b> ve <b>vay be</b> dedirten tasarım.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="#showcase">⚡ Çalışmalarımızı Gör</a>
+          <a class="btn" href="#contact">📩 Teklif Al</a>
+          <a class="btn" href="#stack">🧠 Teknoloji Stack</a>
+        </div>
+
+        <div class="meta">
+          <div class="pill">🎮 <b>Hyper-casual</b> & Arcade</div>
+          <div class="pill">📱 <b>Android</b> / iOS</div>
+          <div class="pill">🧩 <b>UI/UX</b> & Prototip</div>
+        </div>
+      </div>
+
+      <aside class="panel reveal" id="heroPanel" aria-label="Studio Console">
+        <div class="panel-head">
+          <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
+          <small>STUDIO CONSOLE</small>
+        </div>
+
+        <div class="panel-body">
+          <div class="codebox">
+            <div class="glowline"></div>
+<pre><code>// ASIA CONSOLE — build pipeline
+const studio = {
+  focus: ["games", "apps", "UX", "performance"],
+  engine: "Unity",
+  lang: ["C#", "TypeScript", "Kotlin"],
+  mantra: "Ship fast. Polish hard."
+};
+
+function makeMagic(idea){
+  const prototype = iterate(idea, { speed: "fast" });
+  const gameplay  = juice(prototype, { feel: "crisp" });
+  return launch(gameplay);
+}
+
+makeMagic("ONE TAP BALL");</code></pre>
+          </div>
+
+          <div class="tagrow">
+            <div class="tag">🎯 <b>Gameplay Feel</b></div>
+            <div class="tag">🧠 <b>Clean Code</b></div>
+            <div class="tag">🚀 <b>Fast Iteration</b></div>
+            <div class="tag">✨ <b>Polish</b></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="services" class="section">
+      <div class="reveal">
+        <h2>Servisler</h2>
+        <p>
+          Tek bir fikirle gel — biz onu prototipe, sonra da yayınlanabilir bir ürüne dönüştürelim.
+          Aşağıdaki paketler ihtiyaçlara göre özelleşir.
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="card reveal">
+          <h3>Game Development</h3>
+          <ul>
+            <li>Unity ile mobil oyun geliştirme</li>
+            <li>Skor, seviye, ekonomi, IAP altyapısı</li>
+            <li>Haptic, SFX, Juice & polish</li>
+            <li>Store-ready build</li>
+          </ul>
+        </div>
+
+        <div class="card reveal">
+          <h3>App Development</h3>
+          <ul>
+            <li>Android odaklı uygulamalar</li>
+            <li>Modern UI/UX + hızlı performans</li>
+            <li>Landing + onboarding akışları</li>
+            <li>Yayınlanabilir sürüm</li>
+          </ul>
+        </div>
+
+        <div class="card reveal">
+          <h3>Design & Prototype</h3>
+          <ul>
+            <li>Hızlı prototip (MVP)</li>
+            <li>Animasyonlu arayüz tasarımı</li>
+            <li>Marka/Logo/Banner entegrasyonu</li>
+            <li>Figma/asset pipeline</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="showcase" class="section">
+      <div class="reveal">
+        <h2>Vitrin</h2>
+        <p>
+          Burası “şaheser” bölümü: büyük başlıklar, güçlü görseller ve net mesaj.
+          Ekran görüntülerini eklediğimizde tam bir stüdyo sayfası olur.
+        </p>
+      </div>
+
+      <div class="showcase">
+        <div class="card big reveal">
+          <h3 style="margin:0 0 10px; font-size:18px;">ONE TAP BALL</h3>
+          <p style="margin:0; color:var(--muted); line-height:1.7;">
+            Tek dokunuşla başlayan, akıcı hissiyatlı hyper-casual deneyim. Kamera shake, slow-mo,
+            tuzaklar, skor sistemi, flash efektler ve güçlü “game feel”.
+          </p>
+
+          <div class="stats">
+            <div class="stat"><b class="grad">60 FPS</b><span>Akıcı performans hedefi</span></div>
+            <div class="stat"><b class="grad">Fast</b><span>Prototip → polish döngüsü</span></div>
+            <div class="stat"><b class="grad">Clean</b><span>Bakımı kolay mimari</span></div>
+          </div>
+
+          <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+            <a class="btn primary" href="#contact">🎮 Store Link (Yakında)</a>
+            <a class="btn" href="#contact">📷 Screenshots (Yakında)</a>
+          </div>
+        </div>
+
+        <div class="mini">
+          <div class="card reveal">
+            <h3>Micro-Interactions</h3>
+            <ul>
+              <li>Parlak hover & buton glow</li>
+              <li>Scroll reveal animasyonları</li>
+              <li>Neon temalı UI</li>
+            </ul>
+          </div>
+
+          <div class="card reveal">
+            <h3>Build & Release</h3>
+            <ul>
+              <li>APK/AAB hazırlığı</li>
+              <li>Store metadata</li>
+              <li>Optimize asset boyutu</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack" class="section">
+      <div class="reveal">
+        <h2>Teknoloji Stack</h2>
+        <p>
+          Üretim hattı: hızlı geliştirme, test edilebilirlik ve performans.
+          İstersen bu bölümü Unity, Android, Web diye üçe ayırırız.
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="card reveal">
+          <h3>Unity</h3>
+          <ul>
+            <li>C# — gameplay & tools</li>
+            <li>URP / optimize render</li>
+            <li>Addressables (opsiyonel)</li>
+          </ul>
+        </div>
+
+        <div class="card reveal">
+          <h3>Android</h3>
+          <ul>
+            <li>Kotlin</li>
+            <li>Modern UI patterns</li>
+            <li>Performans + stabilite</li>
+          </ul>
+        </div>
+
+        <div class="card reveal">
+          <h3>Web</h3>
+          <ul>
+            <li>Static + hızlı hosting</li>
+            <li>Animasyonlu UI</li>
+            <li>SEO temel ayarlar</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <div class="reveal">
+        <h2>İletişim</h2>
+        <p>
+          Aşağıdaki form “görsel” amaçlıdır. GitHub Pages’te form göndermek için
+          Formspree gibi ücretsiz servis kullanılır. İstersen ben bağlarım.
+        </p>
+      </div>
+
+      <div class="contact">
+        <div class="card reveal">
+          <h3>Mesaj Gönder</h3>
+          <form onsubmit="return false;">
+            <input class="field" placeholder="İsim" />
+            <div style="height:10px"></div>
+            <input class="field" placeholder="E-posta" />
+            <div style="height:10px"></div>
+            <textarea class="field" placeholder="Mesajın..."></textarea>
+            <div style="height:12px"></div>
+            <a class="btn primary" href="mailto:mail@ornek.com?subject=ASIA%20CONSOLE%20-%20Teklif&body=Merhaba%2C%20">
+              📩 Mail ile gönder
+            </a>
+          </form>
+        </div>
+
+        <div class="card reveal">
+          <h3>Hızlı Bilgi</h3>
+          <p class="note">
+            • E-posta: <a style="color:var(--cyan)" href="mailto:mail@ornek.com">mail@ornek.com</a><br/>
+            • Instagram / YouTube / LinkedIn linklerini buraya ekleyebiliriz.<br/>
+            • “Projects” bölümüne oyun ekran görüntüleri eklenince site çok daha premium olur.
+          </p>
+
+          <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
+            <a class="btn" href="#top">⬆️ Başa dön</a>
+            <a class="btn" href="#showcase">🎬 Vitrin</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap" style="padding:0 18px">
+        © <span id="y"></span> ASIA CONSOLE — Built on GitHub Pages
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Year
+    document.getElementById("y").textContent = new Date().getFullYear();
+
+    // Scroll reveal
+    const revealEls = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((entries)=>{
+      for(const e of entries){
+        if(e.isIntersecting){
+          e.target.classList.add("show");
+          io.unobserve(e.target);
+        }
+      }
+    }, { threshold: 0.12 });
+    revealEls.forEach(el=>io.observe(el));
+
+    // Subtle parallax on panel (mouse)
+    const panel = document.getElementById("heroPanel");
+    const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+    window.addEventListener("mousemove", (ev)=>{
+      if(!panel) return;
+      const r = panel.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      const dx = (ev.clientX - cx) / r.width;
+      const dy = (ev.clientY - cy) / r.height;
+      const rx = clamp(-dy*6, -7, 7);
+      const ry = clamp(dx*8, -9, 9);
+      panel.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateY(0px)`;
+    });
+    window.addEventListener("mouseleave", ()=>{ if(panel) panel.style.transform = ""; });
+
+    // Code rain background (lightweight)
+    const c = document.getElementById("rain");
+    const ctx = c.getContext("2d");
+    let w,h,cols,drop;
+    const chars = "ASIA_CONSOLE_01{}[]<>/\\=+-*#";
+    function resize(){
+      w = c.width = window.innerWidth;
+      h = c.height = window.innerHeight;
+      cols = Math.floor(w / 16);
+      drop = new Array(cols).fill(0).map(()=>Math.random()*h);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function tick(){
+      ctx.fillStyle = "rgba(5,7,18,0.12)";
+      ctx.fillRect(0,0,w,h);
+
+      ctx.font = "14px ui-monospace, Menlo, Consolas, monospace";
+      for(let i=0;i<cols;i++){
+        const ch = chars[(Math.random()*chars.length)|0];
+        const x = i*16;
+        const y = drop[i]*16;
+
+        // gradient-ish by y
+        const alpha = 0.35 + 0.25*Math.sin((y/h)*Math.PI);
+        ctx.fillStyle = `rgba(56,189,248,${alpha})`;
+        ctx.fillText(ch, x, y);
+
+        drop[i] += 0.7 + Math.random()*0.9;
+        if(y > h && Math.random() > 0.975) drop[i] = 0;
+      }
+      requestAnimationFrame(tick);
+    }
+    tick();
+  </script>
+</body>
+</html>

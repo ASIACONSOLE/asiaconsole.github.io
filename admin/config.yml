@@ -1,8 +1,6 @@
 backend:
-  name: github
-  repo: ASIACONSOLE/asiaconsole.github.io
+  name: git-gateway
   branch: main
-  auth_endpoint: https://api.netlify.com/auth
 
 site_url: https://asiaconsole.com
 display_url: https://asiaconsole.com

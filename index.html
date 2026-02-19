@@ -1,51 +1,161 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ASIA CONSOLE</title>
 
 <style>
-body{
+  :root{
+    --bg:#020617;
+    --card:#0f172a;
+    --accent:#38bdf8;
+    --text:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  body{
     margin:0;
     font-family:Arial, sans-serif;
-    background:#020617;
-    color:white;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  /* Banner */
+  .hero{
+    position:relative;
+    min-height:70vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     text-align:center;
-}
-header{
-    padding:120px 20px;
-    background:linear-gradient(135deg,#2563eb,#7c3aed);
-}
-h1{font-size:60px;margin:0}
-section{padding:60px 20px}
-.card{
-    max-width:600px;
-    margin:20px auto;
-    background:#0f172a;
-    padding:25px;
-    border-radius:14px;
-}
+    padding:80px 20px;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:url("banner.jpg") center/cover no-repeat;
+    filter:saturate(1.1);
+    transform:scale(1.02);
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(2,6,23,.35), rgba(2,6,23,.9));
+  }
+  .hero-inner{
+    position:relative;
+    max-width:900px;
+  }
+  h1{
+    margin:0;
+    font-size:56px;
+    letter-spacing:2px;
+  }
+  .subtitle{
+    margin-top:10px;
+    opacity:.9;
+    font-size:18px;
+  }
+  .cta{
+    margin-top:24px;
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .btn{
+    display:inline-block;
+    padding:12px 18px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    border:1px solid rgba(255,255,255,.12);
+    color:var(--text);
+    background:rgba(15,23,42,.55);
+    backdrop-filter: blur(8px);
+  }
+  .btn.primary{
+    background:rgba(56,189,248,.22);
+    border-color: rgba(56,189,248,.45);
+  }
+
+  /* Content */
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:50px 20px 70px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:18px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:16px;
+    padding:22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  .card h2{
+    margin:0 0 10px;
+    color:var(--accent);
+    font-size:18px;
+  }
+  .card p{margin:0; opacity:.9; line-height:1.55}
+
+  footer{
+    border-top:1px solid rgba(255,255,255,.06);
+    padding:26px 20px;
+    text-align:center;
+    opacity:.6;
+  }
+
+  @media (max-width: 900px){
+    h1{font-size:42px}
+    .grid{grid-template-columns: 1fr}
+    .hero{min-height:60vh}
+  }
 </style>
 </head>
 
 <body>
 
-<header>
+<header class="hero">
+  <div class="hero-inner">
     <h1>ASIA CONSOLE</h1>
-    <p>Game & App Development</p>
+    <div class="subtitle">Game & App Development Studio</div>
+
+    <div class="cta">
+      <a class="btn primary" href="#projects">Projeler</a>
+      <a class="btn" href="#contact">İletişim</a>
+    </div>
+  </div>
 </header>
 
-<section>
+<main class="wrap">
+  <section class="grid">
     <div class="card">
-        <h2>Hakkımızda</h2>
-        <p>ASIA CONSOLE bağımsız bir oyun ve uygulama geliştirme stüdyosudur.</p>
+      <h2>🚀 Hakkımızda</h2>
+      <p>ASIA CONSOLE modern oyunlar ve uygulamalar geliştiren bağımsız bir stüdyodur. Performans ve kullanıcı deneyimine odaklanır.</p>
     </div>
+    <div class="card" id="projects">
+      <h2>🎮 Projeler</h2>
+      <p>Yakında yayınlanacak oyunlar ve uygulamalar burada listelenecek. Demo, mağaza linkleri ve ekran görüntüleri eklenecek.</p>
+    </div>
+    <div class="card" id="contact">
+      <h2>📬 İletişim</h2>
+      <p>E-posta: <a style="color:var(--accent)" href="mailto:mail@ornek.com">mail@ornek.com</a></p>
+    </div>
+  </section>
+</main>
 
-    <div class="card">
-        <h2>Projeler</h2>
-        <p>Yakında eklenecek.</p>
-    </div>
-</section>
+<footer>
+  © 2026 ASIA CONSOLE
+</footer>
 
 </body>
 </html>

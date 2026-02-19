@@ -4,22 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ASIA CONSOLE — Game & App Development</title>
-  <meta name="description" content="ASIA CONSOLE: oyun ve uygulama geliştirme stüdyosu. Kod, tasarım ve performans odaklı üretim." />
+  <meta name="description" content="ASIA CONSOLE — premium oyun ve uygulama geliştirme stüdyosu." />
 
   <style>
     :root{
-      --bg0:#050712;
-      --bg1:#070a1a;
-      --card: rgba(255,255,255,.06);
-      --stroke: rgba(255,255,255,.12);
-      --text:#e8ecff;
-      --muted: rgba(232,236,255,.72);
-      --cyan:#38bdf8;
-      --violet:#a78bfa;
-      --amber:#fb923c;
-      --good:#34d399;
-      --shadow: 0 20px 60px rgba(0,0,0,.45);
-      --radius: 22px;
+      --bg:#070A12;
+      --bg2:#050712;
+      --text:#E9ECFF;
+      --muted:rgba(233,236,255,.70);
+      --card:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.10);
+      --accent:#3B82F6;   /* premium blue */
+      --accent2:#A78BFA;  /* soft violet */
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+      --radius2: 24px;
     }
 
     *{ box-sizing:border-box; }
@@ -27,210 +26,203 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(56,189,248,.18), transparent 60%),
-                  radial-gradient(900px 600px at 80% 20%, rgba(167,139,250,.18), transparent 55%),
-                  radial-gradient(1100px 700px at 55% 90%, rgba(251,146,60,.10), transparent 60%),
-                  linear-gradient(180deg, var(--bg0), var(--bg1));
       color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(59,130,246,.14), transparent 60%),
+        radial-gradient(900px 600px at 80% 10%, rgba(167,139,250,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
       overflow-x:hidden;
     }
 
-    /* Subtle star noise */
-    .noise{
-      pointer-events:none;
-      position:fixed; inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
-      mix-blend-mode: overlay;
-      opacity:.25;
-      z-index:0;
-    }
-
-    /* Nav */
+    /* Top bar */
     .nav{
       position:sticky; top:0; z-index:50;
       backdrop-filter: blur(14px);
-      background: rgba(5,7,18,.55);
+      background: rgba(7,10,18,.55);
       border-bottom:1px solid rgba(255,255,255,.08);
     }
     .nav-inner{
-      max-width:1200px;
+      max-width:1180px;
       margin:0 auto;
+      padding:14px 18px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:14px 18px;
       gap:14px;
     }
     .brand{
       display:flex; align-items:center; gap:12px;
       text-decoration:none; color:var(--text);
     }
-    .brand-badge{
-      width:38px; height:38px;
-      border-radius:14px;
-      background: radial-gradient(circle at 30% 30%, rgba(56,189,248,.8), rgba(167,139,250,.7) 55%, rgba(251,146,60,.6));
-      box-shadow: 0 10px 30px rgba(56,189,248,.18);
-      position:relative;
-      overflow:hidden;
+    .mark{
+      width:34px; height:34px; border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, rgba(59,130,246,.85), rgba(167,139,250,.70));
+      box-shadow: 0 12px 40px rgba(59,130,246,.18);
+      border:1px solid rgba(255,255,255,.14);
     }
-    .brand-badge::after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: conic-gradient(from 180deg, transparent, rgba(255,255,255,.35), transparent);
-      animation: spin 6s linear infinite;
-      opacity:.8;
-    }
-    .brand-title{
-      display:flex; flex-direction:column; line-height:1.05;
-    }
-    .brand-title b{
+    .brand b{
       letter-spacing:.14em;
-      font-size:14px;
+      font-size:13px;
     }
-    .brand-title span{
-      font-size:12px; opacity:.72;
-    }
-
-    .nav-links{
+    .links{
       display:flex; align-items:center; gap:10px; flex-wrap:wrap;
     }
-    .chip{
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
+    .link{
       text-decoration:none;
-      font-weight:600;
+      color:rgba(233,236,255,.85);
+      font-weight:700;
       font-size:13px;
-      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+      padding:9px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+      transition:.18s ease;
     }
-    .chip:hover{ transform: translateY(-1px); border-color: rgba(56,189,248,.45); background: rgba(56,189,248,.10); }
-    .chip.primary{
-      border-color: rgba(167,139,250,.45);
-      background: rgba(167,139,250,.14);
+    .link:hover{
+      border-color:rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
     }
-    .chip.primary:hover{ border-color: rgba(251,146,60,.55); background: rgba(251,146,60,.12); }
+    .lang{
+      display:flex; gap:6px;
+      padding:6px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+    }
+    .lang button{
+      border:0;
+      background:transparent;
+      color:rgba(233,236,255,.75);
+      font-weight:800;
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .lang button.active{
+      background:rgba(255,255,255,.10);
+      color:var(--text);
+    }
+
+    /* Layout */
+    .wrap{ max-width:1180px; margin:0 auto; padding:0 18px; }
 
     /* Hero */
-    .wrap{ max-width:1200px; margin:0 auto; padding:0 18px; position:relative; z-index:1; }
     .hero{
+      margin:18px auto 0;
+      border-radius: var(--radius2);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
       position:relative;
-      padding:64px 0 28px;
-      min-height: calc(100vh - 64px);
+      min-height: min(78vh, 680px);
       display:grid;
       grid-template-columns: 1.05fr .95fr;
-      gap:24px;
       align-items:center;
+      gap:18px;
     }
+    .hero::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(90deg, rgba(7,10,18,.82), rgba(7,10,18,.35) 50%, rgba(7,10,18,.78)),
+        url("banner.webp") center/cover no-repeat;
+      transform:scale(1.02);
+      filter: saturate(1.04) contrast(1.03);
+    }
+    .hero::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(900px 420px at 25% 30%, rgba(59,130,246,.18), transparent 62%),
+        radial-gradient(900px 420px at 70% 20%, rgba(167,139,250,.14), transparent 62%);
+      pointer-events:none;
+    }
+    .hero > *{ position:relative; z-index:1; }
 
+    .hero-left{ padding:40px 36px; }
     .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 14px;
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 12px;
       border-radius:999px;
-      background: rgba(255,255,255,.04);
+      background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.10);
-      width:fit-content;
-      box-shadow: 0 10px 30px rgba(0,0,0,.22);
+      color:rgba(233,236,255,.78);
+      font-size:13px;
+      font-weight:700;
     }
     .dot{
       width:10px; height:10px; border-radius:50%;
-      background: radial-gradient(circle at 30% 30%, var(--good), rgba(52,211,153,.2));
-      box-shadow: 0 0 0 6px rgba(52,211,153,.08), 0 0 24px rgba(52,211,153,.25);
+      background: radial-gradient(circle at 30% 30%, rgba(59,130,246,1), rgba(59,130,246,.25));
+      box-shadow: 0 0 0 6px rgba(59,130,246,.10);
     }
-    .kicker span{ font-size:13px; color:var(--muted); }
-
     h1{
-      margin:18px 0 14px;
-      font-size: clamp(40px, 5.2vw, 74px);
-      line-height:1.02;
+      margin:18px 0 12px;
+      font-size: clamp(36px, 4.8vw, 64px);
+      line-height:1.05;
       letter-spacing:-.03em;
     }
     .grad{
-      background: linear-gradient(90deg, var(--cyan), var(--violet), var(--amber));
-      -webkit-background-clip: text;
+      background: linear-gradient(90deg, rgba(59,130,246,1), rgba(167,139,250,1));
+      -webkit-background-clip:text;
       background-clip:text;
       color:transparent;
-      filter: drop-shadow(0 10px 30px rgba(56,189,248,.12));
     }
     .lead{
-      margin:0 0 22px;
+      margin:0 0 18px;
       color:var(--muted);
-      font-size: 17px;
-      line-height:1.65;
-      max-width: 58ch;
+      line-height:1.7;
+      max-width:60ch;
+      font-size:16px;
     }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    .hero-actions{
-      display:flex; gap:12px; flex-wrap:wrap;
-      margin-bottom:18px;
-    }
     .btn{
-      position:relative;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      padding:12px 16px;
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:12px 14px;
       border-radius: 14px;
       border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color:var(--text);
+      background:rgba(255,255,255,.06);
       text-decoration:none;
-      font-weight:800;
+      color:var(--text);
+      font-weight:900;
+      font-size:13px;
       letter-spacing:.02em;
-      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
       user-select:none;
     }
-    .btn:hover{ transform: translateY(-2px); border-color: rgba(56,189,248,.55); background: rgba(56,189,248,.12); }
+    .btn:hover{ transform: translateY(-2px); border-color:rgba(255,255,255,.18); background:rgba(255,255,255,.09); }
     .btn.primary{
-      border-color: rgba(56,189,248,.55);
-      background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(167,139,250,.18));
+      border-color: rgba(59,130,246,.55);
+      background: linear-gradient(135deg, rgba(59,130,246,.20), rgba(167,139,250,.15));
     }
-    .btn.primary:hover{ border-color: rgba(251,146,60,.55); background: linear-gradient(135deg, rgba(251,146,60,.18), rgba(167,139,250,.20)); }
-
-    .meta{
-      display:flex; gap:16px; flex-wrap:wrap;
-      color:rgba(232,236,255,.68);
-      font-size:13px;
-    }
-    .meta b{ color:rgba(232,236,255,.92); }
-    .meta .pill{
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:999px;
-      background: rgba(255,255,255,.03);
+    .btn.primary:hover{
+      border-color: rgba(167,139,250,.60);
+      background: linear-gradient(135deg, rgba(59,130,246,.24), rgba(167,139,250,.18));
     }
 
-    /* Right side "console" card */
-    .panel{
-      position:relative;
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    .hero-right{
+      padding:32px 28px;
+    }
+    .glass{
+      border-radius: var(--radius2);
       border:1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
+      background: rgba(7,10,18,.35);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 50px rgba(0,0,0,.35);
       overflow:hidden;
-      transform: translateZ(0);
     }
-    .panel::before{
-      content:"";
-      position:absolute; inset:-1px;
-      background: radial-gradient(900px 300px at 30% 20%, rgba(56,189,248,.22), transparent 60%),
-                  radial-gradient(800px 300px at 70% 30%, rgba(167,139,250,.20), transparent 65%),
-                  radial-gradient(800px 300px at 50% 85%, rgba(251,146,60,.14), transparent 60%);
-      pointer-events:none;
-    }
-    .panel-head{
+    .glass-head{
       display:flex; align-items:center; justify-content:space-between;
-      padding:14px 16px;
+      padding:12px 14px;
       border-bottom:1px solid rgba(255,255,255,.10);
-      position:relative;
+      color:rgba(233,236,255,.72);
+      font-weight:900;
+      letter-spacing:.14em;
+      font-size:11px;
     }
-    .traffic{
-      display:flex; gap:8px;
-    }
+    .traffic{ display:flex; gap:7px; }
     .traffic i{
       width:10px; height:10px; border-radius:50%;
       display:inline-block;
@@ -240,308 +232,184 @@
     .traffic i:nth-child(2){ background:#ffbd2e; }
     .traffic i:nth-child(3){ background:#27c93f; }
 
-    .panel-head small{
-      color:rgba(232,236,255,.68);
-      font-weight:700;
-      letter-spacing:.08em;
-    }
-
-    .panel-body{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-      padding:16px;
-      position:relative;
-    }
-
-    /* Code box */
-    .codebox{
-      position:relative;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(2,6,23,.35);
-      overflow:hidden;
-    }
-    .codebox pre{
+    pre{
       margin:0;
-      padding:16px 16px 16px 16px;
+      padding:14px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size:12.8px;
-      line-height:1.5;
-      color:rgba(232,236,255,.88);
-      max-height: 280px;
+      font-size:12.6px;
+      line-height:1.55;
+      color:rgba(233,236,255,.86);
+      max-height: 320px;
       overflow:auto;
-      position:relative;
-      z-index:2;
     }
-    .glowline{
-      position:absolute; left:-30%; top:0; bottom:0;
-      width:40%;
-      background: linear-gradient(90deg, transparent, rgba(56,189,248,.25), transparent);
-      transform: skewX(-18deg);
-      animation: scan 4.2s ease-in-out infinite;
-      z-index:1;
-      opacity:.9;
-    }
-    .tagrow{
+    .tags{
       display:flex; flex-wrap:wrap; gap:10px;
+      padding:14px;
+      border-top:1px solid rgba(255,255,255,.10);
     }
     .tag{
-      border-radius:999px;
       padding:9px 11px;
+      border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
-      font-size:12.5px;
-      color:rgba(232,236,255,.78);
-      font-weight:700;
+      color:rgba(233,236,255,.76);
+      font-weight:800;
+      font-size:12px;
     }
-    .tag b{ color: rgba(232,236,255,.95); }
 
     /* Sections */
-    .section{
-      padding:56px 0;
-    }
+    .section{ padding:58px 0; }
     .section h2{
       margin:0 0 10px;
-      font-size:28px;
+      font-size:26px;
       letter-spacing:-.02em;
     }
     .section p{
-      margin:0 0 24px;
+      margin:0 0 20px;
       color:var(--muted);
       line-height:1.7;
-      max-width: 72ch;
+      max-width:80ch;
     }
-
     .grid{
       display:grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:16px;
+      gap:14px;
     }
     .card{
-      position:relative;
       border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.10);
-      padding:20px;
-      box-shadow: 0 14px 40px rgba(0,0,0,.28);
-      overflow:hidden;
-      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+      background: rgba(255,255,255,.05);
+      padding:18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.28);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
     }
     .card:hover{
-      transform: translateY(-4px);
-      border-color: rgba(56,189,248,.45);
-      background: rgba(56,189,248,.08);
+      transform: translateY(-3px);
+      border-color: rgba(59,130,246,.35);
+      background: rgba(255,255,255,.07);
     }
-    .card::before{
-      content:"";
-      position:absolute; inset:-1px;
-      background: radial-gradient(500px 200px at 20% 0%, rgba(56,189,248,.18), transparent 60%),
-                  radial-gradient(500px 200px at 80% 10%, rgba(167,139,250,.16), transparent 60%);
-      opacity:.7;
-      pointer-events:none;
-    }
-    .card > *{ position:relative; z-index:1; }
     .card h3{
-      margin:0 0 10px;
-      font-size:16px;
-      letter-spacing:.04em;
+      margin:0 0 8px;
+      font-size:14px;
+      letter-spacing:.10em;
       text-transform:uppercase;
+      color:rgba(233,236,255,.92);
     }
     .card ul{
-      margin:0;
-      padding-left:18px;
-      color:rgba(232,236,255,.78);
+      margin:0; padding-left:16px;
+      color:rgba(233,236,255,.78);
       line-height:1.7;
     }
 
-    /* Showcase */
-    .showcase{
+    .split{
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:16px;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
       align-items:stretch;
-    }
-    .big{
-      padding:22px;
-    }
-    .big .stats{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:12px;
-      margin-top:16px;
     }
     .stat{
+      border-radius: var(--radius);
       border:1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      background: rgba(2,6,23,.30);
-      padding:14px;
+      background: rgba(255,255,255,.04);
+      padding:16px;
     }
-    .stat b{ display:block; font-size:20px; }
-    .stat span{ color:rgba(232,236,255,.70); font-size:12.5px; }
+    .stat b{ display:block; font-size:18px; }
+    .stat span{ color:var(--muted); font-size:12.8px; }
 
-    .mini{
-      display:grid;
-      gap:16px;
-    }
-
-    /* Contact */
-    .contact{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:16px;
-      align-items:stretch;
-    }
-    .field{
-      width:100%;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(2,6,23,.25);
-      color:var(--text);
-      outline:none;
-      font-size:14px;
-    }
-    textarea.field{ min-height:120px; resize:vertical; }
-
-    .note{
-      color:rgba(232,236,255,.62);
-      font-size:12.5px;
-      line-height:1.55;
-    }
-
+    /* Footer */
     footer{
-      padding:40px 0 30px;
+      padding:40px 0 34px;
       border-top:1px solid rgba(255,255,255,.08);
-      color:rgba(232,236,255,.55);
+      color:rgba(233,236,255,.55);
     }
 
-    /* Reveal animation */
-    .reveal{
-      opacity:0;
-      transform: translateY(14px);
-      transition: opacity .7s ease, transform .7s ease;
-    }
-    .reveal.show{
-      opacity:1;
-      transform:none;
-    }
+    /* Reveal */
+    .reveal{ opacity:0; transform: translateY(10px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.show{ opacity:1; transform:none; }
 
-    /* Code rain canvas */
-    canvas#rain{
-      position:fixed;
-      inset:0;
-      z-index:0;
-      opacity:.22;
-      pointer-events:none;
-      filter: blur(.1px);
-    }
-
-    /* Responsive */
+    /* Mobile */
     @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; min-height:auto; padding:42px 0 18px; }
-      .showcase{ grid-template-columns: 1fr; }
-      .contact{ grid-template-columns: 1fr; }
+      .hero{ grid-template-columns: 1fr; }
+      .hero-left{ padding:30px 22px; }
+      .hero-right{ padding:0 18px 22px; }
       .grid{ grid-template-columns: 1fr; }
-      .meta{ gap:10px; }
-    }
-
-    @keyframes scan{
-      0%{ transform: translateX(-30%) skewX(-18deg); }
-      50%{ transform: translateX(240%) skewX(-18deg); }
-      100%{ transform: translateX(-30%) skewX(-18deg); }
-    }
-    @keyframes spin{
-      to{ transform: rotate(360deg); }
+      .split{ grid-template-columns: 1fr; }
+      .links{ gap:6px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="noise"></div>
-  <canvas id="rain"></canvas>
-
   <nav class="nav">
     <div class="nav-inner">
       <a class="brand" href="#top" aria-label="ASIA CONSOLE">
-        <div class="brand-badge" aria-hidden="true"></div>
-        <div class="brand-title">
-          <b>ASIA CONSOLE</b>
-          <span>Game & App Development</span>
-        </div>
+        <div class="mark"></div>
+        <b>ASIA CONSOLE</b>
       </a>
 
-      <div class="nav-links">
-        <a class="chip" href="#services">Servisler</a>
-        <a class="chip" href="#showcase">Vitrin</a>
-        <a class="chip" href="#stack">Teknoloji</a>
-        <a class="chip primary" href="#contact">İletişim</a>
+      <div class="links">
+        <a class="link" href="#services" data-i18n="nav.services">Servisler</a>
+        <a class="link" href="#projects" data-i18n="nav.projects">Projeler</a>
+        <a class="link" href="#contact" data-i18n="nav.contact">İletişim</a>
+
+        <div class="lang" aria-label="Language toggle">
+          <button id="trBtn" type="button">TR</button>
+          <button id="enBtn" type="button">EN</button>
+        </div>
       </div>
     </div>
   </nav>
 
   <main id="top" class="wrap">
     <section class="hero">
-      <div class="reveal">
+      <div class="hero-left reveal">
         <div class="kicker">
           <i class="dot" aria-hidden="true"></i>
-          <span><b>Yeni nesil</b> oyun & uygulama geliştirme stüdyosu</span>
+          <span data-i18n="hero.kicker">Premium oyun & uygulama stüdyosu</span>
         </div>
 
         <h1>
-          Kod yaz. <span class="grad">Dünya kur.</span><br/>
-          Uygulama geliştir. Oyun tasarla.
+          <span data-i18n="hero.line1">Kodla. İnşa et.</span>
+          <span class="grad" data-i18n="hero.line2">Şaheser çıkar.</span>
         </h1>
 
-        <p class="lead">
-          ASIA CONSOLE; mobil oyunlar, uygulamalar ve deneyimler üretir.
-          Hedefimiz: <b>akıcı performans</b>, <b>temiz mimari</b> ve <b>vay be</b> dedirten tasarım.
+        <p class="lead" data-i18n="hero.lead">
+          ASIA CONSOLE; minimal tasarım, yüksek performans ve “game feel” odaklı üretim yapar.
+          Fikirden yayına kadar hızlı ve temiz bir pipeline.
         </p>
 
-        <div class="hero-actions">
-          <a class="btn primary" href="#showcase">⚡ Çalışmalarımızı Gör</a>
-          <a class="btn" href="#contact">📩 Teklif Al</a>
-          <a class="btn" href="#stack">🧠 Teknoloji Stack</a>
-        </div>
-
-        <div class="meta">
-          <div class="pill">🎮 <b>Hyper-casual</b> & Arcade</div>
-          <div class="pill">📱 <b>Android</b> / iOS</div>
-          <div class="pill">🧩 <b>UI/UX</b> & Prototip</div>
+        <div class="actions">
+          <a class="btn primary" href="#projects" data-i18n="hero.cta1">Projeleri Gör</a>
+          <a class="btn" href="#contact" data-i18n="hero.cta2">İletişime Geç</a>
         </div>
       </div>
 
-      <aside class="panel reveal" id="heroPanel" aria-label="Studio Console">
-        <div class="panel-head">
-          <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
-          <small>STUDIO CONSOLE</small>
-        </div>
-
-        <div class="panel-body">
-          <div class="codebox">
-            <div class="glowline"></div>
-<pre><code>// ASIA CONSOLE — build pipeline
-const studio = {
-  focus: ["games", "apps", "UX", "performance"],
-  engine: "Unity",
-  lang: ["C#", "TypeScript", "Kotlin"],
-  mantra: "Ship fast. Polish hard."
-};
-
-function makeMagic(idea){
-  const prototype = iterate(idea, { speed: "fast" });
-  const gameplay  = juice(prototype, { feel: "crisp" });
-  return launch(gameplay);
-}
-
-makeMagic("ONE TAP BALL");</code></pre>
+      <aside class="hero-right reveal">
+        <div class="glass">
+          <div class="glass-head">
+            <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span data-i18n="panel.title">STUDIO CONSOLE</span>
           </div>
 
-          <div class="tagrow">
-            <div class="tag">🎯 <b>Gameplay Feel</b></div>
-            <div class="tag">🧠 <b>Clean Code</b></div>
-            <div class="tag">🚀 <b>Fast Iteration</b></div>
-            <div class="tag">✨ <b>Polish</b></div>
+<pre><code>// ASIA CONSOLE — minimal pipeline
+const studio = {
+  focus: ["games", "apps", "ui/ux", "performance"],
+  engine: "Unity",
+  motto: "Ship fast. Polish hard."
+};
+
+function build(idea){
+  const proto = iterate(idea);
+  const feel = polish(proto);
+  return release(feel);
+}
+
+build("ONE TAP BALL");</code></pre>
+
+          <div class="tags">
+            <span class="tag" data-i18n="tag1">🎮 Gameplay Feel</span>
+            <span class="tag" data-i18n="tag2">✨ Polish</span>
+            <span class="tag" data-i18n="tag3">🧠 Clean Code</span>
           </div>
         </div>
       </aside>
@@ -549,251 +417,281 @@ makeMagic("ONE TAP BALL");</code></pre>
 
     <section id="services" class="section">
       <div class="reveal">
-        <h2>Servisler</h2>
-        <p>
-          Tek bir fikirle gel — biz onu prototipe, sonra da yayınlanabilir bir ürüne dönüştürelim.
-          Aşağıdaki paketler ihtiyaçlara göre özelleşir.
+        <h2 data-i18n="services.title">Servisler</h2>
+        <p data-i18n="services.lead">
+          Üretim hattı sade: prototip → iterasyon → polish → yayın. Gereksiz karmaşa yok.
         </p>
       </div>
 
       <div class="grid">
         <div class="card reveal">
-          <h3>Game Development</h3>
+          <h3 data-i18n="services.c1.title">GAME DEVELOPMENT</h3>
           <ul>
-            <li>Unity ile mobil oyun geliştirme</li>
-            <li>Skor, seviye, ekonomi, IAP altyapısı</li>
-            <li>Haptic, SFX, Juice & polish</li>
-            <li>Store-ready build</li>
+            <li data-i18n="services.c1.l1">Unity ile mobil oyun geliştirme</li>
+            <li data-i18n="services.c1.l2">Skor / seviye / tuzak / game over döngüleri</li>
+            <li data-i18n="services.c1.l3">Juice: kamera shake, slow-mo, SFX</li>
           </ul>
         </div>
 
         <div class="card reveal">
-          <h3>App Development</h3>
+          <h3 data-i18n="services.c2.title">APP DEVELOPMENT</h3>
           <ul>
-            <li>Android odaklı uygulamalar</li>
-            <li>Modern UI/UX + hızlı performans</li>
-            <li>Landing + onboarding akışları</li>
-            <li>Yayınlanabilir sürüm</li>
+            <li data-i18n="services.c2.l1">Android odaklı uygulamalar</li>
+            <li data-i18n="services.c2.l2">Hızlı, stabil, modern UI</li>
+            <li data-i18n="services.c2.l3">MVP → yayınlanabilir sürüm</li>
           </ul>
         </div>
 
         <div class="card reveal">
-          <h3>Design & Prototype</h3>
+          <h3 data-i18n="services.c3.title">DESIGN & BRAND</h3>
           <ul>
-            <li>Hızlı prototip (MVP)</li>
-            <li>Animasyonlu arayüz tasarımı</li>
-            <li>Marka/Logo/Banner entegrasyonu</li>
-            <li>Figma/asset pipeline</li>
+            <li data-i18n="services.c3.l1">Logo / banner / landing tasarım</li>
+            <li data-i18n="services.c3.l2">Animasyonlu arayüz dili</li>
+            <li data-i18n="services.c3.l3">Minimal, premium görünüm</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <section id="showcase" class="section">
+    <section id="projects" class="section">
       <div class="reveal">
-        <h2>Vitrin</h2>
-        <p>
-          Burası “şaheser” bölümü: büyük başlıklar, güçlü görseller ve net mesaj.
-          Ekran görüntülerini eklediğimizde tam bir stüdyo sayfası olur.
+        <h2 data-i18n="projects.title">Öne Çıkanlar</h2>
+        <p data-i18n="projects.lead">
+          Proje kartlarını buraya ekliyoruz. İstersen ekran görüntüsü ve store linkleri ile “vitrin” yaparız.
         </p>
       </div>
 
-      <div class="showcase">
-        <div class="card big reveal">
-          <h3 style="margin:0 0 10px; font-size:18px;">ONE TAP BALL</h3>
-          <p style="margin:0; color:var(--muted); line-height:1.7;">
-            Tek dokunuşla başlayan, akıcı hissiyatlı hyper-casual deneyim. Kamera shake, slow-mo,
-            tuzaklar, skor sistemi, flash efektler ve güçlü “game feel”.
+      <div class="split">
+        <div class="card reveal">
+          <h3 data-i18n="projects.p1.title">ONE TAP BALL</h3>
+          <p style="margin:0; color:var(--muted); line-height:1.7;" data-i18n="projects.p1.desc">
+            Tek dokunuş hissiyatı, hızlı tekrar döngüsü ve güçlü polish. Minimal UI, net geri bildirim, akıcı oyun.
           </p>
-
-          <div class="stats">
-            <div class="stat"><b class="grad">60 FPS</b><span>Akıcı performans hedefi</span></div>
-            <div class="stat"><b class="grad">Fast</b><span>Prototip → polish döngüsü</span></div>
-            <div class="stat"><b class="grad">Clean</b><span>Bakımı kolay mimari</span></div>
-          </div>
-
-          <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
-            <a class="btn primary" href="#contact">🎮 Store Link (Yakında)</a>
-            <a class="btn" href="#contact">📷 Screenshots (Yakında)</a>
+          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn primary" href="#contact" data-i18n="projects.p1.btn1">Store Link (Yakında)</a>
+            <a class="btn" href="#contact" data-i18n="projects.p1.btn2">Ekran Görüntüsü (Yakında)</a>
           </div>
         </div>
 
-        <div class="mini">
-          <div class="card reveal">
-            <h3>Micro-Interactions</h3>
-            <ul>
-              <li>Parlak hover & buton glow</li>
-              <li>Scroll reveal animasyonları</li>
-              <li>Neon temalı UI</li>
-            </ul>
+        <div class="reveal" style="display:grid; gap:14px;">
+          <div class="stat">
+            <b class="grad" data-i18n="projects.s1.big">60 FPS</b>
+            <span data-i18n="projects.s1.small">Hedef: akıcı performans</span>
           </div>
-
-          <div class="card reveal">
-            <h3>Build & Release</h3>
-            <ul>
-              <li>APK/AAB hazırlığı</li>
-              <li>Store metadata</li>
-              <li>Optimize asset boyutu</li>
-            </ul>
+          <div class="stat">
+            <b class="grad" data-i18n="projects.s2.big">FAST</b>
+            <span data-i18n="projects.s2.small">Hızlı iterasyon / hızlı sonuç</span>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="stack" class="section">
-      <div class="reveal">
-        <h2>Teknoloji Stack</h2>
-        <p>
-          Üretim hattı: hızlı geliştirme, test edilebilirlik ve performans.
-          İstersen bu bölümü Unity, Android, Web diye üçe ayırırız.
-        </p>
-      </div>
-
-      <div class="grid">
-        <div class="card reveal">
-          <h3>Unity</h3>
-          <ul>
-            <li>C# — gameplay & tools</li>
-            <li>URP / optimize render</li>
-            <li>Addressables (opsiyonel)</li>
-          </ul>
-        </div>
-
-        <div class="card reveal">
-          <h3>Android</h3>
-          <ul>
-            <li>Kotlin</li>
-            <li>Modern UI patterns</li>
-            <li>Performans + stabilite</li>
-          </ul>
-        </div>
-
-        <div class="card reveal">
-          <h3>Web</h3>
-          <ul>
-            <li>Static + hızlı hosting</li>
-            <li>Animasyonlu UI</li>
-            <li>SEO temel ayarlar</li>
-          </ul>
+          <div class="stat">
+            <b class="grad" data-i18n="projects.s3.big">CLEAN</b>
+            <span data-i18n="projects.s3.small">Basit, sürdürülebilir kod</span>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="contact" class="section">
       <div class="reveal">
-        <h2>İletişim</h2>
-        <p>
-          Aşağıdaki form “görsel” amaçlıdır. GitHub Pages’te form göndermek için
-          Formspree gibi ücretsiz servis kullanılır. İstersen ben bağlarım.
+        <h2 data-i18n="contact.title">İletişim</h2>
+        <p data-i18n="contact.lead">
+          Mailini aşağıya yazalım; buton direkt mail açsın. İstersen form da bağlarız (Formspree).
         </p>
       </div>
 
-      <div class="contact">
+      <div class="grid">
         <div class="card reveal">
-          <h3>Mesaj Gönder</h3>
-          <form onsubmit="return false;">
-            <input class="field" placeholder="İsim" />
-            <div style="height:10px"></div>
-            <input class="field" placeholder="E-posta" />
-            <div style="height:10px"></div>
-            <textarea class="field" placeholder="Mesajın..."></textarea>
-            <div style="height:12px"></div>
-            <a class="btn primary" href="mailto:mail@ornek.com?subject=ASIA%20CONSOLE%20-%20Teklif&body=Merhaba%2C%20">
-              📩 Mail ile gönder
+          <h3 data-i18n="contact.card1.title">Hızlı Mail</h3>
+          <p style="margin:0; color:var(--muted); line-height:1.7;">
+            <span data-i18n="contact.card1.text">E-posta:</span>
+            <a style="color:var(--accent); font-weight:900; text-decoration:none;"
+               href="mailto:mail@ornek.com?subject=ASIA%20CONSOLE%20-%20Teklif">
+              mail@ornek.com
             </a>
-          </form>
+          </p>
+          <div style="margin-top:14px;">
+            <a class="btn primary" href="mailto:mail@ornek.com?subject=ASIA%20CONSOLE%20-%20Teklif" data-i18n="contact.card1.btn">
+              📩 Mail Gönder
+            </a>
+          </div>
         </div>
 
         <div class="card reveal">
-          <h3>Hızlı Bilgi</h3>
-          <p class="note">
-            • E-posta: <a style="color:var(--cyan)" href="mailto:mail@ornek.com">mail@ornek.com</a><br/>
-            • Instagram / YouTube / LinkedIn linklerini buraya ekleyebiliriz.<br/>
-            • “Projects” bölümüne oyun ekran görüntüleri eklenince site çok daha premium olur.
+          <h3 data-i18n="contact.card2.title">Sosyal</h3>
+          <p style="margin:0; color:var(--muted); line-height:1.7;" data-i18n="contact.card2.text">
+            Instagram / YouTube / LinkedIn linklerini ekleyelim. Minimal ikonlarla premium görünür.
           </p>
+        </div>
 
-          <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
-            <a class="btn" href="#top">⬆️ Başa dön</a>
-            <a class="btn" href="#showcase">🎬 Vitrin</a>
-          </div>
+        <div class="card reveal">
+          <h3 data-i18n="contact.card3.title">Domain</h3>
+          <p style="margin:0; color:var(--muted); line-height:1.7;">
+            <span data-i18n="contact.card3.text">Site:</span>
+            <b style="color:rgba(233,236,255,.92)">asiaconsole.com</b>
+          </p>
         </div>
       </div>
     </section>
 
     <footer>
-      <div class="wrap" style="padding:0 18px">
-        © <span id="y"></span> ASIA CONSOLE — Built on GitHub Pages
+      <div class="wrap" style="padding:0 18px;">
+        © <span id="year"></span> ASIA CONSOLE
       </div>
     </footer>
   </main>
 
   <script>
     // Year
-    document.getElementById("y").textContent = new Date().getFullYear();
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-    // Scroll reveal
+    // Reveal on scroll (minimal)
     const revealEls = document.querySelectorAll(".reveal");
     const io = new IntersectionObserver((entries)=>{
-      for(const e of entries){
+      entries.forEach(e=>{
         if(e.isIntersecting){
           e.target.classList.add("show");
           io.unobserve(e.target);
         }
-      }
-    }, { threshold: 0.12 });
+      })
+    }, { threshold: 0.14 });
     revealEls.forEach(el=>io.observe(el));
 
-    // Subtle parallax on panel (mouse)
-    const panel = document.getElementById("heroPanel");
-    const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
-    window.addEventListener("mousemove", (ev)=>{
-      if(!panel) return;
-      const r = panel.getBoundingClientRect();
-      const cx = r.left + r.width/2;
-      const cy = r.top + r.height/2;
-      const dx = (ev.clientX - cx) / r.width;
-      const dy = (ev.clientY - cy) / r.height;
-      const rx = clamp(-dy*6, -7, 7);
-      const ry = clamp(dx*8, -9, 9);
-      panel.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateY(0px)`;
-    });
-    window.addEventListener("mouseleave", ()=>{ if(panel) panel.style.transform = ""; });
+    // i18n
+    const dict = {
+      tr: {
+        "nav.services":"Servisler",
+        "nav.projects":"Projeler",
+        "nav.contact":"İletişim",
 
-    // Code rain background (lightweight)
-    const c = document.getElementById("rain");
-    const ctx = c.getContext("2d");
-    let w,h,cols,drop;
-    const chars = "ASIA_CONSOLE_01{}[]<>/\\=+-*#";
-    function resize(){
-      w = c.width = window.innerWidth;
-      h = c.height = window.innerHeight;
-      cols = Math.floor(w / 16);
-      drop = new Array(cols).fill(0).map(()=>Math.random()*h);
-    }
-    window.addEventListener("resize", resize);
-    resize();
+        "hero.kicker":"Premium oyun & uygulama stüdyosu",
+        "hero.line1":"Kodla. İnşa et.",
+        "hero.line2":"Şaheser çıkar.",
+        "hero.lead":"ASIA CONSOLE; minimal tasarım, yüksek performans ve “game feel” odaklı üretim yapar. Fikirden yayına kadar hızlı ve temiz bir pipeline.",
+        "hero.cta1":"Projeleri Gör",
+        "hero.cta2":"İletişime Geç",
 
-    function tick(){
-      ctx.fillStyle = "rgba(5,7,18,0.12)";
-      ctx.fillRect(0,0,w,h);
+        "panel.title":"STUDIO CONSOLE",
+        "tag1":"🎮 Gameplay Feel",
+        "tag2":"✨ Polish",
+        "tag3":"🧠 Clean Code",
 
-      ctx.font = "14px ui-monospace, Menlo, Consolas, monospace";
-      for(let i=0;i<cols;i++){
-        const ch = chars[(Math.random()*chars.length)|0];
-        const x = i*16;
-        const y = drop[i]*16;
+        "services.title":"Servisler",
+        "services.lead":"Üretim hattı sade: prototip → iterasyon → polish → yayın. Gereksiz karmaşa yok.",
+        "services.c1.title":"GAME DEVELOPMENT",
+        "services.c1.l1":"Unity ile mobil oyun geliştirme",
+        "services.c1.l2":"Skor / seviye / tuzak / game over döngüleri",
+        "services.c1.l3":"Juice: kamera shake, slow-mo, SFX",
+        "services.c2.title":"APP DEVELOPMENT",
+        "services.c2.l1":"Android odaklı uygulamalar",
+        "services.c2.l2":"Hızlı, stabil, modern UI",
+        "services.c2.l3":"MVP → yayınlanabilir sürüm",
+        "services.c3.title":"DESIGN & BRAND",
+        "services.c3.l1":"Logo / banner / landing tasarım",
+        "services.c3.l2":"Animasyonlu arayüz dili",
+        "services.c3.l3":"Minimal, premium görünüm",
 
-        // gradient-ish by y
-        const alpha = 0.35 + 0.25*Math.sin((y/h)*Math.PI);
-        ctx.fillStyle = `rgba(56,189,248,${alpha})`;
-        ctx.fillText(ch, x, y);
+        "projects.title":"Öne Çıkanlar",
+        "projects.lead":"Proje kartlarını buraya ekliyoruz. İstersen ekran görüntüsü ve store linkleri ile “vitrin” yaparız.",
+        "projects.p1.title":"ONE TAP BALL",
+        "projects.p1.desc":"Tek dokunuş hissiyatı, hızlı tekrar döngüsü ve güçlü polish. Minimal UI, net geri bildirim, akıcı oyun.",
+        "projects.p1.btn1":"Store Link (Yakında)",
+        "projects.p1.btn2":"Ekran Görüntüsü (Yakında)",
+        "projects.s1.big":"60 FPS",
+        "projects.s1.small":"Hedef: akıcı performans",
+        "projects.s2.big":"FAST",
+        "projects.s2.small":"Hızlı iterasyon / hızlı sonuç",
+        "projects.s3.big":"CLEAN",
+        "projects.s3.small":"Basit, sürdürülebilir kod",
 
-        drop[i] += 0.7 + Math.random()*0.9;
-        if(y > h && Math.random() > 0.975) drop[i] = 0;
+        "contact.title":"İletişim",
+        "contact.lead":"Mailini aşağıya yazalım; buton direkt mail açsın. İstersen form da bağlarız (Formspree).",
+        "contact.card1.title":"Hızlı Mail",
+        "contact.card1.text":"E-posta:",
+        "contact.card1.btn":"📩 Mail Gönder",
+        "contact.card2.title":"Sosyal",
+        "contact.card2.text":"Instagram / YouTube / LinkedIn linklerini ekleyelim. Minimal ikonlarla premium görünür.",
+        "contact.card3.title":"Domain",
+        "contact.card3.text":"Site:"
+      },
+      en: {
+        "nav.services":"Services",
+        "nav.projects":"Projects",
+        "nav.contact":"Contact",
+
+        "hero.kicker":"Premium game & app studio",
+        "hero.line1":"Code. Build.",
+        "hero.line2":"Ship masterpieces.",
+        "hero.lead":"ASIA CONSOLE delivers minimal design, high performance, and strong game feel. From idea to release with a clean, fast pipeline.",
+        "hero.cta1":"View Projects",
+        "hero.cta2":"Get in Touch",
+
+        "panel.title":"STUDIO CONSOLE",
+        "tag1":"🎮 Gameplay Feel",
+        "tag2":"✨ Polish",
+        "tag3":"🧠 Clean Code",
+
+        "services.title":"Services",
+        "services.lead":"A simple pipeline: prototype → iterate → polish → release. No unnecessary complexity.",
+        "services.c1.title":"GAME DEVELOPMENT",
+        "services.c1.l1":"Mobile game development with Unity",
+        "services.c1.l2":"Score / levels / traps / game-over loops",
+        "services.c1.l3":"Juice: camera shake, slow-mo, SFX",
+        "services.c2.title":"APP DEVELOPMENT",
+        "services.c2.l1":"Android-focused apps",
+        "services.c2.l2":"Fast, stable, modern UI",
+        "services.c2.l3":"MVP → production-ready release",
+        "services.c3.title":"DESIGN & BRAND",
+        "services.c3.l1":"Logo / banner / landing design",
+        "services.c3.l2":"Animated UI language",
+        "services.c3.l3":"Minimal, premium look",
+
+        "projects.title":"Highlights",
+        "projects.lead":"We’ll add your project cards here. Screenshots + store links can turn this into a premium showcase.",
+        "projects.p1.title":"ONE TAP BALL",
+        "projects.p1.desc":"One-tap feel, fast replay loop, and strong polish. Minimal UI, clear feedback, smooth gameplay.",
+        "projects.p1.btn1":"Store Link (Soon)",
+        "projects.p1.btn2":"Screenshots (Soon)",
+        "projects.s1.big":"60 FPS",
+        "projects.s1.small":"Goal: smooth performance",
+        "projects.s2.big":"FAST",
+        "projects.s2.small":"Rapid iteration / quick results",
+        "projects.s3.big":"CLEAN",
+        "projects.s3.small":"Simple, maintainable code",
+
+        "contact.title":"Contact",
+        "contact.lead":"Add your email below; the button opens email directly. We can also hook up a form (Formspree).",
+        "contact.card1.title":"Quick Email",
+        "contact.card1.text":"Email:",
+        "contact.card1.btn":"📩 Send Email",
+        "contact.card2.title":"Social",
+        "contact.card2.text":"Let’s add Instagram / YouTube / LinkedIn links. Minimal icons look premium.",
+        "contact.card3.title":"Domain",
+        "contact.card3.text":"Website:"
       }
-      requestAnimationFrame(tick);
+    };
+
+    const trBtn = document.getElementById("trBtn");
+    const enBtn = document.getElementById("enBtn");
+
+    function applyLang(lang){
+      const d = dict[lang] || dict.tr;
+      document.documentElement.lang = lang;
+
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const key = el.getAttribute("data-i18n");
+        if(d[key]) el.textContent = d[key];
+      });
+
+      trBtn.classList.toggle("active", lang === "tr");
+      enBtn.classList.toggle("active", lang === "en");
+      localStorage.setItem("lang", lang);
     }
-    tick();
+
+    trBtn.addEventListener("click", ()=>applyLang("tr"));
+    enBtn.addEventListener("click", ()=>applyLang("en"));
+
+    // init
+    const saved = localStorage.getItem("lang");
+    applyLang(saved === "en" ? "en" : "tr");
   </script>
 </body>
 </html>

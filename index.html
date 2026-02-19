@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ASIA CONSOLE — Game & App Development</title>
-  <meta name="description" content="ASIA CONSOLE — premium oyun ve uygulama geliştirme stüdyosu." />
+  <title>Asia Console Studio — Game & App Development</title>
+  <meta name="description" content="Asia Console Studio — premium oyun ve uygulama geliştirme stüdyosu." />
 
   <style>
     :root{
@@ -50,27 +50,60 @@
       justify-content:space-between;
       gap:14px;
     }
+
     .brand{
       display:flex; align-items:center; gap:12px;
       text-decoration:none; color:var(--text);
+      min-width: 220px;
     }
-    .mark{
-      width:34px; height:34px; border-radius:12px;
-      background: radial-gradient(circle at 30% 30%, rgba(59,130,246,.85), rgba(167,139,250,.70));
-      box-shadow: 0 12px 40px rgba(59,130,246,.18);
+    .logo{
+      width:38px; height:38px;
+      border-radius:14px;
+      overflow:hidden;
       border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      box-shadow: 0 14px 45px rgba(59,130,246,.14);
+      position:relative;
+      flex:0 0 auto;
     }
-    .brand b{
-      letter-spacing:.14em;
-      font-size:13px;
+    .logo img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+      transform: scale(1.02);
     }
+    /* subtle premium glow */
+    .logo::after{
+      content:"";
+      position:absolute; inset:-30%;
+      background: conic-gradient(from 180deg,
+        transparent, rgba(255,255,255,.20), transparent, rgba(59,130,246,.20), transparent);
+      animation: spin 10s linear infinite;
+      opacity:.6;
+      mix-blend-mode: overlay;
+      pointer-events:none;
+    }
+
+    .brand-text{
+      display:flex; flex-direction:column; line-height:1.1;
+    }
+    .brand-text b{
+      letter-spacing:.12em;
+      font-size:12.5px;
+    }
+    .brand-text span{
+      font-size:12px;
+      color:rgba(233,236,255,.65);
+      font-weight:700;
+    }
+
     .links{
       display:flex; align-items:center; gap:10px; flex-wrap:wrap;
     }
     .link{
       text-decoration:none;
       color:rgba(233,236,255,.85);
-      font-weight:700;
+      font-weight:800;
       font-size:13px;
       padding:9px 10px;
       border-radius:999px;
@@ -82,6 +115,7 @@
       background:rgba(255,255,255,.04);
       color:var(--text);
     }
+
     .lang{
       display:flex; gap:6px;
       padding:6px;
@@ -93,7 +127,7 @@
       border:0;
       background:transparent;
       color:rgba(233,236,255,.75);
-      font-weight:800;
+      font-weight:900;
       font-size:12px;
       padding:8px 10px;
       border-radius:999px;
@@ -126,7 +160,7 @@
       content:"";
       position:absolute; inset:0;
       background:
-        linear-gradient(90deg, rgba(7,10,18,.82), rgba(7,10,18,.35) 50%, rgba(7,10,18,.78)),
+        linear-gradient(90deg, rgba(7,10,18,.84), rgba(7,10,18,.35) 52%, rgba(7,10,18,.80)),
         url("banner.webp") center/cover no-repeat;
       transform:scale(1.02);
       filter: saturate(1.04) contrast(1.03);
@@ -150,16 +184,18 @@
       border:1px solid rgba(255,255,255,.10);
       color:rgba(233,236,255,.78);
       font-size:13px;
-      font-weight:700;
+      font-weight:800;
     }
     .dot{
       width:10px; height:10px; border-radius:50%;
       background: radial-gradient(circle at 30% 30%, rgba(59,130,246,1), rgba(59,130,246,.25));
       box-shadow: 0 0 0 6px rgba(59,130,246,.10);
     }
+
+    /* New premium heading (requested) */
     h1{
-      margin:18px 0 12px;
-      font-size: clamp(36px, 4.8vw, 64px);
+      margin:18px 0 10px;
+      font-size: clamp(34px, 4.7vw, 62px);
       line-height:1.05;
       letter-spacing:-.03em;
     }
@@ -172,12 +208,12 @@
     .lead{
       margin:0 0 18px;
       color:var(--muted);
-      line-height:1.7;
-      max-width:60ch;
+      line-height:1.75;
+      max-width:62ch;
       font-size:16px;
     }
-    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
 
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
       padding:12px 14px;
@@ -202,9 +238,7 @@
       background: linear-gradient(135deg, rgba(59,130,246,.24), rgba(167,139,250,.18));
     }
 
-    .hero-right{
-      padding:32px 28px;
-    }
+    .hero-right{ padding:32px 28px; }
     .glass{
       border-radius: var(--radius2);
       border:1px solid rgba(255,255,255,.12);
@@ -225,8 +259,7 @@
     .traffic{ display:flex; gap:7px; }
     .traffic i{
       width:10px; height:10px; border-radius:50%;
-      display:inline-block;
-      opacity:.9;
+      display:inline-block; opacity:.9;
     }
     .traffic i:nth-child(1){ background:#ff5f56; }
     .traffic i:nth-child(2){ background:#ffbd2e; }
@@ -253,7 +286,7 @@
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       color:rgba(233,236,255,.76);
-      font-weight:800;
+      font-weight:900;
       font-size:12px;
     }
 
@@ -316,7 +349,6 @@
     .stat b{ display:block; font-size:18px; }
     .stat span{ color:var(--muted); font-size:12.8px; }
 
-    /* Footer */
     footer{
       padding:40px 0 34px;
       border-top:1px solid rgba(255,255,255,.08);
@@ -327,7 +359,6 @@
     .reveal{ opacity:0; transform: translateY(10px); transition: opacity .7s ease, transform .7s ease; }
     .reveal.show{ opacity:1; transform:none; }
 
-    /* Mobile */
     @media (max-width: 980px){
       .hero{ grid-template-columns: 1fr; }
       .hero-left{ padding:30px 22px; }
@@ -335,16 +366,24 @@
       .grid{ grid-template-columns: 1fr; }
       .split{ grid-template-columns: 1fr; }
       .links{ gap:6px; }
+      .brand{ min-width:auto; }
     }
+
+    @keyframes spin{ to{ transform: rotate(360deg); } }
   </style>
 </head>
 
 <body>
   <nav class="nav">
     <div class="nav-inner">
-      <a class="brand" href="#top" aria-label="ASIA CONSOLE">
-        <div class="mark"></div>
-        <b>ASIA CONSOLE</b>
+      <a class="brand" href="#top" aria-label="Asia Console Studio">
+        <div class="logo">
+          <img src="logo.png" alt="ASIA CONSOLE logo">
+        </div>
+        <div class="brand-text">
+          <b>ASIA CONSOLE</b>
+          <span data-i18n="brand.sub">Interactive Studio</span>
+        </div>
       </a>
 
       <div class="links">
@@ -368,14 +407,15 @@
           <span data-i18n="hero.kicker">Premium oyun & uygulama stüdyosu</span>
         </div>
 
+        <!-- nicer title (requested) -->
         <h1>
-          <span data-i18n="hero.line1">Kodla. İnşa et.</span>
-          <span class="grad" data-i18n="hero.line2">Şaheser çıkar.</span>
+          <span data-i18n="hero.title1">Asia Console</span>
+          <span class="grad" data-i18n="hero.title2">Studio</span>
         </h1>
 
         <p class="lead" data-i18n="hero.lead">
-          ASIA CONSOLE; minimal tasarım, yüksek performans ve “game feel” odaklı üretim yapar.
-          Fikirden yayına kadar hızlı ve temiz bir pipeline.
+          Minimal tasarım, yüksek performans ve güçlü “game feel”.
+          Fikirden yayına kadar temiz bir üretim hattı.
         </p>
 
         <div class="actions">
@@ -419,7 +459,7 @@ build("ONE TAP BALL");</code></pre>
       <div class="reveal">
         <h2 data-i18n="services.title">Servisler</h2>
         <p data-i18n="services.lead">
-          Üretim hattı sade: prototip → iterasyon → polish → yayın. Gereksiz karmaşa yok.
+          Prototip → iterasyon → polish → yayın. Gereksiz karmaşa yok.
         </p>
       </div>
 
@@ -457,7 +497,7 @@ build("ONE TAP BALL");</code></pre>
       <div class="reveal">
         <h2 data-i18n="projects.title">Öne Çıkanlar</h2>
         <p data-i18n="projects.lead">
-          Proje kartlarını buraya ekliyoruz. İstersen ekran görüntüsü ve store linkleri ile “vitrin” yaparız.
+          Proje kartlarını buraya ekliyoruz. Ekran görüntüsü ve store linkleri ile “vitrin” yaparız.
         </p>
       </div>
 
@@ -540,10 +580,9 @@ build("ONE TAP BALL");</code></pre>
   </main>
 
   <script>
-    // Year
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    // Reveal on scroll (minimal)
+    // Reveal on scroll
     const revealEls = document.querySelectorAll(".reveal");
     const io = new IntersectionObserver((entries)=>{
       entries.forEach(e=>{
@@ -558,14 +597,15 @@ build("ONE TAP BALL");</code></pre>
     // i18n
     const dict = {
       tr: {
+        "brand.sub":"Interactive Studio",
         "nav.services":"Servisler",
         "nav.projects":"Projeler",
         "nav.contact":"İletişim",
 
         "hero.kicker":"Premium oyun & uygulama stüdyosu",
-        "hero.line1":"Kodla. İnşa et.",
-        "hero.line2":"Şaheser çıkar.",
-        "hero.lead":"ASIA CONSOLE; minimal tasarım, yüksek performans ve “game feel” odaklı üretim yapar. Fikirden yayına kadar hızlı ve temiz bir pipeline.",
+        "hero.title1":"Asia Console",
+        "hero.title2":"Studio",
+        "hero.lead":"Minimal tasarım, yüksek performans ve güçlü “game feel”. Fikirden yayına kadar temiz bir üretim hattı.",
         "hero.cta1":"Projeleri Gör",
         "hero.cta2":"İletişime Geç",
 
@@ -575,7 +615,7 @@ build("ONE TAP BALL");</code></pre>
         "tag3":"🧠 Clean Code",
 
         "services.title":"Servisler",
-        "services.lead":"Üretim hattı sade: prototip → iterasyon → polish → yayın. Gereksiz karmaşa yok.",
+        "services.lead":"Prototip → iterasyon → polish → yayın. Gereksiz karmaşa yok.",
         "services.c1.title":"GAME DEVELOPMENT",
         "services.c1.l1":"Unity ile mobil oyun geliştirme",
         "services.c1.l2":"Skor / seviye / tuzak / game over döngüleri",
@@ -590,7 +630,7 @@ build("ONE TAP BALL");</code></pre>
         "services.c3.l3":"Minimal, premium görünüm",
 
         "projects.title":"Öne Çıkanlar",
-        "projects.lead":"Proje kartlarını buraya ekliyoruz. İstersen ekran görüntüsü ve store linkleri ile “vitrin” yaparız.",
+        "projects.lead":"Proje kartlarını buraya ekliyoruz. Ekran görüntüsü ve store linkleri ile “vitrin” yaparız.",
         "projects.p1.title":"ONE TAP BALL",
         "projects.p1.desc":"Tek dokunuş hissiyatı, hızlı tekrar döngüsü ve güçlü polish. Minimal UI, net geri bildirim, akıcı oyun.",
         "projects.p1.btn1":"Store Link (Yakında)",
@@ -613,14 +653,15 @@ build("ONE TAP BALL");</code></pre>
         "contact.card3.text":"Site:"
       },
       en: {
+        "brand.sub":"Interactive Studio",
         "nav.services":"Services",
         "nav.projects":"Projects",
         "nav.contact":"Contact",
 
         "hero.kicker":"Premium game & app studio",
-        "hero.line1":"Code. Build.",
-        "hero.line2":"Ship masterpieces.",
-        "hero.lead":"ASIA CONSOLE delivers minimal design, high performance, and strong game feel. From idea to release with a clean, fast pipeline.",
+        "hero.title1":"Asia Console",
+        "hero.title2":"Studio",
+        "hero.lead":"Minimal design, high performance, and strong game feel. A clean pipeline from idea to release.",
         "hero.cta1":"View Projects",
         "hero.cta2":"Get in Touch",
 
@@ -630,7 +671,7 @@ build("ONE TAP BALL");</code></pre>
         "tag3":"🧠 Clean Code",
 
         "services.title":"Services",
-        "services.lead":"A simple pipeline: prototype → iterate → polish → release. No unnecessary complexity.",
+        "services.lead":"Prototype → iterate → polish → release. No unnecessary complexity.",
         "services.c1.title":"GAME DEVELOPMENT",
         "services.c1.l1":"Mobile game development with Unity",
         "services.c1.l2":"Score / levels / traps / game-over loops",
@@ -645,7 +686,7 @@ build("ONE TAP BALL");</code></pre>
         "services.c3.l3":"Minimal, premium look",
 
         "projects.title":"Highlights",
-        "projects.lead":"We’ll add your project cards here. Screenshots + store links can turn this into a premium showcase.",
+        "projects.lead":"We’ll add project cards here. Screenshots + store links can turn this into a premium showcase.",
         "projects.p1.title":"ONE TAP BALL",
         "projects.p1.desc":"One-tap feel, fast replay loop, and strong polish. Minimal UI, clear feedback, smooth gameplay.",
         "projects.p1.btn1":"Store Link (Soon)",
@@ -675,12 +716,10 @@ build("ONE TAP BALL");</code></pre>
     function applyLang(lang){
       const d = dict[lang] || dict.tr;
       document.documentElement.lang = lang;
-
       document.querySelectorAll("[data-i18n]").forEach(el=>{
         const key = el.getAttribute("data-i18n");
         if(d[key]) el.textContent = d[key];
       });
-
       trBtn.classList.toggle("active", lang === "tr");
       enBtn.classList.toggle("active", lang === "en");
       localStorage.setItem("lang", lang);
@@ -689,7 +728,6 @@ build("ONE TAP BALL");</code></pre>
     trBtn.addEventListener("click", ()=>applyLang("tr"));
     enBtn.addEventListener("click", ()=>applyLang("en"));
 
-    // init
     const saved = localStorage.getItem("lang");
     applyLang(saved === "en" ? "en" : "tr");
   </script>

@@ -3,65 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geliştirici Portfolyosu | Yazılım, Oyun & Animasyon</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ASIA CONSOLE | Game & App Development</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card { transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #1e293b; }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.2); }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Oxanium:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
-<body class="antialiased">
+<body class="bg-gray-900 text-gray-100 font-oxanium antialiased">
 
-    <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto">
-        <h1 class="text-2xl font-bold gradient-text">DevHub.</h1>
-        <div class="space-x-6 hidden md:block">
-            <a href="#projects" class="hover:text-sky-400 transition">Projeler</a>
-            <a href="#about" class="hover:text-sky-400 transition">Hakkımda</a>
-            <a href="https://github.com" target="_blank" class="bg-sky-600 px-4 py-2 rounded-lg hover:bg-sky-500 transition">GitHub</a>
+    <nav class="fixed w-full z-50 bg-gray-900 bg-opacity-80 backdrop-filter backdrop-blur-sm shadow-lg py-4 transition-all duration-300">
+        <div class="container mx-auto flex justify-between items-center px-6">
+            <a href="#" class="flex items-center space-x-2">
+                <img src="icon.png" alt="ASIA CONSOLE Logo" class="h-10 w-10 animate-pulse">
+                <span class="text-3xl font-orbitron text-red-500 tracking-wider">ASIA CONSOLE</span>
+            </a>
+            <div class="hidden md:flex space-x-8 text-lg font-medium">
+                <a href="#home" class="nav-link relative group">Anasayfa<span class="underline-anim"></span></a>
+                <a href="#projects" class="nav-link relative group">Projeler<span class="underline-anim"></span></a>
+                <a href="#services" class="nav-link relative group">Hizmetler<span class="underline-anim"></span></a>
+                <a href="#about" class="nav-link relative group">Hakkımızda<span class="underline-anim"></span></a>
+                <a href="#contact" class="nav-link relative group">İletişim<span class="underline-anim"></span></a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-100 text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 bg-opacity-95 py-4 text-center">
+            <a href="#home" class="block py-2 text-xl hover:text-red-500 transition">Anasayfa</a>
+            <a href="#projects" class="block py-2 text-xl hover:text-red-500 transition">Projeler</a>
+            <a href="#services" class="block py-2 text-xl hover:text-red-500 transition">Hizmetler</a>
+            <a href="#about" class="block py-2 text-xl hover:text-red-500 transition">Hakkımızda</a>
+            <a href="#contact" class="block py-2 text-xl hover:text-red-500 transition">İletişim</a>
         </div>
     </nav>
 
-    <header class="text-center py-20 px-4">
-        <h2 class="text-5xl md:text-7xl font-extrabold mb-6">Fikirleri <span class="gradient-text">Gerçeğe</span> Dönüştür.</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto text-lg">Kodlama, oyun geliştirme ve animasyon dünyasında ürettiğim her şey burada. GitHub üzerinde açık kaynaklı projelerimi keşfedin.</p>
-    </header>
-
-    <main id="projects" class="max-w-6xl mx-auto px-6 pb-20">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            <div class="card bg-slate-900/50 p-6 rounded-2xl">
-                <div class="text-sky-400 text-3xl mb-4"><i class="fas fa-code"></i></div>
-                <h3 class="text-xl font-bold mb-2">Yazılım & Uygulama</h3>
-                <p class="text-gray-400 mb-4">Web araçları, mobil uygulamalar ve otomasyon sistemleri.</p>
-                <span class="text-xs font-mono text-sky-500 bg-sky-500/10 px-2 py-1 rounded">Python</span>
-                <span class="text-xs font-mono text-sky-500 bg-sky-500/10 px-2 py-1 rounded">React</span>
-            </div>
-
-            <div class="card bg-slate-900/50 p-6 rounded-2xl">
-                <div class="text-indigo-400 text-3xl mb-4"><i class="fas fa-gamepad"></i></div>
-                <h3 class="text-xl font-bold mb-2">Oyun Geliştirme</h3>
-                <p class="text-gray-400 mb-4">Unity ve Unreal Engine ile geliştirilen 2D/3D oyun projeleri.</p>
-                <span class="text-xs font-mono text-indigo-500 bg-indigo-500/10 px-2 py-1 rounded">C#</span>
-                <span class="text-xs font-mono text-indigo-500 bg-indigo-500/10 px-2 py-1 rounded">Unity</span>
-            </div>
-
-            <div class="card bg-slate-900/50 p-6 rounded-2xl">
-                <div class="text-purple-400 text-3xl mb-4"><i class="fas fa-film"></i></div>
-                <h3 class="text-xl font-bold mb-2">Animasyon & Sanat</h3>
-                <p class="text-gray-400 mb-4">Blender ve After Effects ile oluşturulmuş görsel çalışmalar.</p>
-                <span class="text-xs font-mono text-purple-500 bg-purple-500/10 px-2 py-1 rounded">Blender</span>
-                <span class="text-xs font-mono text-purple-500 bg-purple-500/10 px-2 py-1 rounded">Motion Design</span>
-            </div>
-
+    <section id="home" class="relative h-screen flex items-center justify-center text-center overflow-hidden">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('banner.png');">
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80"></div>
         </div>
-    </main>
+        <div class="relative z-10 px-6 max-w-4xl mx-auto">
+            <h1 class="text-6xl md:text-8xl font-orbitron font-bold text-white leading-tight animate-fade-in-up">
+                Fikirlerini <span class="text-red-500">Dijital Dünyaya</span> Taşı
+            </h1>
+            <p class="mt-6 text-xl md:text-2xl text-gray-300 animate-fade-in-up delay-200">
+                Oyun, Uygulama ve Animasyon Geliştirmede Uzmanlık
+            </p>
+            <div class="mt-10 flex flex-wrap justify-center gap-6">
+                <a href="#projects" class="btn-primary animate-scale-in delay-400">Projelerimizi Keşfet <i class="fas fa-arrow-right ml-2"></i></a>
+                <a href="#contact" class="btn-secondary animate-scale-in delay-500">İletişime Geç <i class="fas fa-envelope ml-2"></i></a>
+            </div>
+        </div>
+    </section>
 
-    <footer class="border-t border-slate-800 py-10 text-center text-gray-500 text-sm">
-        <p>© 2026 Tasarımcı & Geliştirici. GitHub Pages ile güçlendirildi.</p>
+    <section id="services" class="py-20 bg-gray-800 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-grid-pattern z-0"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <h2 class="text-5xl font-orbitron text-center mb-16 text-white animate-fade-in">
+                Uzmanlık <span class="text-red-500">Alanlarımız</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="service-card group bg-gray-900 p-8 rounded-xl shadow-xl border border-gray-700 animate-slide-in-left">
+                    <div class="text-red-500 text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3 class="text-3xl font-orbitron mb-4 text-white">Yazılım & Uygulama</h3>
+                    <p class="text-gray-400 text-lg">
+                        Yenilikçi mobil ve web uygulamaları, sağlam altyapılar ve özel yazılım çözümleri geliştiriyoruz.
+                    </p>
+                    <a href="#projects" class="mt-6 inline-block text-red-400 hover:text-red-300 group-hover:translate-x-2 transition-all duration-300">
+                        Detaylı İncele <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div class="service-card group bg-gray-900 p-8 rounded-xl shadow-xl border border-gray-700 animate-fade-in delay-200">
+                    <div class="text-blue-500 text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="text-3xl font-orbitron mb-4 text-white">Oyun Geliştirme</h3>
+                    <p class="text-gray-400 text-lg">
+                        Sürükleyici 2D ve 3D oyunlar, VR/AR deneyimleri ile oyuncuları büyüleyen projeler üretiyoruz.
+                    </p>
+                    <a href="#projects" class="mt-6 inline-block text-blue-400 hover:text-blue-300 group-hover:translate-x-2 transition-all duration-300">
+                        Detaylı İncele <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div class="service-card group bg-gray-900 p-8 rounded-xl shadow-xl border border-gray-700 animate-slide-in-right">
+                    <div class="text-purple-500 text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h3 class="text-3xl font-orbitron mb-4 text-white">Animasyon & Görsel Sanatlar</h3>
+                    <p class="text-gray-400 text-lg">
+                        Markanız için etkileyici animasyonlar, tanıtım videoları ve 3D modellemeler tasarlıyoruz.
+                    </p>
+                    <a href="#projects" class="mt-6 inline-block text-purple-400 hover:text-purple-300 group-hover:translate-x-2 transition-all duration-300">
+                        Detaylı İncele <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6">
+            <h2 class="text-5xl font-orbitron text-center mb-16 text-white animate-fade-in">
+                Öne Çıkan <span class="text-red-500">Projelerimiz</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div class="project-card bg-gray-800 rounded-xl shadow-lg overflow-hidden group border border-gray-700 hover:border-red-500 transition-all duration-300 animate-zoom-in">
+                    <img src="https://via.placeholder.com/600x400/1f2937/d1d5db?text=Project+1" alt="Project 1" class="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-500">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-orbitron mb-2 text-white group-hover:text-red-500 transition-colors duration-300">Cyberpunk RPG</h3>
+                        <p class="text-gray-400 mb-4">
+                            Unity motorunda geliştirilmiş, siberpunk temalı sürükleyici bir rol yapma oyunu.
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="badge">Unity</span>
+                            <span class="badge">C#</span>
+                            <span class="badge">3D Game</span>
+                        </div>
+                        <a href="#" class="mt-6 inline-block text-red-400 hover:text-red-300 group-hover:underline transition-all duration-300">
+                            Detayları Gör <i class="fas fa-external-link-alt ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="project-card bg-gray-800 rounded-xl shadow-lg overflow-hidden group border border-gray-700 hover:border-blue-500 transition-all duration-300 animate-zoom-in delay-200">
+                    <img src="https://via.placeholder.com/600x400/1f2937/d1d5db?text=Project+2" alt="Project 2" class="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-500">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-orbitron mb-2 text-white group-hover:text-blue-500 transition-colors duration-300">Akıllı Ev Uygulaması</h3>
+                        <p class="text-gray-400 mb-4">
+                            Ev otomasyonunu kolaylaştıran, React Native ile geliştirilmiş mobil uygulama.
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="badge">React Native</span>
+                            <span class="badge">Node.js</span>
+                            <span class="badge">Mobile App</span>
+                        </div>
+                        <a href="#" class="mt-6 inline-block text-blue-400 hover:text-blue-300 group-hover:underline transition-all duration-300">
+                            Detayları Gör <i class="fas fa-external-link-alt ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="project-card bg-gray-800 rounded-xl shadow-lg overflow-hidden group border border-gray-700 hover:border-purple-500 transition-all duration-300 animate-zoom-in delay-400">
+                    <img src="https://via.placeholder.com/600x400/1f2937/d1d5db?text=Project+3" alt="Project 3" class="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-500">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-orbitron mb-2 text-white group-hover:text-purple-500 transition-colors duration-300">Tanıtım Animasyonu</h3>
+                        <p class="text-gray-400 mb-4">
+                            Bir teknoloji şirketi için hazırlanan 3D hareketli grafik tanıtım filmi.
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="badge">Blender</span>
+                            <span class="badge">After Effects</span>
+                            <span class="badge">Motion Graphics</span>
+                        </div>
+                        <a href="#" class="mt-6 inline-block text-purple-400 hover:text-purple-300 group-hover:underline transition-all duration-300">
+                            Detayları Gör <i class="fas fa-external-link-alt ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-16">
+                <a href="#contact" class="btn-primary animate-bounce-subtle">Tüm Projeleri Görüntüle <i class="fas fa-arrow-circle-right ml-2"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="py-20 bg-gray-800 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-grid-pattern z-0"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <h2 class="text-5xl font-orbitron text-center mb-16 text-white animate-fade-in">
+                ASIA CONSOLE <span class="text-red-500">Kimdir?</span>
+            </h2>
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 text-gray-300 text-lg leading-relaxed animate-slide-in-left">
+                    <p class="mb-6">
+                        ASIA CONSOLE olarak, yaratıcılığı teknolojiyle birleştirerek dijital dünyada fark yaratan projeler geliştiriyoruz. Oyunlardan mobil uygulamalara, etkileyici animasyonlardan özel yazılım çözümlerine kadar geniş bir yelpazede hizmet sunuyoruz. Her projeye tutku ve özenle yaklaşarak, müşterilerimizin vizyonunu gerçeğe dönüştürmeyi hedefliyoruz.
+                    </p>
+                    <p class="mb-6">
+                        Ekibimiz, sektördeki en güncel teknolojilere hakim, deneyimli geliştiriciler, tasarımcılar ve sanatçılardan oluşuyor. Sizinle birlikte çalışarak, sıradışı fikirleri hayata geçirmek için sabırsızlanıyoruz.
+                    </p>
+                    <a href="#contact" class="btn-primary-small inline-flex items-center mt-4 animate-pulse-light">
+                        Bizimle Çalışın <i class="fas fa-handshake ml-2"></i>
+                    </a>
+                </div>
+                <div class="md:w-1/2 flex justify-center animate-slide-in-right">
+                    <img src="icon.png" alt="ASIA CONSOLE About" class="w-64 h-64 object-contain animate-spin-slow-reverse">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6">
+            <h2 class="text-5xl font-orbitron text-center mb-16 text-white animate-fade-in">
+                Bizimle <span class="text-red-500">İletişime Geçin</span>
+            </h2>
+            <div class="max-w-3xl mx-auto bg-gray-800 p-10 rounded-xl shadow-xl border border-gray-700 animate-pop-in">
+                <form action="#" method="POST" class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-gray-300 text-lg mb-2">Adınız Soyadınız</label>
+                        <input type="text" id="name" name="name" class="w-full p-4 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-red-500 transition-all duration-300 text-white" placeholder="Adınızı girin" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-300 text-lg mb-2">E-posta Adresiniz</label>
+                        <input type="email" id="email" name="email" class="w-full p-4 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-red-500 transition-all duration-300 text-white" placeholder="E-posta adresinizi girin" required>
+                    </div>
+                    <div>
+                        <label for="message" class="block text-gray-300 text-lg mb-2">Mesajınız</label>
+                        <textarea id="message" name="message" rows="6" class="w-full p-4 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-red-500 transition-all duration-300 text-white" placeholder="Mesajınızı buraya yazın..." required></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn-primary w-full md:w-auto animate-pulse-light">
+                            Mesaj Gönder <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 border-t border-gray-700 py-10 text-center text-gray-500 text-sm">
+        <div class="container mx-auto px-6">
+            <p>&copy; 2024 ASIA CONSOLE. Tüm Hakları Saklıdır.</p>
+            <div class="flex justify-center space-x-6 mt-4 text-xl">
+                <a href="https://github.com/yourusername" target="_blank" class="hover:text-red-500 transition-colors duration-300"><i class="fab fa-github"></i></a>
+                <a href="https://twitter.com/yourusername" target="_blank" class="hover:text-red-500 transition-colors duration-300"><i class="fab fa-twitter"></i></a>
+                <a href="https://linkedin.com/in/yourusername" target="_blank" class="hover:text-red-500 transition-colors duration-300"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
     </footer>
 
+    <script src="script.js"></script>
 </body>
 </html>

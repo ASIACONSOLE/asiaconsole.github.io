@@ -16,11 +16,14 @@ button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer;background:#11
 .muted{color:#cfd3ff;line-height:1.7}
 
 /* Modal */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
-.modal-box{background:#0b1025;padding:20px;border-radius:16px;width:320px}
-input{width:100%;margin:6px 0;padding:10px;border-radius:8px;border:1px solid #222;background:#050712;color:white}
-.close{float:right;cursor:pointer;color:#cfd3ff}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:18px}
+.modal-box{background:#0b1025;padding:18px;border-radius:16px;width:min(360px,100%);border:1px solid #1b275a}
+input{width:100%;margin:7px 0;padding:10px 12px;border-radius:10px;border:1px solid #222;background:#050712;color:white}
+.close{float:right;cursor:pointer;color:#cfd3ff;background:transparent;border:0;font-size:18px}
 .user{font-size:12px;color:#cfd3ff}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.row button{flex:1}
+.small{font-size:12px;color:#cfd3ff;opacity:.9;margin-top:10px;line-height:1.4}
 </style>
 </head>
 
@@ -41,7 +44,7 @@ input{width:100%;margin:6px 0;padding:10px;border-radius:8px;border:1px solid #2
     <a href="members.html">Üye Paneli</a>
   </div>
 
-  <div>
+  <div style="display:flex;align-items:center;gap:10px">
     <span id="userLabel" class="user"></span>
     <button id="authBtn">Giriş / Üye Ol</button>
     <button id="logoutBtn" style="display:none">Çıkış</button>
@@ -56,22 +59,33 @@ input{width:100%;margin:6px 0;padding:10px;border-radius:8px;border:1px solid #2
 <div class="card">
   <h2>Hoş geldin 👋</h2>
   <p class="muted">
-    Firebase Authentication aktif.
+    Firebase Authentication aktif. Üye ol / giriş yap.
+    Hata olursa ekranda gerçek hata kodu gösterilir.
   </p>
 </div>
 
 <!-- LOGIN MODAL -->
 <div id="authModal" class="modal">
   <div class="modal-box">
-    <span class="close" id="closeAuth">✕</span>
-    <h3>Giriş / Üye Ol</h3>
+    <button class="close" id="closeAuth" aria-label="Kapat">✕</button>
+    <h3 style="margin:0 0 10px">Giriş / Üye Ol</h3>
 
     <input id="email" type="email" placeholder="E-posta">
-    <input id="pass" type="password" placeholder="Şifre">
+    <input id="pass" type="password" placeholder="Şifre (min 6 karakter)">
 
-    <button id="loginBtn">Giriş Yap</button>
-    <button id="registerBtn">Üye Ol</button>
-    <button id="googleBtn">Google ile</button>
+    <div class="row">
+      <button id="loginBtn">Giriş Yap</button>
+      <button id="registerBtn">Üye Ol</button>
+    </div>
+
+    <div class="row">
+      <button id="googleBtn">Google ile</button>
+    </div>
+
+    <div class="small">
+      • Email/Şifre için şifre en az 6 karakter olmalı.<br>
+      • Google giriş hata verirse genelde Firebase → Authorized domains eksiktir.
+    </div>
   </div>
 </div>
 
@@ -101,51 +115,79 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+// UI refs
 const modal = document.getElementById("authModal");
-const emailEl = document.getElementById("email");
-const passEl  = document.getElementById("pass");
 const authBtn = document.getElementById("authBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userLabel = document.getElementById("userLabel");
+const emailEl = document.getElementById("email");
+const passEl  = document.getElementById("pass");
 
-authBtn.onclick = () => modal.style.display = "flex";
-document.getElementById("closeAuth").onclick = () => modal.style.display = "none";
+function openModal(){ modal.style.display = "flex"; }
+function closeModal(){ modal.style.display = "none"; }
 
-document.getElementById("loginBtn").onclick = async () => {
+authBtn.addEventListener("click", openModal);
+document.getElementById("closeAuth").addEventListener("click", closeModal);
+modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
+
+function showAuthError(prefix, e){
+  const code = e?.code || "";
+  const msg = e?.message || e;
+  alert(prefix + ":\n" + code + "\n" + msg);
+  console.error(e);
+}
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = (emailEl.value || "").trim();
+  const pass  = (passEl.value || "");
+  if (!email.includes("@")) { alert("Geçerli bir e-posta yaz."); return; }
+  if (!pass) { alert("Şifre gir."); return; }
+
   try {
-    await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
-    modal.style.display = "none";
+    await signInWithEmailAndPassword(auth, email, pass);
+    closeModal();
   } catch(e){
-    alert("Login hata: " + (e?.code || "") + "\n" + (e?.message || e));
-    console.error(e);
+    showAuthError("Giriş hatası", e);
   }
-};
+});
 
-document.getElementById("registerBtn").onclick = async () => {
+document.getElementById("registerBtn").addEventListener("click", async () => {
+  const email = (emailEl.value || "").trim();
+  const pass  = (passEl.value || "");
+  if (!email.includes("@")) { alert("Geçerli bir e-posta yaz."); return; }
+  if (pass.length < 6) { alert("Şifre en az 6 karakter olmalı."); return; }
+
   try {
-    await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
-    modal.style.display = "none";
+    await createUserWithEmailAndPassword(auth, email, pass);
+    closeModal();
   } catch(e){
-    alert("Kayıt hata: " + (e?.code || "") + "\n" + (e?.message || e));
-    console.error(e);
+    showAuthError("Kayıt hatası", e);
   }
-};
+});
 
-document.getElementById("googleBtn").onclick = async () => {
+document.getElementById("googleBtn").addEventListener("click", async () => {
   try {
     await signInWithPopup(auth, provider);
-    modal.style.display = "none";
+    closeModal();
   } catch(e){
-    alert("Google hata: " + (e?.code || "") + "\n" + (e?.message || e));
-    console.error(e);
+    showAuthError("Google giriş hatası", e);
   }
-};
+});
 
-logoutBtn.onclick = () => signOut(auth);
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch(e){
+    showAuthError("Çıkış hatası", e);
+  }
+});
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, (user) => {
   logoutBtn.style.display = user ? "inline-block" : "none";
   authBtn.style.display = user ? "none" : "inline-block";
-  userLabel.textContent = user ? (user.email || "") : "";
+  userLabel.textContent = user ? (user.email || user.displayName || "") : "";
 });
 </script>
+
+</body>
+</html>

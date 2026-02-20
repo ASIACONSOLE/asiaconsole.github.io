@@ -102,39 +102,50 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 const modal = document.getElementById("authModal");
+const emailEl = document.getElementById("email");
+const passEl  = document.getElementById("pass");
+const authBtn = document.getElementById("authBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const userLabel = document.getElementById("userLabel");
 
-document.getElementById("authBtn").onclick = () => modal.style.display = "flex";
+authBtn.onclick = () => modal.style.display = "flex";
 document.getElementById("closeAuth").onclick = () => modal.style.display = "none";
 
 document.getElementById("loginBtn").onclick = async () => {
   try {
-    await signInWithEmailAndPassword(auth, email.value, pass.value);
+    await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
     modal.style.display = "none";
-  } catch(e){ alert("Login hata"); }
+  } catch(e){
+    alert("Login hata: " + (e?.code || "") + "\n" + (e?.message || e));
+    console.error(e);
+  }
 };
 
 document.getElementById("registerBtn").onclick = async () => {
   try {
-    await createUserWithEmailAndPassword(auth, email.value, pass.value);
+    await createUserWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
     modal.style.display = "none";
-  } catch(e){ alert("Kayıt hata"); }
+  } catch(e){
+    alert("Kayıt hata: " + (e?.code || "") + "\n" + (e?.message || e));
+    console.error(e);
+  }
 };
 
 document.getElementById("googleBtn").onclick = async () => {
   try {
     await signInWithPopup(auth, provider);
     modal.style.display = "none";
-  } catch(e){ alert("Google hata"); }
+  } catch(e){
+    alert("Google hata: " + (e?.code || "") + "\n" + (e?.message || e));
+    console.error(e);
+  }
 };
 
-document.getElementById("logoutBtn").onclick = () => signOut(auth);
+logoutBtn.onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, user => {
-  document.getElementById("logoutBtn").style.display = user ? "inline-block" : "none";
-  document.getElementById("authBtn").style.display = user ? "none" : "inline-block";
-  document.getElementById("userLabel").textContent = user ? user.email : "";
+  logoutBtn.style.display = user ? "inline-block" : "none";
+  authBtn.style.display = user ? "none" : "inline-block";
+  userLabel.textContent = user ? (user.email || "") : "";
 });
 </script>
-
-</body>
-</html>

@@ -6,48 +6,15 @@
 <title>Asia Console</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#050712;
-  color:white;
-}
-
-.nav{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px 40px;
-  background:#0b1025;
-  position:sticky;
-  top:0;
-}
-
-.nav a{
-  color:white;
-  text-decoration:none;
-  margin:0 10px;
-}
-
-button{
-  padding:8px 14px;
-  border-radius:8px;
-  border:0;
-  cursor:pointer;
-}
-
-.hero{
-  text-align:center;
-  padding:80px 20px;
-}
-
-.card{
-  max-width:900px;
-  margin:20px auto 70px;
-  padding:22px;
-  background:#0b1025;
-  border-radius:18px;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#050712;color:white;}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0b1025;position:sticky;top:0;gap:14px;flex-wrap:wrap}
+.nav a{color:white;text-decoration:none;margin:0 10px;white-space:nowrap}
+.nav .links{display:flex;align-items:center;flex-wrap:wrap}
+button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
+.hero{text-align:center;padding:80px 20px}
+.card{max-width:900px;margin:18px auto 70px;padding:22px;background:#0b1025;border-radius:18px}
+.muted{color:#cfd3ff;line-height:1.7}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#111a3a;color:#cfd3ff;margin:6px 6px 0 0;font-size:12px}
 </style>
 </head>
 
@@ -56,11 +23,16 @@ button{
 <nav class="nav">
   <a href="/">Asia Console</a>
 
-  <div>
+  <div class="links">
     <a href="/">Ana Sayfa</a>
+    <a href="/services.html">Servisler</a>
+    <a href="/showcase.html">Vitrin</a>
+    <a href="/stack.html">Teknoloji</a>
     <a href="/games.html">Games</a>
     <a href="/apps.html">Apps</a>
     <a href="/forum.html">Forum</a>
+    <a href="/contact.html">İletişim</a>
+    <a href="/members.html">Üye Paneli</a>
   </div>
 
   <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
@@ -73,7 +45,13 @@ button{
 
 <div class="card">
   <h2>Hoş geldin 👋</h2>
-  <p>Menüden sayfalara geçebilirsin. Üye girişi butonuyla giriş yapınca buton “Çıkış” olur.</p>
+  <p class="muted">
+    Menü artık tek sayfa değil: her başlık ayrı sayfaya gider. Üye girişi sağ üstten.
+    Forum sayfasında topluluk alanı var.
+  </p>
+  <span class="badge">Multi-page</span>
+  <span class="badge">Netlify Identity</span>
+  <span class="badge">Forum (Giscus)</span>
 </div>
 
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -81,25 +59,20 @@ button{
 function openAuth(){
   if (window.netlifyIdentity) window.netlifyIdentity.open();
 }
-
 function setAuthButton(user){
   const btn = document.getElementById("authBtn");
   if(!btn) return;
   if(user){
-    btn.textContent = "Çıkış";
+    btn.textContent = "Çıkış (" + (user.email || "üye") + ")";
     btn.onclick = () => window.netlifyIdentity.logout();
-  }else{
+  } else {
     btn.textContent = "Giriş / Üye Ol";
     btn.onclick = openAuth;
   }
 }
-
 if (window.netlifyIdentity) {
   window.netlifyIdentity.on("init", user => setAuthButton(user));
-  window.netlifyIdentity.on("login", user => {
-    setAuthButton(user);
-    window.netlifyIdentity.close();
-  });
+  window.netlifyIdentity.on("login", user => { setAuthButton(user); window.netlifyIdentity.close(); });
   window.netlifyIdentity.on("logout", () => setAuthButton(null));
   window.netlifyIdentity.init();
 }

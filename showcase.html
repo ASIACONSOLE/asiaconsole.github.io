@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asia Console — Vitrin</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#050712;color:white;}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0b1025;position:sticky;top:0;gap:14px;flex-wrap:wrap}
+.nav a{color:white;text-decoration:none;margin:0 10px;white-space:nowrap}
+.nav .links{display:flex;align-items:center;flex-wrap:wrap}
+button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
+.hero{text-align:center;padding:60px 20px}
+.card{max-width:900px;margin:18px auto 70px;padding:22px;background:#0b1025;border-radius:18px}
+.muted{color:#cfd3ff;line-height:1.8}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.item{padding:16px;border-radius:14px;background:#0f1736}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/">Asia Console</a>
+  <div class="links">
+    <a href="/">Ana Sayfa</a><a href="/services.html">Servisler</a><a href="/showcase.html">Vitrin</a><a href="/stack.html">Teknoloji</a>
+    <a href="/games.html">Games</a><a href="/apps.html">Apps</a><a href="/forum.html">Forum</a><a href="/contact.html">İletişim</a><a href="/members.html">Üye Paneli</a>
+  </div>
+  <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
+</nav>
+
+<div class="hero"><h1>Vitrin</h1><p>Projeler / ekran görüntüleri / linkler</p></div>
+
+<div class="card">
+  <div class="grid">
+    <div class="item">
+      <h3>One Tap Ball</h3>
+      <p class="muted">Store link (yakında) • Trailer (yakında)</p>
+    </div>
+    <div class="item">
+      <h3>Yeni Proje</h3>
+      <p class="muted">Buraya yeni oyun/uygulama kartları ekleyeceğiz.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+function openAuth(){ if(window.netlifyIdentity) window.netlifyIdentity.open(); }
+function setAuthButton(user){
+  const btn=document.getElementById("authBtn"); if(!btn) return;
+  if(user){ btn.textContent="Çıkış ("+(user.email||"üye")+")"; btn.onclick=()=>window.netlifyIdentity.logout(); }
+  else { btn.textContent="Giriş / Üye Ol"; btn.onclick=openAuth; }
+}
+if(window.netlifyIdentity){
+  window.netlifyIdentity.on("init",u=>setAuthButton(u));
+  window.netlifyIdentity.on("login",u=>{setAuthButton(u);window.netlifyIdentity.close();});
+  window.netlifyIdentity.on("logout",()=>setAuthButton(null));
+  window.netlifyIdentity.init();
+}
+</script>
+</body>
+</html>

@@ -1,18 +1,92 @@
-<div id="giscusArea" style="margin-top:18px;"></div>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asia Console — Forum</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#050712;color:white;}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0b1025;position:sticky;top:0;gap:14px;flex-wrap:wrap}
+.nav a{color:white;text-decoration:none;margin:0 10px;white-space:nowrap}
+.nav .links{display:flex;align-items:center;flex-wrap:wrap}
+button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
+.hero{text-align:center;padding:60px 20px}
+.card{max-width:900px;margin:18px auto 70px;padding:22px;background:#0b1025;border-radius:18px}
+.muted{color:#cfd3ff;line-height:1.8}
+</style>
+</head>
+<body>
 
-<!-- BURAYA GISCUS SCRIPT GELECEK -->
-<script src="https://giscus.app/client.js"
-        data-repo="ASIACONSOLE/asiaconsole.github.io"
-        data-repo-id="R_kgDORTw08A"
-        data-category="General"
-        data-category-id="DIC_XXXXXXXXXXXX"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="bottom"
-        data-theme="preferred_color_scheme"
-        data-lang="tr"
-        crossorigin="anonymous"
-        async>
+<nav class="nav">
+  <a href="/">Asia Console</a>
+  <div class="links">
+    <a href="/">Ana Sayfa</a><a href="/services.html">Servisler</a><a href="/showcase.html">Vitrin</a><a href="/stack.html">Teknoloji</a>
+    <a href="/games.html">Games</a><a href="/apps.html">Apps</a><a href="/forum.html">Forum</a><a href="/contact.html">İletişim</a><a href="/members.html">Üye Paneli</a>
+  </div>
+  <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
+</nav>
+
+<div class="hero"><h1>Forum</h1><p>Topluluk & tartışma</p></div>
+
+<div class="card" id="forumWrap">
+  <p class="muted">Forum üyeler için. Giriş yaptıktan sonra içerik görünür.</p>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+function openAuth(){ if(window.netlifyIdentity) window.netlifyIdentity.open(); }
+
+function setAuthButton(user){
+  const btn=document.getElementById("authBtn"); if(!btn) return;
+  if(user){ btn.textContent="Çıkış ("+(user.email||"üye")+")"; btn.onclick=()=>window.netlifyIdentity.logout(); }
+  else { btn.textContent="Giriş / Üye Ol"; btn.onclick=openAuth; }
+}
+
+function mountGiscus(){
+  const wrap = document.getElementById("forumWrap");
+  wrap.innerHTML = `
+    <h2>Topluluk</h2>
+    <p class="muted">Aşağıdaki alan Giscus (GitHub Discussions) forumudur.</p>
+    <div id="giscus"></div>
+  `;
+
+  // Giscus script injection
+  const s = document.createElement("script");
+  s.src = "https://giscus.app/client.js";
+  s.setAttribute("data-repo", "ASIACONSOLE/asiaconsole.github.io");
+  s.setAttribute("data-repo-id", "R_kgDORTw08A");
+
+  // ⚠️ BURAYI DOLDURMAN GEREKİYOR (giscus.app verdiği değerler)
+  s.setAttribute("data-category", "General");            // örnek
+  s.setAttribute("data-category-id", "DIC_XXXXXXXXXXXX"); // örnek
+
+  s.setAttribute("data-mapping", "pathname");
+  s.setAttribute("data-strict", "0");
+  s.setAttribute("data-reactions-enabled", "1");
+  s.setAttribute("data-emit-metadata", "0");
+  s.setAttribute("data-input-position", "bottom");
+  s.setAttribute("data-theme", "preferred_color_scheme");
+  s.setAttribute("data-lang", "tr");
+  s.crossOrigin = "anonymous";
+  s.async = true;
+  document.body.appendChild(s);
+}
+
+function renderForum(user){
+  if(!user){
+    document.getElementById("forumWrap").innerHTML = `<p class="muted">Forum üyeler için. Giriş ekranı açılıyor…</p>`;
+    openAuth();
+    return;
+  }
+  mountGiscus();
+}
+
+if(window.netlifyIdentity){
+  window.netlifyIdentity.on("init", user => { setAuthButton(user); renderForum(user); });
+  window.netlifyIdentity.on("login", user => { setAuthButton(user); renderForum(user); window.netlifyIdentity.close(); });
+  window.netlifyIdentity.on("logout", () => { setAuthButton(null); renderForum(null); });
+  window.netlifyIdentity.init();
+}
 </script>
+</body>
+</html>

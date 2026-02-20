@@ -1,17 +1,140 @@
-<div id="authBox">
-  <input id="email" placeholder="email">
-  <input id="pass" type="password" placeholder="şifre">
-  <button id="loginBtn">Login</button>
-  <button id="registerBtn">Register</button>
-  <button id="googleBtn">Google</button>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asia Console</title>
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#050712;color:white;}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0b1025;position:sticky;top:0;gap:14px;flex-wrap:wrap}
+.nav a{color:white;text-decoration:none;margin:0 10px;white-space:nowrap}
+.nav .links{display:flex;align-items:center;flex-wrap:wrap}
+button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer;background:#111a3a;color:white}
+.hero{text-align:center;padding:80px 20px}
+.card{max-width:900px;margin:18px auto 70px;padding:22px;background:#0b1025;border-radius:18px}
+.muted{color:#cfd3ff;line-height:1.7}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
+.modal-box{background:#0b1025;padding:20px;border-radius:16px;width:320px}
+input{width:100%;margin:6px 0;padding:10px;border-radius:8px;border:1px solid #222;background:#050712;color:white}
+.close{float:right;cursor:pointer;color:#cfd3ff}
+.user{font-size:12px;color:#cfd3ff}
+</style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <a href="./">Asia Console</a>
+
+  <div class="links">
+    <a href="./">Ana Sayfa</a>
+    <a href="services.html">Servisler</a>
+    <a href="showcase.html">Vitrin</a>
+    <a href="stack.html">Teknoloji</a>
+    <a href="games.html">Games</a>
+    <a href="apps.html">Apps</a>
+    <a href="forum.html">Forum</a>
+    <a href="contact.html">İletişim</a>
+    <a href="members.html">Üye Paneli</a>
+  </div>
+
+  <div>
+    <span id="userLabel" class="user"></span>
+    <button id="authBtn">Giriş / Üye Ol</button>
+    <button id="logoutBtn" style="display:none">Çıkış</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Asia Console Studio</h1>
+  <p>Game & App Development</p>
 </div>
 
-<div>
-  <span id="userLabel"></span>
-  <button id="logoutBtn" style="display:none">Logout</button>
+<div class="card">
+  <h2>Hoş geldin 👋</h2>
+  <p class="muted">
+    Firebase Authentication aktif.
+  </p>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="authModal" class="modal">
+  <div class="modal-box">
+    <span class="close" id="closeAuth">✕</span>
+    <h3>Giriş / Üye Ol</h3>
+
+    <input id="email" type="email" placeholder="E-posta">
+    <input id="pass" type="password" placeholder="Şifre">
+
+    <button id="loginBtn">Giriş Yap</button>
+    <button id="registerBtn">Üye Ol</button>
+    <button id="googleBtn">Google ile</button>
+  </div>
 </div>
 
 <script type="module">
-  import { bindAuthUI } from "./firebase-init.js";
-  bindAuthUI();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAY2-JMHxNgBvM8jHmadiCRHi--eDTSW_Q",
+  authDomain: "asia-console.firebaseapp.com",
+  projectId: "asia-console",
+  storageBucket: "asia-console.firebasestorage.app",
+  messagingSenderId: "1063457883595",
+  appId: "1:1063457883595:web:c8b5946208098f19a9e24e",
+  measurementId: "G-50B31ZJV6C"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const modal = document.getElementById("authModal");
+
+document.getElementById("authBtn").onclick = () => modal.style.display = "flex";
+document.getElementById("closeAuth").onclick = () => modal.style.display = "none";
+
+document.getElementById("loginBtn").onclick = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, email.value, pass.value);
+    modal.style.display = "none";
+  } catch(e){ alert("Login hata"); }
+};
+
+document.getElementById("registerBtn").onclick = async () => {
+  try {
+    await createUserWithEmailAndPassword(auth, email.value, pass.value);
+    modal.style.display = "none";
+  } catch(e){ alert("Kayıt hata"); }
+};
+
+document.getElementById("googleBtn").onclick = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+    modal.style.display = "none";
+  } catch(e){ alert("Google hata"); }
+};
+
+document.getElementById("logoutBtn").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  document.getElementById("logoutBtn").style.display = user ? "inline-block" : "none";
+  document.getElementById("authBtn").style.display = user ? "none" : "inline-block";
+  document.getElementById("userLabel").textContent = user ? user.email : "";
+});
 </script>
+
+</body>
+</html>

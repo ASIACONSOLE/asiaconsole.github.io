@@ -35,9 +35,18 @@ button{
   border:0;
   cursor:pointer;
 }
+
 .hero{
   text-align:center;
   padding:80px 20px;
+}
+
+.card{
+  max-width:900px;
+  margin:20px auto 70px;
+  padding:22px;
+  background:#0b1025;
+  border-radius:18px;
 }
 </style>
 </head>
@@ -54,7 +63,7 @@ button{
     <a href="/forum.html">Forum</a>
   </div>
 
-  <button onclick="netlifyIdentity.open()">Giriş / Üye Ol</button>
+  <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
 </nav>
 
 <div class="hero">
@@ -62,7 +71,39 @@ button{
   <p>Game & App Development</p>
 </div>
 
+<div class="card">
+  <h2>Hoş geldin 👋</h2>
+  <p>Menüden sayfalara geçebilirsin. Üye girişi butonuyla giriş yapınca buton “Çıkış” olur.</p>
+</div>
+
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+function openAuth(){
+  if (window.netlifyIdentity) window.netlifyIdentity.open();
+}
+
+function setAuthButton(user){
+  const btn = document.getElementById("authBtn");
+  if(!btn) return;
+  if(user){
+    btn.textContent = "Çıkış";
+    btn.onclick = () => window.netlifyIdentity.logout();
+  }else{
+    btn.textContent = "Giriş / Üye Ol";
+    btn.onclick = openAuth;
+  }
+}
+
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.on("init", user => setAuthButton(user));
+  window.netlifyIdentity.on("login", user => {
+    setAuthButton(user);
+    window.netlifyIdentity.close();
+  });
+  window.netlifyIdentity.on("logout", () => setAuthButton(null));
+  window.netlifyIdentity.init();
+}
+</script>
 
 </body>
 </html>

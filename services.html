@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asia Console — Servisler</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#050712;color:white;}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0b1025;position:sticky;top:0;gap:14px;flex-wrap:wrap}
+.nav a{color:white;text-decoration:none;margin:0 10px;white-space:nowrap}
+.nav .links{display:flex;align-items:center;flex-wrap:wrap}
+button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
+.hero{text-align:center;padding:60px 20px}
+.card{max-width:900px;margin:18px auto 70px;padding:22px;background:#0b1025;border-radius:18px}
+.muted{color:#cfd3ff;line-height:1.8}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/">Asia Console</a>
+  <div class="links">
+    <a href="/">Ana Sayfa</a><a href="/services.html">Servisler</a><a href="/showcase.html">Vitrin</a><a href="/stack.html">Teknoloji</a>
+    <a href="/games.html">Games</a><a href="/apps.html">Apps</a><a href="/forum.html">Forum</a><a href="/contact.html">İletişim</a><a href="/members.html">Üye Paneli</a>
+  </div>
+  <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
+</nav>
+
+<div class="hero"><h1>Servisler</h1><p>Ne yapıyoruz?</p></div>
+
+<div class="card">
+  <h2>Oyun Geliştirme</h2>
+  <p class="muted">Unity ile mobil oyunlar, hyper-casual sistemler, skor/best, polish, SFX, kamera shake, slow-mo.</p>
+  <h2>Uygulama Geliştirme</h2>
+  <p class="muted">Android odaklı uygulamalar, hızlı MVP, modern arayüzler.</p>
+  <h2>Tasarım & Marka</h2>
+  <p class="muted">Logo, banner, landing page, vitrin düzeni.</p>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+function openAuth(){ if(window.netlifyIdentity) window.netlifyIdentity.open(); }
+function setAuthButton(user){
+  const btn=document.getElementById("authBtn"); if(!btn) return;
+  if(user){ btn.textContent="Çıkış ("+(user.email||"üye")+")"; btn.onclick=()=>window.netlifyIdentity.logout(); }
+  else { btn.textContent="Giriş / Üye Ol"; btn.onclick=openAuth; }
+}
+if(window.netlifyIdentity){
+  window.netlifyIdentity.on("init",u=>setAuthButton(u));
+  window.netlifyIdentity.on("login",u=>{setAuthButton(u);window.netlifyIdentity.close();});
+  window.netlifyIdentity.on("logout",()=>setAuthButton(null));
+  window.netlifyIdentity.init();
+}
+</script>
+</body>
+</html>

@@ -21,18 +21,18 @@ button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
 <body>
 
 <nav class="nav">
-  <a href="/">Asia Console</a>
+  <a href="./">Asia Console</a>
 
   <div class="links">
-    <a href="/">Ana Sayfa</a>
-    <a href="/services.html">Servisler</a>
-    <a href="/showcase.html">Vitrin</a>
-    <a href="/stack.html">Teknoloji</a>
-    <a href="/games.html">Games</a>
-    <a href="/apps.html">Apps</a>
-    <a href="/forum.html">Forum</a>
-    <a href="/contact.html">İletişim</a>
-    <a href="/members.html">Üye Paneli</a>
+    <a href="./">Ana Sayfa</a>
+    <a href="services.html">Servisler</a>
+    <a href="showcase.html">Vitrin</a>
+    <a href="stack.html">Teknoloji</a>
+    <a href="games.html">Games</a>
+    <a href="apps.html">Apps</a>
+    <a href="forum.html">Forum</a>
+    <a href="contact.html">İletişim</a>
+    <a href="members.html">Üye Paneli</a>
   </div>
 
   <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
@@ -50,11 +50,13 @@ button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
     Forum sayfasında topluluk alanı var.
   </p>
   <span class="badge">Multi-page</span>
-  <span class="badge">Netlify Identity</span>
+  <span class="badge">GitHub Pages Ready</span>
   <span class="badge">Forum (Giscus)</span>
 </div>
 
+<!-- Netlify Identity (istersen silebilirsin, hata sebebi değil) -->
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
 <script>
 function openAuth(){
   if (window.netlifyIdentity) window.netlifyIdentity.open();
@@ -63,7 +65,7 @@ function setAuthButton(user){
   const btn = document.getElementById("authBtn");
   if(!btn) return;
   if(user){
-    btn.textContent = "Çıkış (" + (user.email || "üye") + ")";
+    btn.textContent = "Çıkış";
     btn.onclick = () => window.netlifyIdentity.logout();
   } else {
     btn.textContent = "Giriş / Üye Ol";

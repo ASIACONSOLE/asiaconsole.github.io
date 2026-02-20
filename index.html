@@ -1,84 +1,17 @@
-<!doctype html>
-<html lang="tr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Asia Console</title>
-
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#050712;color:white;}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#0b1025;position:sticky;top:0;gap:14px;flex-wrap:wrap}
-.nav a{color:white;text-decoration:none;margin:0 10px;white-space:nowrap}
-.nav .links{display:flex;align-items:center;flex-wrap:wrap}
-button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer}
-.hero{text-align:center;padding:80px 20px}
-.card{max-width:900px;margin:18px auto 70px;padding:22px;background:#0b1025;border-radius:18px}
-.muted{color:#cfd3ff;line-height:1.7}
-.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#111a3a;color:#cfd3ff;margin:6px 6px 0 0;font-size:12px}
-</style>
-</head>
-
-<body>
-
-<nav class="nav">
-  <a href="./">Asia Console</a>
-
-  <div class="links">
-    <a href="./">Ana Sayfa</a>
-    <a href="services.html">Servisler</a>
-    <a href="showcase.html">Vitrin</a>
-    <a href="stack.html">Teknoloji</a>
-    <a href="games.html">Games</a>
-    <a href="apps.html">Apps</a>
-    <a href="forum.html">Forum</a>
-    <a href="contact.html">İletişim</a>
-    <a href="members.html">Üye Paneli</a>
-  </div>
-
-  <button id="authBtn" onclick="openAuth()">Giriş / Üye Ol</button>
-</nav>
-
-<div class="hero">
-  <h1>Asia Console Studio</h1>
-  <p>Game & App Development</p>
+<div id="authBox">
+  <input id="email" placeholder="email">
+  <input id="pass" type="password" placeholder="şifre">
+  <button id="loginBtn">Login</button>
+  <button id="registerBtn">Register</button>
+  <button id="googleBtn">Google</button>
 </div>
 
-<div class="card">
-  <h2>Hoş geldin 👋</h2>
-  <p class="muted">
-    Menü artık tek sayfa değil: her başlık ayrı sayfaya gider. Üye girişi sağ üstten.
-    Forum sayfasında topluluk alanı var.
-  </p>
-  <span class="badge">Multi-page</span>
-  <span class="badge">GitHub Pages Ready</span>
-  <span class="badge">Forum (Giscus)</span>
+<div>
+  <span id="userLabel"></span>
+  <button id="logoutBtn" style="display:none">Logout</button>
 </div>
 
-<!-- Netlify Identity (istersen silebilirsin, hata sebebi değil) -->
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-<script>
-function openAuth(){
-  if (window.netlifyIdentity) window.netlifyIdentity.open();
-}
-function setAuthButton(user){
-  const btn = document.getElementById("authBtn");
-  if(!btn) return;
-  if(user){
-    btn.textContent = "Çıkış";
-    btn.onclick = () => window.netlifyIdentity.logout();
-  } else {
-    btn.textContent = "Giriş / Üye Ol";
-    btn.onclick = openAuth;
-  }
-}
-if (window.netlifyIdentity) {
-  window.netlifyIdentity.on("init", user => setAuthButton(user));
-  window.netlifyIdentity.on("login", user => { setAuthButton(user); window.netlifyIdentity.close(); });
-  window.netlifyIdentity.on("logout", () => setAuthButton(null));
-  window.netlifyIdentity.init();
-}
+<script type="module">
+  import { bindAuthUI } from "./firebase-init.js";
+  bindAuthUI();
 </script>
-
-</body>
-</html>

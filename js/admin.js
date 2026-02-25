@@ -69,10 +69,31 @@ function setSidebarActive() {
     });
 }
 
-// ---- LOGOUT BUTTON ----
-function initLogout() {
-    const btn = document.getElementById('logoutBtn');
-    if (btn) btn.addEventListener('click', Admin.logout);
+// ---- MOBILE MENU ----
+function initMobileMenu() {
+    const toggle = document.querySelector('.menu-toggle');
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-open');
+        });
+    }
+
+    overlay.addEventListener('click', () => {
+        document.body.classList.remove('sidebar-open');
+    });
+
+    // Close on link click (mobile)
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+    });
 }
 
 // ---- INIT ----
@@ -82,4 +103,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isLoginPage) Admin.check();
     setSidebarActive();
     initLogout();
+    initMobileMenu();
 });

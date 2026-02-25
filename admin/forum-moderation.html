@@ -10,37 +10,56 @@
 
 <body>
     <div class="admin-layout">
-        <aside class="sidebar">
+        <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">⚙️</div>
                 <div>
-                    <h1>AsiaConsole</h1><span>Admin Panel</span>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="sidebar-link">📊 Dashboard</a>
-                <a href="pages.html" class="sidebar-link">📄 İçerik Yönetimi</a>
-                <a href="forum-moderation.html" class="sidebar-link active">💬 Forum Moderasyonu</a>
-                <a href="projects.html" class="sidebar-link">🚀 Proje Moderasyonu</a>
-                <a href="users.html" class="sidebar-link">👥 Kullanıcılar</a>
-                <a href="settings.html" class="sidebar-link">⚙️ Site Ayarları</a>
-                <a href="../index.html" class="sidebar-link" target="_blank">🌐 Siteye Git</a>
-                <a href="#" class="sidebar-link" id="adminLogoutLink" style="margin-top:auto; color:#ef4444;">🚪
-                    Çıkış</a>
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link active"><span class="icon">💬</span> Forum
+                    Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi
+                    Görüntüle</a>
             </nav>
+            <div class="sidebar-footer">
+                <div class="admin-user-info">
+                    <div class="admin-avatar">A</div>
+                    <div>
+                        <div class="admin-user-name">Admin</div>
+                        <div class="admin-user-role">Süper Yönetici</div>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
         </aside>
 
         <main class="admin-main">
             <div class="admin-topbar">
-                <div class="topbar-info">
-                    <h2>💬 Forum Moderasyonu</h2>
-                    <p>Bekleyen forum konularını onaylayın veya reddedin</p>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="topbar-title">💬 Forum Moderasyonu</div>
                 </div>
                 <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
                     <button class="topbar-btn" id="approveAllBtn"
-                        style="background:linear-gradient(135deg,#10b981,#059669);">✅ Tümünü Onayla</button>
+                        style="background:linear-gradient(135deg,#10b981,#059669); white-space:nowrap;">✅ Tümünü
+                        Onayla</button>
                     <button class="topbar-btn" id="rejectAllBtn"
-                        style="background:linear-gradient(135deg,#ef4444,#dc2626);">🗑️ Tümünü Reddet</button>
+                        style="background:linear-gradient(135deg,#ef4444,#dc2626); white-space:nowrap;">🗑️
+                        Temizle</button>
                 </div>
             </div>
 
@@ -317,10 +336,9 @@
                 showAdminToast('🗑️ Tüm bekleyen konular silindi.', 'error');
             });
 
-            document.getElementById('adminLogoutLink').addEventListener('click', e => {
+            document.getElementById('logoutBtn').addEventListener('click', e => {
                 e.preventDefault();
-                localStorage.removeItem('tc_admin_session');
-                window.location.href = 'index.html';
+                Admin.logout();
             });
         });
     </script>

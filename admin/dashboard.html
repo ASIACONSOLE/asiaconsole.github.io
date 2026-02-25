@@ -51,7 +51,14 @@
         <!-- MAIN CONTENT -->
         <main class="admin-main">
             <div class="admin-topbar">
-                <div class="topbar-title">📊 Dashboard</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="topbar-title">📊 Dashboard</div>
+                </div>
                 <div class="topbar-actions">
                     <a href="pages.html" class="topbar-btn">➕ Yeni İçerik</a>
                     <a href="../index.html" target="_blank" class="topbar-btn secondary">🌐 Siteyi Gör</a>
@@ -125,16 +132,18 @@
                             <a href="pages.html" class="topbar-btn"
                                 style="font-size:0.8rem; padding:0.4rem 0.75rem;">Tümünü Yönet</a>
                         </div>
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Başlık</th>
-                                    <th>Kategori</th>
-                                    <th>Görüntü</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentArticlesBody"></tbody>
-                        </table>
+                        <div class="admin-table-wrapper">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Başlık</th>
+                                        <th>Kategori</th>
+                                        <th>Görüntü</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentArticlesBody"></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- QUICK ACTIONS -->
@@ -176,19 +185,21 @@
                     <div class="admin-card-header">
                         <div class="admin-card-title">💬 Son Forum Konuları</div>
                     </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Konu</th>
-                                <th>Yazar</th>
-                                <th>Kategori</th>
-                                <th>Yanıt</th>
-                                <th>Durum</th>
-                                <th>Tarih</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentForumBody"></tbody>
-                    </table>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Konu</th>
+                                    <th>Yazar</th>
+                                    <th>Kategori</th>
+                                    <th>Yanıt</th>
+                                    <th>Durum</th>
+                                    <th>Tarih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentForumBody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>

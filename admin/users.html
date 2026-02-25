@@ -42,12 +42,19 @@
 
         <main class="admin-main">
             <div class="admin-topbar">
-                <div class="topbar-title">👥 Kullanıcı Yönetimi</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="topbar-title">👥 Kullanıcı Yönetimi</div>
+                </div>
                 <div class="topbar-actions">
-                    <button class="topbar-btn" id="addUserBtn">➕ Kullanıcı Ekle</button>
+                    <button class="topbar-btn" id="addUserBtn" style="white-space:nowrap;">➕ Ekle</button>
                     <div class="admin-search">
                         <span class="s-icon">🔍</span>
-                        <input type="text" id="searchUsers" placeholder="Kullanıcı ara...">
+                        <input type="text" id="searchUsers" placeholder="Ara...">
                     </div>
                 </div>
             </div>
@@ -62,7 +69,8 @@
                         <span style="font-size:0.8rem; color:var(--text-muted);">Site sıfırlamadan önce yedeğinizi
                             alın</span>
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; padding:0.5rem 0;">
+                    <div
+                        style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem; padding:0.5rem 0;">
                         <!-- EXPORT -->
                         <div
                             style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:12px; padding:1.25rem;">
@@ -117,7 +125,8 @@
                 </div>
 
                 <!-- Quick Stats -->
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem;">
+                <div
+                    style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                     <div class="admin-stat-card">
                         <div class="stat-icon blue">👥</div>
                         <div>
@@ -154,21 +163,23 @@
                                 style="font-size:0.8rem; padding:0.35rem 0.75rem;">Pasif</button>
                         </div>
                     </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Kullanıcı</th>
-                                <th>E-posta</th>
-                                <th>Kayıt Tarihi</th>
-                                <th>Şifre</th>
-                                <th>Forum</th>
-                                <th>Hesap Türü</th>
-                                <th>Durum</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersBody"></tbody>
-                    </table>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th>E-posta</th>
+                                    <th>Kayıt Tarihi</th>
+                                    <th>Şifre</th>
+                                    <th>Forum</th>
+                                    <th>Hesap Türü</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody"></tbody>
+                        </table>
+                    </div>
                     <div id="emptyUsers" style="display:none;" class="empty-state">
                         <div class="ei">👥</div>
                         <h3>Kullanıcı bulunamadı</h3>

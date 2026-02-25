@@ -862,7 +862,42 @@ body {
     font-size: 0.875rem;
 }
 
+/* MENU TOGGLE BURGER */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 1000;
+    padding: 8px;
+    border-radius: 8px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border);
+}
+
+.menu-toggle span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text-primary);
+    border-radius: 2px;
+    transition: var(--transition);
+}
+
+/* TABLE RESPONSIVENESS */
+.admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 /* RESPONSIVE */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-w: 240px;
+    }
+}
+
 @media (max-width: 900px) {
     .admin-stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -870,6 +905,71 @@ body {
 
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    .admin-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .admin-sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+    }
+
+    body.sidebar-open .admin-sidebar {
+        transform: translateX(0);
+    }
+
+    body.sidebar-open .sidebar-overlay {
+        display: block;
+    }
+
+    .admin-main {
+        margin-left: 0;
+    }
+
+    .admin-topbar {
+        padding: 0 1rem;
+    }
+
+    .admin-content {
+        padding: 1rem;
+    }
+
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .topbar-actions .topbar-btn.secondary {
+        display: none;
+        /* Hide 'View Site' on mobile topbar to save space */
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 90;
+    }
+
+    .admin-card {
+        margin-bottom: 1rem;
+    }
+
+    /* Dashboard specific grid fix */
+    div[style*="grid-template-columns: 1.5fr 1fr"] {
+        grid-template-columns: 1fr !important;
     }
 }
 
@@ -888,5 +988,32 @@ body {
 
     .admin-stats-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .topbar-title {
+        font-size: 0.9rem;
+    }
+
+    .admin-stat-card {
+        padding: 1rem;
+    }
+
+    .stat-val {
+        font-size: 1.4rem;
+    }
+
+    .modal {
+        padding: 1.25rem;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer .topbar-btn {
+        width: 100%;
+        justify-content: center;
     }
 }

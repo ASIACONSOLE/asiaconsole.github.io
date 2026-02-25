@@ -74,7 +74,14 @@
 
         <main class="admin-main">
             <div class="admin-topbar">
-                <div class="topbar-title">🚀 Proje Moderasyonu</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="topbar-title">🚀 Proje Moderasyonu</div>
+                </div>
             </div>
 
             <div class="admin-content">
@@ -93,19 +100,21 @@
                                 style="font-size:0.8rem; padding:0.35rem 0.75rem;">Reddedilen</button>
                         </div>
                     </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Proje Adı</th>
-                                <th>Kategori</th>
-                                <th>Gönderen</th>
-                                <th>Tarih</th>
-                                <th>Durum</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projectsBody"></tbody>
-                    </table>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Proje Adı</th>
+                                    <th>Kategori</th>
+                                    <th>Gönderen</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>

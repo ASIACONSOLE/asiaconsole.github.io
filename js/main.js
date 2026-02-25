@@ -167,14 +167,24 @@ const THEME_PRESETS = {
 const DB = {
     get(key) {
         try {
-            const local = JSON.parse(localStorage.getItem('tc_' + key));
+            let local = JSON.parse(localStorage.getItem('tc_' + key));
+            // TRIPLE-GUARD: Always unwrap local data if it's corrupted with wrappers
+            while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
+                local = local.data;
+            }
             return local || null;
         } catch { return null; }
     },
     set(key, val, syncToCloud = true) {
+        // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped
+        let cleanVal = val;
+        while (cleanVal && typeof cleanVal === 'object' && 'data' in cleanVal && cleanVal.data !== undefined) {
+            cleanVal = cleanVal.data;
+        }
+
         // Prepare data for comparison
         const oldVal = localStorage.getItem('tc_' + key);
-        const newVal = JSON.stringify(val);
+        const newVal = JSON.stringify(cleanVal);
 
         // Skip if data hasn't changed (save performance)
         if (oldVal === newVal) return;
@@ -186,8 +196,8 @@ const DB = {
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
                 try {
-                    // Ensure data is a pure POJO (no undefined, no class instances)
-                    const cleanData = JSON.parse(JSON.stringify(val));
+                    // Final POJO cleaning
+                    const finalData = JSON.parse(JSON.stringify(cleanVal));
 
                     // Firestore Document Limit Check (Approx 1MB)
                     const size = new Blob([JSON.stringify(cleanData)]).size;
@@ -197,13 +207,10 @@ const DB = {
                         return;
                     }
 
-                    console.log(`[Firebase] Syncing ${key} to cloud...`);
-                    FirebaseDB.set('site_data', key, { data: cleanData, lastSync: Date.now() })
+                    FirebaseDB.set('site_data', key, { data: finalData, lastSync: Date.now() })
                         .then(ok => {
                             if (ok) {
                                 console.log(`[Firebase] ${key} synced successfully ✓`);
-                                // Toast only for manual saves (explicit calls) if showAdminToast exists
-                                // we check if it's broad enough to avoid spam.
                             } else {
                                 console.warn(`[Firebase] ${key} sync failed.`);
                             }

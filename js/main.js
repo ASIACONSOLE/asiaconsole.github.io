@@ -747,9 +747,14 @@ if (typeof FirebaseDB !== 'undefined') {
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {
-                // CRITICAL: Extract .data from wrapper if it exists, otherwise use remote as is
                 if (!remote) return;
-                const remoteData = (typeof remote === 'object' && remote !== null && 'data' in remote) ? remote.data : remote;
+
+                // RECURSIVE UNWRAP: Clean any accidental nesting from old bugs
+                let remoteData = remote;
+                while (remoteData && typeof remoteData === 'object' && 'data' in remoteData && remoteData.data !== undefined) {
+                    remoteData = remoteData.data;
+                }
+
                 if (remoteData === undefined || remoteData === null) return;
 
                 const local = localStorage.getItem('tc_' + key);

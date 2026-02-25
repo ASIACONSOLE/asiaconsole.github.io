@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üye Paneli - AsiaConsole</title>
+    <meta name="description" content="AsiaConsole üye girişi, kayıt ve üye paneli.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Branding -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="iletisim.html">📩 İletişim</a>
+    </div>
+    <div class="page-wrapper">
+
+        <!-- AUTH BOX (shown if not logged in) -->
+        <div class="auth-container" id="authSection">
+            <div class="auth-box">
+                <div class="auth-logo">
+                    <div style="font-size:2.5rem; margin-bottom:0.5rem;">👤</div>
+                    <h2 class="site-name">AsiaConsole</h2>
+                    <p>Topluluğa katılın</p>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Giriş Yap</button>
+                    <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Kayıt Ol</button>
+                    <button class="auth-tab" id="tabForgot" onclick="switchTab('forgot')">Şifremi Unuttum</button>
+                </div>
+
+                <!-- Login Panel -->
+                <div class="auth-panel active" id="loginPanel">
+                    <div class="form-group">
+                        <label>E-posta veya Kullanıcı Adı</label>
+                        <input type="text" id="loginEmail" placeholder="E-posta veya kullanıcı adı">
+                    </div>
+                    <div class="form-group">
+                        <label>Şifre</label>
+                        <input type="password" id="loginPassword" placeholder="Şifreniz">
+                    </div>
+                    <div id="loginError" style="display:none; color:#ec4899; font-size:0.85rem; margin-bottom:1rem;">
+                    </div>
+                    <button class="btn-primary" id="loginBtn" style="width:100%; justify-content:center;">🔑 Giriş
+                        Yap</button>
+                    <div style="text-align:center; margin-top:0.75rem;">
+                        <button onclick="switchTab('forgot')"
+                            style="background:none; border:none; color:var(--text-muted); font-size:0.82rem; cursor:pointer; text-decoration:underline;">Şifremi
+                            unuttum?</button>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.75rem; margin:1rem 0;">
+                        <div style="flex:1; height:1px; background:var(--border);"></div>
+                        <span style="font-size:0.78rem; color:var(--text-muted);">veya</span>
+                        <div style="flex:1; height:1px; background:var(--border);"></div>
+                    </div>
+                    <button class="google-login-btn" id="googleLoginBtn" onclick="GoogleAuth.signIn()"
+                        style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.75rem; padding:0.75rem 1.25rem; background:white; color:#1a1a1a; border:1px solid #e5e7eb; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.1);"
+                        onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+                        onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+                        <svg width="20" height="20" viewBox="0 0 48 48">
+                            <path fill="#4285F4"
+                                d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z" />
+                            <path fill="#34A853"
+                                d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z" />
+                            <path fill="#FBBC05"
+                                d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z" />
+                            <path fill="#EA4335"
+                                d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z" />
+                        </svg>
+                        Google ile Giriş Yap
+                    </button>
+
+                </div>
+
+                <!-- Register Panel -->
+                <div class="auth-panel" id="registerPanel">
+                    <div class="form-group">
+                        <label>Kullanıcı Adı</label>
+                        <input type="text" id="regUsername" placeholder="Kullanıcı adınız">
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" id="regEmail" placeholder="E-posta adresiniz">
+                    </div>
+                    <div class="form-group">
+                        <label>Şifre</label>
+                        <input type="password" id="regPassword" placeholder="En az 6 karakter">
+                    </div>
+                    <div class="form-group">
+                        <label>Güvenlik Sorusu</label>
+                        <select id="regSecQ"
+                            style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-size:0.9rem; font-family:'Inter',sans-serif;">
+                            <option value="">-- Bir soru seçin --</option>
+                            <option value="ilk_araba">İlk arabanızın markası nedir?</option>
+                            <option value="anne_kiz">Annenizin kızlık soyadı nedir?</option>
+                            <option value="ilk_okul">İlköğretim okulunuzun adı nedir?</option>
+                            <option value="evcil">İlk evcil hayvanınızın adı nedir?</option>
+                            <option value="dogum_sehri">Doğduğunuz şehir nedir?</option>
+                            <option value="fav_takim">Favori spor takımınız nedir?</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Güvenlik Sorusu Cevabı</label>
+                        <input type="text" id="regSecA" placeholder="Cevabınızı girin">
+                    </div>
+                    <div id="regError" style="display:none; color:#ec4899; font-size:0.85rem; margin-bottom:1rem;">
+                    </div>
+                    <button class="btn-primary" id="registerBtn" style="width:100%; justify-content:center;">🚀 Kayıt
+                        Ol</button>
+                    <div style="display:flex; align-items:center; gap:0.75rem; margin:1rem 0;">
+                        <div style="flex:1; height:1px; background:var(--border);"></div>
+                        <span style="font-size:0.78rem; color:var(--text-muted);">veya hızlı kayıt</span>
+                        <div style="flex:1; height:1px; background:var(--border);"></div>
+                    </div>
+                    <button class="google-login-btn" onclick="GoogleAuth.signIn()"
+                        style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.75rem; padding:0.75rem 1.25rem; background:white; color:#1a1a1a; border:1px solid #e5e7eb; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.1);"
+                        onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+                        onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+                        <svg width="20" height="20" viewBox="0 0 48 48">
+                            <path fill="#4285F4"
+                                d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z" />
+                            <path fill="#34A853"
+                                d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z" />
+                            <path fill="#FBBC05"
+                                d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z" />
+                            <path fill="#EA4335"
+                                d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7z" />
+                        </svg>
+                        Google ile Kayıt Ol
+                    </button>
+                </div>
+
+                <!-- Forgot Password Panel -->
+                <div class="auth-panel" id="forgotPanel">
+                    <div style="text-align:center; margin-bottom:1.25rem;">
+                        <div style="font-size:2rem; margin-bottom:0.5rem;">🔐</div>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">Kullanıcı adınızı girin ve kayıt
+                            sırasında belirlediğiniz güvenlik sorusunu cevaplayın.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Kullanıcı Adı</label>
+                        <input type="text" id="fpUsername" placeholder="Kullanıcı adınız" oninput="fpLoadQuestion()">
+                    </div>
+                    <div id="fpQuestionBox" style="display:none;">
+                        <div class="form-group">
+                            <label>Güvenlik Sorunuz</label>
+                            <div id="fpQuestion"
+                                style="padding:0.75rem 1rem; background:rgba(79,142,247,0.08); border:1px solid rgba(79,142,247,0.2); border-radius:10px; font-size:0.875rem; color:var(--text-secondary);">
+                                —</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Cevabınız</label>
+                            <input type="text" id="fpSecAnswer" placeholder="Güvenlik sorusu cevabınız">
+                        </div>
+                    </div>
+                    <div id="fpStep2" style="display:none;">
+                        <div class="form-group">
+                            <label>Yeni Şifre</label>
+                            <input type="password" id="fpNewPass" placeholder="En az 6 karakter">
+                        </div>
+                        <div class="form-group">
+                            <label>Yeni Şifre (Tekrar)</label>
+                            <input type="password" id="fpNewPass2" placeholder="Şifreyi tekrar girin">
+                        </div>
+                    </div>
+                    <div id="fpMsg" style="font-size:0.85rem; margin-bottom:1rem; display:none;"></div>
+                    <button class="btn-primary" id="fpVerifyBtn" style="width:100%; justify-content:center;"
+                        onclick="fpVerify()">🔍 Doğrula</button>
+                    <button class="btn-primary" id="fpSaveBtn" style="width:100%; justify-content:center; display:none;"
+                        onclick="fpSave()">✅ Şifreyi Güncelle</button>
+                    <div style="text-align:center; margin-top:1rem;">
+                        <button onclick="switchTab('login')"
+                            style="background:none; border:none; color:var(--text-muted); font-size:0.82rem; cursor:pointer; text-decoration:underline;">←
+                            Girişe Dön</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DASHBOARD (shown if logged in) -->
+        <div id="dashSection" style="display:none; position:relative; z-index:5;">
+            <div class="dashboard-header">
+                <div class="container">
+                    <div class="user-info">
+                        <div style="position:relative; cursor:pointer;"
+                            onclick="document.getElementById('avatarFileInput').click();"
+                            title="Profil fotoğrafı yükle">
+                            <div class="user-avatar" id="dashAvatar">?</div>
+                            <div
+                                style="position:absolute;bottom:0;right:0;width:22px;height:22px;border-radius:50%;background:var(--accent-blue);display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+                                📷</div>
+                            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                        </div>
+                        <div class="user-details">
+                            <h2 id="dashUsername">Kullanıcı</h2>
+                            <p id="dashEmail">email@example.com</p>
+                            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                                <span
+                                    style="font-size:0.75rem; background:rgba(79,142,247,0.15); color:var(--accent-blue); padding:0.25rem 0.75rem; border-radius:50px; font-weight:600;">✅
+                                    Aktif Üye</span>
+                            </div>
+                        </div>
+                        <div style="margin-left:auto; display:flex; gap:0.5rem; align-items:center;">
+                            <a id="myProfileLink" href="profil.html" class="btn-secondary"
+                                style="font-size:0.8rem; padding:0.4rem 0.8rem;">👤 Profilim</a>
+                            <a href="mesajlar.html" class="btn-secondary"
+                                style="font-size:0.8rem; padding:0.4rem 0.8rem; position:relative;" id="msgNavBtn">💬
+                                Mesajlar <span id="msgBadgePanel" class="msg-unread-badge"
+                                    style="display:none; margin-left:4px;"></span></a>
+                            <button class="btn-secondary" id="logoutBtn">🚪 Çıkış Yap</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="section">
+                <div class="container">
+                    <div id="dashStats" class="dashboard-stats">
+                        <div class="dash-stat">
+                            <div class="dash-stat-num" id="dashPostCount">0</div>
+                            <div class="dash-stat-label">Forum Konusu</div>
+                        </div>
+                        <div class="dash-stat">
+                            <div class="dash-stat-num" id="dashAccountType">Standart</div>
+                            <div class="dash-stat-label">Hesap Türü</div>
+                        </div>
+                        <div class="dash-stat">
+                            <div class="dash-stat-num" id="dashJoined">-</div>
+                            <div class="dash-stat-label">Kayıt Tarihi</div>
+                        </div>
+                    </div>
+
+                    <div id="dashGrid"
+                        style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:2rem;">
+                        <div>
+                            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">📋 Hızlı Erişim</h3>
+                            <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                                <a id="quickProfileLink" href="profil.html" class="card"
+                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary);">
+                                    <span style="font-size:1.5rem;">👤</span>
+                                    <div>
+                                        <div style="font-weight:600; font-size:0.9rem;">Profilim</div>
+                                        <div style="font-size:0.8rem; color:var(--text-secondary);">Profilini görüntüle
+                                            ve özelleştir</div>
+                                    </div>
+                                </a>
+                                <a href="mesajlar.html" class="card"
+                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary);">
+                                    <span style="font-size:1.5rem;">💬</span>
+                                    <div style="flex:1;">
+                                        <div
+                                            style="font-weight:600; font-size:0.9rem; display:flex; align-items:center; gap:0.5rem;">
+                                            Mesajlarım <span id="msgBadgeQuick" class="msg-unread-badge"
+                                                style="display:none;"></span></div>
+                                        <div style="font-size:0.8rem; color:var(--text-secondary);">Üyelerle özel
+                                            mesajlaş</div>
+                                    </div>
+                                </a>
+                                <div class="card" onclick="switchDashTab('editProfile')"
+                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary); cursor:pointer;">
+                                    <span style="font-size:1.5rem;">✏️</span>
+                                    <div>
+                                        <div style="font-weight:600; font-size:0.9rem;">Profili Düzenle</div>
+                                        <div style="font-size:0.8rem; color:var(--text-secondary);">Bio, kapak
+                                            fotoğrafı, sosyal linkler</div>
+                                    </div>
+                                </div>
+                                <a href="forum.html" class="card"
+                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary);">
+                                    <span style="font-size:1.5rem;">💬</span>
+                                    <div>
+                                        <div style="font-weight:600; font-size:0.9rem;">Forum</div>
+                                        <div style="font-size:0.8rem; color:var(--text-secondary);">Yeni konu aç veya
+                                            tartışmalara katıl</div>
+                                    </div>
+                                </a>
+                                <div class="card" onclick="switchDashTab('projects')"
+                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary); cursor:pointer;">
+                                    <span style="font-size:1.5rem;">🚀</span>
+                                    <div>
+                                        <div style="font-weight:600; font-size:0.9rem;">Proje Gönder</div>
+                                        <div style="font-size:0.8rem; color:var(--text-secondary);">HTML oyun veya
+                                            uygulama ekle</div>
+                                    </div>
+                                </div>
+                                <div class="card" onclick="switchDashTab('tier')"
+                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary); cursor:pointer;">
+                                    <span style="font-size:1.5rem;">💎</span>
+                                    <div>
+                                        <div style="font-weight:600; font-size:0.9rem;">Hesap Türü</div>
+                                        <div style="font-size:0.8rem; color:var(--text-secondary);">Üyeliğini yükselt ve
+                                            ayrıcalıklardan faydalan</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">🔐 Hesap Ayarları</h3>
+                            <div class="contact-form" style="margin:0;">
+                                <div class="form-group">
+                                    <label>Görünen Ad</label>
+                                    <input type="text" id="settingUsername" placeholder="Kullanıcı adınız">
+                                </div>
+                                <div class="form-group">
+                                    <label>E-posta</label>
+                                    <input type="email" id="settingEmail" placeholder="E-posta adresiniz">
+                                </div>
+                                <div class="form-group">
+                                    <label>Yeni Şifre (opsiyonel)</label>
+                                    <input type="password" id="settingPassword" placeholder="Boş bırakırsanız değişmez">
+                                </div>
+                                <button class="btn-primary" id="saveSettingsBtn"
+                                    style="width:100%; justify-content:center;">💾 Kaydet</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACCOUNT TIER SECTION -->
+                    <div id="tierSection" style="display:none; margin-top:2rem;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h3 style="font-size:1.1rem; font-weight:700;">💎 Üyelik Seviyeniz</h3>
+                            <button class="btn-secondary" onclick="switchDashTab('home')"
+                                style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
+                        </div>
+
+                        <div id="tiersListContainer"
+                            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
+                            <!-- Tiers will be rendered here dynamically -->
+                        </div>
+
+                        <div
+                            style="margin-top:2rem; padding:1.5rem; background:rgba(79,142,247,0.05); border:1px solid rgba(79,142,247,0.1); border-radius:12px; font-size:0.875rem; color:var(--text-secondary);">
+                            <p>💡 <strong>Bilgilendirme:</strong> Hesap türünüzü yükseltmek veya üyelik avantajları
+                                hakkında bilgi almak için lütfen site yöneticisi ile iletişime geçin. Üyelik seviyeleri
+                                sadece yöneticiler tarafından güncellenebilir.</p>
+                        </div>
+                    </div>
+
+                    <!-- PROFILE EDIT SECTION -->
+                    <div id="editProfileSection" style="display:none; margin-top:2rem;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h3 style="font-size:1.1rem; font-weight:700;">✏️ Profili Düzenle</h3>
+                            <button class="btn-secondary" onclick="switchDashTab('home')"
+                                style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
+                        </div>
+                        <div class="card" style="margin-bottom:1.5rem;">
+                            <div class="form-group">
+                                <label>📝 Bio (Hakkımda)</label>
+                                <textarea id="editBio" rows="4" placeholder="Kendinizi tanıtın..."
+                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:inherit; font-size:0.9rem; resize:vertical;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>🐦 Twitter / X URL</label>
+                                <input type="url" id="editTwitter" placeholder="https://twitter.com/kullaniciadi">
+                            </div>
+                            <div class="form-group">
+                                <label>🐙 GitHub URL</label>
+                                <input type="url" id="editGithub" placeholder="https://github.com/kullaniciadi">
+                            </div>
+                            <div class="form-group">
+                                <label>▶️ YouTube URL</label>
+                                <input type="url" id="editYoutube" placeholder="https://youtube.com/@kanal">
+                            </div>
+                            <div class="form-group">
+                                <label>🖼️ Kapak Fotoğrafı</label>
+                                <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                                    <div id="coverPreview"
+                                        style="width:120px; height:60px; border-radius:8px; background:var(--gradient-hero); background-size:cover; border:1px solid var(--border);">
+                                    </div>
+                                    <button class="btn-secondary"
+                                        onclick="document.getElementById('editCoverInput').click()"
+                                        style="padding:0.4rem 0.8rem; font-size:0.8rem;">📷 Fotoğraf Seç</button>
+                                    <input type="file" id="editCoverInput" accept="image/*" style="display:none;">
+                                </div>
+                            </div>
+                            <button class="btn-primary" id="saveProfileBtn"
+                                style="width:100%; justify-content:center;">💾 Profili Kaydet</button>
+                        </div>
+                        <div style="text-align:center;">
+                            <a id="goToProfileLink" href="profil.html" class="btn-secondary">👁️ Profilimi Görüntüle</a>
+                        </div>
+                    </div>
+
+                    <!-- PROJECT SUBMISSION SECTION (Hidden by default) -->
+                    <div id="projectSection" style="display:none; margin-top:2rem;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 style="font-size:1.1rem; font-weight:700;">🚀 Proje Gönderimi (HTML)</h3>
+                            <button class="btn-secondary" onclick="switchDashTab('home')"
+                                style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
+                        </div>
+
+                        <div class="card" style="margin-bottom:1.5rem;">
+                            <div class="form-group">
+                                <label>Proje Başlığı</label>
+                                <input type="text" id="projTitle" placeholder="Örn: Pong Oyunu">
+                            </div>
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select id="projCategory"
+                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
+                                    <option value="oyun">🎮 Oyun</option>
+                                    <option value="uygulama">📱 Uygulama</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Kısa Açıklama</label>
+                                <input type="text" id="projDesc" placeholder="Projeniz ne işe yarar?">
+                            </div>
+                            <div class="form-group">
+                                <label>HTML Kodları (HTML+CSS+JS bir arada)</label>
+                                <textarea id="projCode"
+                                    style="width:100%; height:300px; padding:1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:monospace;"
+                                    placeholder="<html>...</html>"></textarea>
+                            </div>
+                            <button class="btn-primary" id="submitProjBtn"
+                                style="width:100%; justify-content:center;">📤 Onaya Gönder</button>
+                        </div>
+
+                        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">📂 Projelerim</h3>
+                        <div id="myProjectsList" style="display:grid; gap:1rem;">
+                            <!-- Dynamic projects will load here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <style>
+        /* Force Matrix to background and ensure UI is clickable */
+        #matrixCanvas {
+            position: fixed !important;
+            z-index: -1 !important;
+            pointer-events: none !important;
+            opacity: 0.08 !important;
+        }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        #dashSection {
+            position: relative;
+            z-index: 10;
+            background: transparent;
+        }
+
+        .section,
+        .container {
+            position: relative;
+            z-index: 15;
+        }
+
+        .card {
+            position: relative;
+            z-index: 20;
+        }
+
+        input,
+        textarea,
+        select,
+        button,
+        .btn-primary,
+        .btn-secondary {
+            position: relative;
+            z-index: 30 !important;
+            pointer-events: auto !important;
+        }
+
+        input,
+        textarea {
+            cursor: text !important;
+        }
+
+        button,
+        .btn-primary,
+        .btn-secondary,
+        select {
+            cursor: pointer !important;
+        }
+
+        .dash-sidebar {
+            z-index: 40;
+        }
+
+        .navbar {
+            z-index: 50;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+    </style>
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/google-auth.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+        function switchTab(tab) {
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            const tabForgot = document.getElementById('tabForgot');
+            const loginPanel = document.getElementById('loginPanel');
+            const registerPanel = document.getElementById('registerPanel');
+            const forgotPanel = document.getElementById('forgotPanel');
+
+            if (tabLogin) tabLogin.classList.toggle('active', tab === 'login');
+            if (tabRegister) tabRegister.classList.toggle('active', tab === 'register');
+            if (tabForgot) tabForgot.classList.toggle('active', tab === 'forgot');
+            if (loginPanel) loginPanel.classList.toggle('active', tab === 'login');
+            if (registerPanel) registerPanel.classList.toggle('active', tab === 'register');
+            if (forgotPanel) forgotPanel.classList.toggle('active', tab === 'forgot');
+
+            // reset forgot form on open
+            if (tab === 'forgot') {
+                const step2 = document.getElementById('fpStep2');
+                const verifyBtn = document.getElementById('fpVerifyBtn');
+                const saveBtn = document.getElementById('fpSaveBtn');
+                const msg = document.getElementById('fpMsg');
+                const uname = document.getElementById('fpUsername');
+                const qBox = document.getElementById('fpQuestionBox');
+                const ans = document.getElementById('fpSecAnswer');
+
+                if (step2) step2.style.display = 'none';
+                if (verifyBtn) verifyBtn.style.display = 'block';
+                if (saveBtn) saveBtn.style.display = 'none';
+                if (msg) msg.style.display = 'none';
+                if (uname) uname.value = '';
+                if (qBox) qBox.style.display = 'none';
+                if (ans) ans.value = '';
+            }
+        }
+
+        const QUESTIONS = {
+            ilk_araba: 'İlk arabanızın markası nedir?',
+            anne_kiz: 'Annenizin kızlık soyadı nedir?',
+            ilk_okul: 'İlköğretim okulunuzun adı nedir?',
+            evcil: 'İlk evcil hayvanınızın adı nedir?',
+            dogum_sehri: 'Doğduğunuz şehir nedir?',
+            fav_takim: 'Favori spor takımınız nedir?'
+        };
+
+        let _fpUser = null;
+
+        function fpLoadQuestion() {
+            const unameEl = document.getElementById('fpUsername');
+            if (!unameEl) return;
+            const uname = unameEl.value.trim().toLowerCase();
+            const box = document.getElementById('fpQuestionBox');
+            const qEl = document.getElementById('fpQuestion');
+            if (!uname) { if (box) box.style.display = 'none'; return; }
+            const users = DB.get('users') || [];
+            const found = users.find(u => u.username.toLowerCase() === uname);
+            if (found && found.securityQuestion) {
+                if (qEl) qEl.textContent = QUESTIONS[found.securityQuestion] || found.securityQuestion;
+                if (box) box.style.display = 'block';
+            } else {
+                if (box) box.style.display = 'none';
+            }
+        }
+
+        function fpVerify() {
+            const unameEl = document.getElementById('fpUsername');
+            const ansEl = document.getElementById('fpSecAnswer');
+            const msg = document.getElementById('fpMsg');
+            if (!unameEl || !ansEl || !msg) return;
+
+            const uname = unameEl.value.trim().toLowerCase();
+            const answer = ansEl.value.trim().toLowerCase();
+
+            if (!uname || !answer) {
+                msg.textContent = '❌ Lütfen kullanıcı adı ve güvenlik sorusu cevabını girin.';
+                msg.style.color = '#ef4444'; msg.style.display = 'block'; return;
+            }
+            const users = DB.get('users') || [];
+            const found = users.find(u => u.username.toLowerCase() === uname);
+            if (!found || !found.securityAnswer) {
+                msg.textContent = '❌ Kullanıcı bulunamadı veya güvenlik sorusu tanımlı değil.';
+                msg.style.color = '#ef4444'; msg.style.display = 'block'; return;
+            }
+            if (found.securityAnswer.toLowerCase() !== answer) {
+                msg.textContent = '❌ Güvenlik sorusu cevabı yanlış.';
+                msg.style.color = '#ef4444'; msg.style.display = 'block'; return;
+            }
+            _fpUser = found;
+            msg.textContent = '✅ Doğrulandı! Yeni şifrenizi belirleyin.';
+            msg.style.color = '#10b981'; msg.style.display = 'block';
+
+            const step2 = document.getElementById('fpStep2');
+            const vBtn = document.getElementById('fpVerifyBtn');
+            const sBtn = document.getElementById('fpSaveBtn');
+            if (step2) step2.style.display = 'block';
+            if (vBtn) vBtn.style.display = 'none';
+            if (sBtn) sBtn.style.display = 'block';
+        }
+
+        function fpSave() {
+            const msg = document.getElementById('fpMsg');
+            const p1El = document.getElementById('fpNewPass');
+            const p2El = document.getElementById('fpNewPass2');
+            if (!msg || !p1El || !p2El) return;
+
+            const p1 = p1El.value;
+            const p2 = p2El.value;
+            if (!p1 || p1.length < 6) { msg.textContent = '❌ Şifre en az 6 karakter olmalı.'; msg.style.color = '#ef4444'; return; }
+            if (p1 !== p2) { msg.textContent = '❌ Şifreler eşleşmiyor.'; msg.style.color = '#ef4444'; return; }
+            const users = DB.get('users') || [];
+            const idx = users.findIndex(u => u.id === _fpUser.id);
+            if (idx !== -1) {
+                users[idx].password = p1;
+                DB.set('users', users);
+                msg.textContent = '✅ Şifreniz güncellendi! Şimdi giriş yapabilirsiniz.';
+                msg.style.color = '#10b981';
+                const step2 = document.getElementById('fpStep2');
+                const sBtn = document.getElementById('fpSaveBtn');
+                if (step2) step2.style.display = 'none';
+                if (sBtn) sBtn.style.display = 'none';
+                _fpUser = null;
+                setTimeout(() => switchTab('login'), 2000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // ---- Google OAuth Init ----
+            // Must be called here so the SDK initializes after the page loads
+            GoogleAuth.init(null, (googleUser) => {
+                // On successful Google sign-in, show dashboard
+                showDashboard(googleUser);
+                loadMyProjects();
+            });
+
+            const user = Auth.currentUser();
+            if (user) {
+                showDashboard(user);
+                // Load projects if the user manages to stay on the projects tab or switches to it
+                loadMyProjects();
+            }
+
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                const pass = document.getElementById('loginPassword').value;
+                const errEl = document.getElementById('loginError');
+                if (!email || !pass) { errEl.textContent = 'Lütfen tüm alanları doldurun.'; errEl.style.display = 'block'; return; }
+                if (Auth.login(email, pass)) {
+                    showDashboard(Auth.currentUser());
+                } else {
+                    errEl.textContent = '❌ E-posta/kullanıcı adı veya şifre hatalı.';
+                    errEl.style.display = 'block';
+                }
+            });
+
+            document.getElementById('registerBtn').addEventListener('click', () => {
+                const username = document.getElementById('regUsername').value.trim();
+                const email = document.getElementById('regEmail').value.trim();
+                const pass = document.getElementById('regPassword').value;
+                const secQ = document.getElementById('regSecQ').value;
+                const secA = document.getElementById('regSecA').value.trim();
+                const errEl = document.getElementById('regError');
+                if (!username || !email || !pass) { errEl.textContent = 'Lütfen tüm alanları doldurun.'; errEl.style.display = 'block'; return; }
+                if (pass.length < 6) { errEl.textContent = 'Şifre en az 6 karakter olmalıdır.'; errEl.style.display = 'block'; return; }
+                if (!secQ || !secA) { errEl.textContent = 'Lütfen bir güvenlik sorusu ve cevabı belirleyin.'; errEl.style.display = 'block'; return; }
+                const result = Auth.register(username, email, pass);
+                if (result.ok) {
+                    // Save security question to user record
+                    const users = DB.get('users') || [];
+                    const idx = users.findIndex(u => u.email === email);
+                    if (idx !== -1) {
+                        users[idx].securityQuestion = secQ;
+                        users[idx].securityAnswer = secA;
+                        DB.set('users', users);
+                    }
+                    showToast('Kayıt başarılı! Hoş geldiniz 🎉', 'success');
+                    showDashboard(Auth.currentUser());
+                } else {
+                    errEl.textContent = result.msg;
+                    errEl.style.display = 'block';
+                }
+            });
+
+            // Project submission logic inside DOMContentLoaded
+            const submitBtn = document.getElementById('submitProjBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    const u = Auth.currentUser();
+                    if (!u) {
+                        showToast('Oturumun süresi dolmuş olabilir, lütfen tekrar giriş yap.', 'error');
+                        return;
+                    }
+
+                    const title = document.getElementById('projTitle').value.trim();
+                    const category = document.getElementById('projCategory').value;
+                    const desc = document.getElementById('projDesc').value.trim();
+                    const code = document.getElementById('projCode').value.trim();
+
+                    if (!title || !desc || !code) {
+                        showToast('Lütfen tüm alanları (başlık, açıklama ve kodlar) doldurun!', 'error');
+                        return;
+                    }
+
+                    try {
+                        const projects = DB.get('user_projects') || [];
+                        const newProj = {
+                            id: Date.now(),
+                            title,
+                            category,
+                            desc,
+                            code,
+                            author: u.username,
+                            status: 'pending',
+                            date: new Date().toLocaleDateString('tr-TR'),
+                            views: 0
+                        };
+
+                        projects.push(newProj);
+                        DB.set('user_projects', projects);
+
+                        showToast('🚀 Projeniz başarıyla onaya gönderildi!', 'success');
+
+                        // Clear form
+                        document.getElementById('projTitle').value = '';
+                        document.getElementById('projDesc').value = '';
+                        document.getElementById('projCode').value = '';
+
+                        loadMyProjects();
+                    } catch (err) {
+                        console.error('Project submission error:', err);
+                        showToast('Pojeyi kaydederken bir hata oluştu. Depolama alanı dolmuş olabilir.', 'error');
+                    }
+                });
+            }
+
+            // Initialize Google Auth
+            if (typeof GoogleAuth !== 'undefined') {
+                GoogleAuth.init(null, function (user) {
+                    showToast('🎉 ' + user.username + ' olarak giriş yapıldı!', 'success');
+                    setTimeout(() => location.reload(), 800);
+                });
+            }
+        });
+
+        function showDashboard(user) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashSection').style.display = 'block';
+            document.getElementById('dashAvatar').textContent = user.username[0].toUpperCase();
+            document.getElementById('dashUsername').textContent = user.username;
+            document.getElementById('dashEmail').textContent = user.email;
+            document.getElementById('settingUsername').value = user.username;
+            document.getElementById('settingEmail').value = user.email;
+
+            // Get user data for stats
+            const users = DB.get('users') || [];
+            const fullUser = users.find(u => u.id === user.id);
+            if (fullUser) {
+                document.getElementById('dashJoined').textContent = fullUser.joined;
+
+                const tierEl = document.getElementById('dashAccountType');
+                if (tierEl) {
+                    const tierId = fullUser.accountType || 'standart';
+                    const tierInfo = UserTiers.get(tierId);
+                    tierEl.textContent = tierInfo.name;
+                    tierEl.style.color = tierInfo.color;
+                }
+            }
+            // Forum post count
+            const posts = DB.get('forum_posts') || [];
+            const myPostsCount = posts.filter(p => p.author === user.username).length;
+            document.getElementById('dashPostCount').textContent = myPostsCount;
+
+            // Profile photo upload
+            const photoKey = 'tc_avatar_' + user.id;
+            const savedPhoto = localStorage.getItem(photoKey);
+            const avatarEl = document.getElementById('dashAvatar');
+            if (savedPhoto) {
+                avatarEl.style.backgroundImage = 'url(' + savedPhoto + ')';
+                avatarEl.style.backgroundSize = 'cover';
+                avatarEl.style.backgroundPosition = 'center';
+                avatarEl.textContent = '';
+            }
+
+            const avatarInput = document.getElementById('avatarFileInput');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', function () {
+                    const file = this.files[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) {
+                        showToast('Fotoğraf 2MB\'dan büyük olamaz!', 'error');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const b64 = e.target.result;
+                        localStorage.setItem(photoKey, b64);
+                        avatarEl.style.backgroundImage = 'url(' + b64 + ')';
+                        avatarEl.style.backgroundSize = 'cover';
+                        avatarEl.style.backgroundPosition = 'center';
+                        avatarEl.textContent = '';
+                        showToast('✅ Profil fotoğrafı güncellendi!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                Auth.logout();
+                location.reload();
+            });
+
+            document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+                showToast('Ayarlarınız kaydedildi! ✅', 'success');
+            });
+
+            // Profile page links
+            const profileUrl = 'profil.html?user=' + encodeURIComponent(user.username);
+            ['myProfileLink', 'quickProfileLink', 'goToProfileLink'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.href = profileUrl;
+            });
+
+            // Unread messages badge
+            const unread = Messaging.unreadCount(user.username);
+            ['msgBadgePanel', 'msgBadgeQuick'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (unread > 0) { el.textContent = unread; el.style.display = 'flex'; }
+                else el.style.display = 'none';
+            });
+        }
+
+        // --- PROJECT SYSTEM LOGIC ---
+        function switchDashTab(tab) {
+            const projectSection = document.getElementById('projectSection');
+            const tierSection = document.getElementById('tierSection');
+            const editProfileSection = document.getElementById('editProfileSection');
+            const dashGrid = document.getElementById('dashGrid');
+            const dashStats = document.getElementById('dashStats');
+
+            // Hide all
+            if (projectSection) projectSection.style.display = 'none';
+            if (tierSection) tierSection.style.display = 'none';
+            if (editProfileSection) editProfileSection.style.display = 'none';
+
+            if (tab === 'projects') {
+                if (projectSection) projectSection.style.display = 'block';
+                if (dashGrid) dashGrid.style.display = 'none';
+                if (dashStats) dashStats.style.display = 'none';
+                loadMyProjects();
+            } else if (tab === 'tier') {
+                if (tierSection) tierSection.style.display = 'block';
+                if (dashGrid) dashGrid.style.display = 'none';
+                if (dashStats) dashStats.style.display = 'none';
+                renderTiersList();
+            } else if (tab === 'editProfile') {
+                if (editProfileSection) editProfileSection.style.display = 'block';
+                if (dashGrid) dashGrid.style.display = 'none';
+                if (dashStats) dashStats.style.display = 'none';
+                loadEditProfileForm();
+            } else {
+                if (dashGrid) dashGrid.style.display = 'grid';
+                if (dashStats) dashStats.style.display = 'flex';
+            }
+        }
+
+        function loadEditProfileForm() {
+            const u = Auth.currentUser();
+            if (!u) return;
+            const extra = ProfileData.get(u.id);
+            const bioEl = document.getElementById('editBio');
+            const twitterEl = document.getElementById('editTwitter');
+            const githubEl = document.getElementById('editGithub');
+            const youtubeEl = document.getElementById('editYoutube');
+
+            if (bioEl) bioEl.value = extra.bio || '';
+            if (twitterEl) twitterEl.value = extra.socialTwitter || '';
+            if (githubEl) githubEl.value = extra.socialGithub || '';
+            if (youtubeEl) youtubeEl.value = extra.socialYoutube || '';
+
+            // Cover preview
+            const coverKey = 'tc_cover_' + u.id;
+            const savedCover = localStorage.getItem(coverKey) || extra.coverPhoto;
+            const previewEl = document.getElementById('coverPreview');
+            if (previewEl && savedCover) previewEl.style.backgroundImage = 'url(' + savedCover + ')';
+
+            // Cover file upload
+            const coverInput = document.getElementById('editCoverInput');
+            if (coverInput) {
+                coverInput.onchange = function () {
+                    const file = this.files[0];
+                    if (!file) return;
+                    if (file.size > 3 * 1024 * 1024) { showToast('Fotoğraf 3MB\'dan büyük olamaz!', 'error'); return; }
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const b64 = e.target.result;
+                        localStorage.setItem(coverKey, b64);
+                        if (previewEl) previewEl.style.backgroundImage = 'url(' + b64 + ')';
+                        ProfileData.save(u.id, { coverPhoto: b64 });
+                        showToast('✅ Kapak fotoğrafı güncellendi!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                };
+            }
+
+            // Save button
+            const saveBtn = document.getElementById('saveProfileBtn');
+            if (saveBtn) {
+                saveBtn.onclick = () => {
+                    ProfileData.save(u.id, {
+                        bio: bioEl ? bioEl.value.trim() : '',
+                        socialTwitter: twitterEl ? twitterEl.value.trim() : '',
+                        socialGithub: githubEl ? githubEl.value.trim() : '',
+                        socialYoutube: youtubeEl ? youtubeEl.value.trim() : ''
+                    });
+                    showToast('✅ Profil bilgileri kaydedildi!', 'success');
+                };
+            }
+        }
+
+        function renderTiersList() {
+            const container = document.getElementById('tiersListContainer');
+            if (!container) return;
+            const tiers = UserTiers.getAll();
+            const user = Auth.currentUser();
+            const users = DB.get('users') || [];
+            const fullUser = users.find(u => u.id === user.id);
+            const currentTier = fullUser ? (fullUser.accountType || 'standart') : 'standart';
+
+            container.innerHTML = Object.keys(tiers).map(id => {
+                const t = tiers[id];
+                const isCurrent = id === currentTier;
+                return `
+                    <div class="card" style="padding:1.5rem; border-color:${isCurrent ? (t.color.startsWith('var') ? 'var(--accent-blue)' : t.color) : 'var(--border)'}; position:relative;">
+                        ${isCurrent ? '<div style="position:absolute; top:8px; right:8px; font-size:0.7rem; background:rgba(16,185,129,0.1); color:#10b981; padding:2px 8px; border-radius:4px; font-weight:700;">MEVCUT PAKET</div>' : ''}
+                        <div style="font-size:2rem; margin-bottom:1rem;">${t.icon || '👤'}</div>
+                        <h4 style="margin-bottom:0.5rem; color:${t.color}">${t.name}</h4>
+                        <ul style="list-style:none; font-size:0.875rem; color:var(--text-secondary); margin-top:1rem;">
+                            ${(t.perks || []).map(p => `<li style="margin-bottom:0.4rem;">✅ ${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadMyProjects() {
+            const u = Auth.currentUser();
+            if (!u) return;
+
+            const projects = DB.get('user_projects') || [];
+            const myProjs = projects.filter(p => p.author === u.username);
+            const listEl = document.getElementById('myProjectsList');
+            if (!listEl) return;
+
+            if (myProjs.length === 0) {
+                listEl.innerHTML = '<div class="card" style="text-align:center; color:var(--text-muted); padding:2rem;">Henüz bir projeniz yok. Yukardaki formu kullanarak ilk projenizi gönderin!</div>';
+                return;
+            }
+
+            const statusColors = { pending: '#f97316', approved: '#10b981', rejected: '#ef4444' };
+            const statusLabels = { pending: '⏳ Beklemede', approved: '✅ Onaylandı', rejected: '❌ Reddedildi' };
+
+            listEl.innerHTML = myProjs.sort((a, b) => b.id - a.id).map(p => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; ${p.status === 'approved' ? 'cursor:pointer;' : 'cursor:default;'}" 
+                     ${p.status === 'approved' ? `onclick="window.location.href='proje-izle.html?id=${p.id}'"` : ''}>
+                    <div>
+                        <div style="font-weight:600;">${p.title} ${p.status === 'approved' ? '▶️' : ''}</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);">${p.category === 'oyun' ? '🎮 Oyun' : '📱 Uygulama'} • ${p.date}</div>
+                    </div>
+                    <div style="color:${statusColors[p.status]}; font-size:0.85rem; font-weight:600;">${statusLabels[p.status]}</div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+
+</html>

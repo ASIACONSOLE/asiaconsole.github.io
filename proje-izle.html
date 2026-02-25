@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje İzle - AsiaConsole</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .viewer-header {
+            background: var(--bg-secondary);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .proj-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .proj-title {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .proj-author {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .iframe-container {
+            height: 95vh;
+            width: 100%;
+            position: relative;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        iframe:fullscreen {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .reviews-section {
+            max-width: 900px;
+            margin: 2rem auto;
+            width: 100%;
+            padding: 0 1.5rem 4rem;
+        }
+
+        .review-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .stars {
+            color: #fbbf24;
+            display: flex;
+            gap: 2px;
+        }
+
+        .star-input {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .star-input.active {
+            color: #fbbf24;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="viewer-header">
+        <div class="proj-info">
+            <a href="javascript:history.back()" class="back-btn">← Geri</a>
+            <div>
+                <div class="proj-title" id="viewTitle">Proje Yükleniyor...</div>
+                <div class="proj-author" id="viewAuthor">Lütfen bekleyin</div>
+            </div>
+        </div>
+        <div class="proj-actions" style="display: flex; gap: 0.5rem;">
+            <button class="btn-primary" onclick="toggleFullScreen()"
+                style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">⛶ Tam Ekran</button>
+            <button class="btn-secondary" onclick="location.reload()"
+                style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">🔄 Yeniden Başlat</button>
+        </div>
+    </div>
+
+    <div class="iframe-container">
+        <iframe id="runner"
+            sandbox="allow-scripts allow-modals allow-forms allow-same-origin allow-pointer-lock allow-popups"></iframe>
+    </div>
+
+    <div class="reviews-section">
+        <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">💬 Değerlendirmeler <span
+                id="reviewCount"
+                style="font-size: 0.9rem; background: var(--bg-secondary); padding: 2px 8px; border-radius: 20px; color: var(--text-secondary);">0</span>
+        </h2>
+
+        <div id="addReviewBox" class="review-card" style="margin-bottom: 2rem; border-color: var(--accent-blue);">
+            <div id="loginPrompt" style="text-align: center; padding: 1rem; display: none;">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">Yorum yapmak için giriş yapmalısınız.</p>
+                <a href="uye-panel.html" class="btn-primary" style="display: inline-flex;">Giriş Yap</a>
+            </div>
+
+            <div id="reviewForm">
+                <h4 style="margin-bottom: 1rem;">Deneyiminizi Paylaşın</h4>
+                <div class="stars" style="margin-bottom: 1rem;" id="starPicker">
+                    <span class="star-input" data-v="1">★</span>
+                    <span class="star-input" data-v="2">★</span>
+                    <span class="star-input" data-v="3">★</span>
+                    <span class="star-input" data-v="4">★</span>
+                    <span class="star-input" data-v="5">★</span>
+                </div>
+                <textarea id="reviewText"
+                    style="width: 100%; height: 100px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; color: white; margin-bottom: 1rem; font-family: inherit; resize: none;"
+                    placeholder="Bu proje hakkında ne düşünüyorsunuz?"></textarea>
+                <button class="btn-primary" id="submitReviewBtn">Yorumu Yayınla</button>
+            </div>
+        </div>
+
+        <div id="reviewsList">
+            <!-- Reviews load here -->
+        </div>
+    </div>
+
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let currentRating = 0;
+        let currentProjectId = 0;
+
+        function toggleFullScreen() {
+            const runner = document.getElementById('runner');
+            if (runner.requestFullscreen) {
+                runner.requestFullscreen();
+            } else if (runner.webkitRequestFullscreen) {
+                runner.webkitRequestFullscreen();
+            } else if (runner.msRequestFullscreen) {
+                runner.msRequestFullscreen();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentProjectId = parseInt(urlParams.get('id'));
+
+            if (!currentProjectId) {
+                alert('Proje ID bulunamadı.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const user = Auth.currentUser();
+            if (!user) {
+                const form = document.getElementById('reviewForm');
+                const prompt = document.getElementById('loginPrompt');
+                if (form) form.style.display = 'none';
+                if (prompt) prompt.style.display = 'block';
+            }
+
+            const projects = DB.get('user_projects') || [];
+            const proj = projects.find(p => p.id === currentProjectId);
+
+            if (!proj || proj.status !== 'approved') {
+                alert('Proje bulunamadı veya henüz onaylanmamış.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('viewTitle').textContent = proj.title;
+            document.getElementById('viewAuthor').innerHTML = `<a href="profil.html?user=${encodeURIComponent(proj.author)}" style="color:inherit; text-decoration:none;">@${proj.author}</a> tarafından sunuldu`;
+
+            const iframe = document.getElementById('runner');
+            iframe.srcdoc = proj.code;
+
+            // Increment views
+            const allProjects = DB.get('user_projects') || [];
+            const idx = allProjects.findIndex(p => p.id === currentProjectId);
+            if (idx !== -1) {
+                allProjects[idx].views = (allProjects[idx].views || 0) + 1;
+                DB.set('user_projects', allProjects);
+            }
+
+            initReviews();
+        });
+
+        function initReviews() {
+            // Star picker logic
+            const stars = document.querySelectorAll('.star-input');
+            stars.forEach(s => {
+                s.addEventListener('click', () => {
+                    currentRating = parseInt(s.getAttribute('data-v'));
+                    updateStars();
+                });
+                s.addEventListener('mouseenter', () => {
+                    const v = parseInt(s.getAttribute('data-v'));
+                    highlightStars(v);
+                });
+            });
+
+            const picker = document.getElementById('starPicker');
+            if (picker) {
+                picker.addEventListener('mouseleave', updateStars);
+            }
+
+            function highlightStars(v) {
+                stars.forEach(st => {
+                    st.classList.toggle('active', parseInt(st.getAttribute('data-v')) <= v);
+                });
+            }
+
+            function updateStars() {
+                highlightStars(currentRating);
+            }
+
+            // Submit logic
+            const submitBtn = document.getElementById('submitReviewBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    const textEl = document.getElementById('reviewText');
+                    const text = textEl ? textEl.value.trim() : '';
+                    const user = Auth.currentUser();
+
+                    if (!currentRating) {
+                        showToast('Lütfen bir puan verin!', 'error');
+                        return;
+                    }
+                    if (!text) {
+                        showToast('Lütfen bir yorum yazın!', 'error');
+                        return;
+                    }
+
+                    ProjectReviews.add(currentProjectId, user.username, currentRating, text);
+                    showToast('Teşekkürler! Yorumunuz başarıyla eklendi.', 'success');
+
+                    // Reset form
+                    if (textEl) textEl.value = '';
+                    currentRating = 0;
+                    updateStars();
+
+                    loadReviews();
+                });
+            }
+
+            loadReviews();
+        }
+
+        function loadReviews() {
+            const list = ProjectReviews.getByProject(currentProjectId);
+            const container = document.getElementById('reviewsList');
+            const countEl = document.getElementById('reviewCount');
+            if (countEl) countEl.textContent = list.length;
+
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 3rem;">Henüz değerlendirme yok. İlk yorumu siz yapın!</div>';
+                return;
+            }
+
+            container.innerHTML = list.map(r => `
+                <div class="review-card">
+                    <div class="review-header">
+                        <div style="font-weight: 700; color: var(--text-primary);"><a href="profil.html?user=${encodeURIComponent(r.username)}" style="color:inherit; text-decoration:none;">👤 ${r.username}</a></div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">${r.date}</div>
+                    </div>
+                    <div class="stars" style="margin-bottom: 0.75rem;">
+                        ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                    </div>
+                    <div style="color: var(--text-secondary); line-height: 1.5; font-size: 0.95rem;">
+                        ${r.comment}
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+
+</html>

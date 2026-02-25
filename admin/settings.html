@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Ayarları - AsiaConsole Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1><span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link active"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi
+                    Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-user-info">
+                    <div class="admin-avatar">A</div>
+                    <div>
+                        <div class="admin-user-name">Admin</div>
+                        <div class="admin-user-role">Süper Yönetici</div>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-title">🎨 Site Ayarları</div>
+                <div class="topbar-actions">
+                    <button class="topbar-btn" id="saveAllBtn">💾 Tüm Değişiklikleri Kaydet</button>
+                    <a href="../index.html" target="_blank" class="topbar-btn secondary">🌐 Önizle</a>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+
+                    <!-- GENERAL SETTINGS -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">📝 Genel Bilgiler</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Site Adı</label>
+                                <input type="text" id="siteName" placeholder="AsiaConsole">
+                            </div>
+                            <div class="form-group">
+                                <label>Site Sloganı</label>
+                                <input type="text" id="siteSlogan" placeholder="Teknoloji, Oyun ve Uygulama...">
+                            </div>
+                            <div class="form-group">
+                                <label>Footer Metni</label>
+                                <input type="text" id="footerText" placeholder="© 2025 AsiaConsole...">
+                            </div>
+                            <div class="form-group">
+                                <label>İletişim E-postası</label>
+                                <input type="email" id="contactEmail" placeholder="iletisim@asiaconsole.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LOGO UPLOAD -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🖼️ Site Logosu</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                                <div id="logoPreviewBox"
+                                    style="width:80px;height:80px;border-radius:12px;background:var(--bg-glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                                    <img id="logoPreviewImg" src="" alt="Logo"
+                                        style="width:100%;height:100%;object-fit:contain;display:none;">
+                                    <span id="logoPlaceholder" style="font-size:2rem;">🌐</span>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Site Logosu (PNG
+                                        / JPG / SVG)</div>
+                                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+                                        Maksimum boyut 2MB. Kare format önerilir.</div>
+                                    <label for="logoFileInput" class="logo-upload-label"
+                                        style="cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);border-radius:8px;font-size:0.85rem;color:#4f8ef7;font-weight:600;">📁
+                                        Logo Seç</label>
+                                    <input type="file" id="logoFileInput" accept="image/*" style="display:none;">
+                                </div>
+                            </div>
+                            <div id="logoRemoveRow" style="display:none;">
+                                <button class="btn-action btn-delete" id="logoRemoveBtn">🗑️ Logoyu Kaldır</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TYPOGRAPHY & BRANDING -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">✍️ Tipografi & Marka</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Site İsmi Fontu</label>
+                                <select id="siteFont"
+                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
+                                    <option value="'Inter', sans-serif">Inter (Modern & Temiz)</option>
+                                    <option value="'Orbitron', sans-serif">Orbitron (Fütüristik)</option>
+                                    <option value="'Playfair Display', serif">Playfair Display (Zarif)</option>
+                                    <option value="'Roboto', sans-serif">Roboto (Standart)</option>
+                                    <option value="'Press Start 2P', cursive">Retro Pixel (Oyun)</option>
+                                    <option value="'Michroma', sans-serif">Michroma (Teknolojik)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Marka Animasyonu (Site İsmi)</label>
+                                <select id="brandAnim"
+                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
+                                    <option value="none">Yok</option>
+                                    <option value="glow">Glow (Parlayan)</option>
+                                    <option value="float">Float (Yüzen)</option>
+                                    <option value="glitch">Glitch (Digital Bozulma)</option>
+                                    <option value="neon">Neon (Titreşen Tabela)</option>
+                                    <option value="typing">Typing (Yazı Yazma - Siyah/Beyaz)</option>
+                                    <option value="pulse">Pulse (Nabız)</option>
+                                    <option value="shimmer">Shimmer (Gümüş Parıltı)</option>
+                                    <option value="bounce">Bounce (Zıplama)</option>
+                                    <option value="flip">Flip (3D Dönüş)</option>
+                                    <option value="skew">Skew (Eğilme)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Logo Boyutu</label>
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <input type="range" id="logoSize" min="20" max="80" step="2"
+                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
+                                    <span id="logoSizeVal"
+                                        style="font-weight:700; color:var(--accent-blue); width:50px;">36px</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Site İsmi Font Boyutu</label>
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <input type="range" id="siteNameSize" min="1.0" max="3.0" step="0.1"
+                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
+                                    <span id="siteNameSizeVal"
+                                        style="font-weight:700; color:var(--accent-blue); width:50px;">1.4rem</span>
+                                </div>
+                            </div>
+                            <!-- NEW: ANIMATION SPEED -->
+                            <div class="form-group">
+                                <label>Marka Animasyon Hızı (Saniye)</label>
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <input type="range" id="brandAnimSpeed" min="0.1" max="5.0" step="0.1"
+                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
+                                    <span id="brandAnimSpeedVal"
+                                        style="font-weight:700; color:var(--accent-blue); width:50px;">2.0s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HERO & LAYOUT -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🏢 Hero & Düzen</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Hero Banner Yüksekliği</label>
+                                <input type="range" id="heroHeight" min="50" max="100" step="5"
+                                    style="width:100%; cursor:pointer; accent-color:var(--accent-blue);">
+                                <div
+                                    style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">
+                                    <span>Yarım (50vh)</span><span id="heroHeightVal">100vh</span><span>Tam
+                                        (100vh)</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Hero Başlık Boyutu</label>
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <input type="range" id="heroTitleSize" min="2.0" max="7.0" step="0.25"
+                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
+                                    <span id="heroTitleSizeVal"
+                                        style="font-weight:700; color:var(--accent-blue); width:50px;">5.5rem</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Navbar Stili</label>
+                                <select id="navbarStyle"
+                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
+                                    <option value="blur">Blur (Camморфиzm)</option>
+                                    <option value="solid">Düz Siyah</option>
+                                    <option value="trans">Şeffaf</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CATEGORY ICONS -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🏷️ Kategori İkonları</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Teknoloji Sayfası İkonu</label>
+                                <input type="text" id="iconTeknoloji" placeholder="Örn: 💻 veya 🤖">
+                            </div>
+                            <div class="form-group">
+                                <label>Oyun Sayfası İkonu</label>
+                                <input type="text" id="iconOyun" placeholder="Örn: 🎮 veya 🕹️">
+                            </div>
+                            <div class="form-group">
+                                <label>Uygulama Sayfası İkonu</label>
+                                <input type="text" id="iconUygulama" placeholder="Örn: 📱 veya 🧪">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI ASSISTANT -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🤖 Yapay Zeka Asistanı</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group"
+                                style="display:flex; align-items:center; justify-content:space-between;">
+                                <label style="margin-bottom:0;">AI Asistanını Etkinleştir</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="aiEnabled">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>Asistan Adı</label>
+                                <input type="text" id="aiName" placeholder="Örn: AsiaBot">
+                            </div>
+                            <div class="form-group">
+                                <label>İlk Karşılama Mesajı</label>
+                                <textarea id="aiGreeting" rows="2"
+                                    placeholder="Örn: Merhaba! Size nasıl yardımcı olabilirim?"></textarea>
+                            </div>
+                            <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
+                                <div
+                                    style="font-size:0.8rem; font-weight:700; color:var(--accent-blue); text-transform:uppercase; margin-bottom:0.75rem;">
+                                    🚀 Canlı AI (Gemini) Ayarları</div>
+                                <div class="form-group">
+                                    <label>Gemini API Anahtarı</label>
+                                    <input type="password" id="geminiApiKey"
+                                        placeholder="AI Studio'dan aldığınız anahtar" style="font-family:monospace;">
+                                </div>
+                                <div
+                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(79,142,247,0.06); border:1px solid rgba(79,142,247,0.2); border-radius:8px;">
+                                    💡 <strong>Ücretsiz anahtar almak çok kolay:</strong><br>
+                                    <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                                        style="color:var(--accent-blue);">Google AI Studio</a>'ya gidin ve "Create API
+                                    Key" butonuna basın.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THEME SETTINGS -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🎨 Tema & Renk</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Hazır Tema Seçimi</label>
+                                <select id="activeTheme"
+                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); margin-bottom:1rem;">
+                                    <option value="custom">Özel (Kendi Renklerimi Belirle)</option>
+                                    <option value="cyberpunk">Cyberpunk (Neon Pembe & Turkuaz)</option>
+                                    <option value="matrix">Matrix (Hacker Yeşili & Siyah)</option>
+                                    <option value="space">Space Odyssey (Galaksi Mavisi & Gümüş)</option>
+                                    <option value="code">Code Knight (Yazılımcı Mavisi & Slate)</option>
+                                    <option value="aurora">Aurora (Kuzey Işıkları - Mor/Teal)</option>
+                                    <option value="volcano">Volcano (Lav Kırmızısı & Turuncu)</option>
+                                    <option value="titanium">Titanium (Endüstriyel Gri & Beyaz)</option>
+                                    <option value="synthwave">Synthwave (Retro Pembe & Violet)</option>
+                                    <option value="forest">Forest (Zümrüt Yeşili & Orman)</option>
+                                    <option value="cloud">Cloud Tech (Modern Açık Tema)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Ana Vurgu Rengi</label>
+                                <input type="color" id="accentColor"
+                                    style="width:100%; height:42px; padding:4px; cursor:pointer; background:var(--bg-glass); border:1px solid var(--border); border-radius:8px;">
+                            </div>
+                            <div class="form-group">
+                                <label>Hazır Renkler</label>
+                                <div class="color-swatches">
+                                    <div class="swatch" title="Mavi" style="background:#4f8ef7;" data-color="#4f8ef7">
+                                    </div>
+                                    <div class="swatch" title="Mor" style="background:#a855f7;" data-color="#a855f7">
+                                    </div>
+                                    <div class="swatch" title="Yeşil" style="background:#10b981;" data-color="#10b981">
+                                    </div>
+                                    <div class="swatch" title="Kırmızı" style="background:#ef4444;"
+                                        data-color="#ef4444"></div>
+                                    <div class="swatch" title="Turuncu" style="background:#f97316;"
+                                        data-color="#f97316"></div>
+                                    <div class="swatch" title="Pembe" style="background:#ec4899;" data-color="#ec4899">
+                                    </div>
+                                    <div class="swatch" title="Sarı" style="background:#f59e0b;" data-color="#f59e0b">
+                                    </div>
+                                    <div class="swatch" title="Turkuaz" style="background:#06b6d4;"
+                                        data-color="#06b6d4"></div>
+                                </div>
+                            </div>
+                            <div
+                                style="padding:1rem; background:rgba(79,142,247,0.08); border:1px solid rgba(79,142,247,0.2); border-radius:8px; font-size:0.85rem; color:var(--text-secondary);">
+                                💡 Renk değişikliği kaydedildiğinde tüm sayfalara uygulanır.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SOCIAL MEDIA -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🔗 Sosyal Medya</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Twitter / X URL</label>
+                                <input type="url" id="socialTwitter" placeholder="https://twitter.com/...">
+                            </div>
+                            <div class="form-group">
+                                <label>GitHub URL</label>
+                                <input type="url" id="socialGithub" placeholder="https://github.com/...">
+                            </div>
+                            <div class="form-group">
+                                <label>YouTube URL</label>
+                                <input type="url" id="socialYoutube" placeholder="https://youtube.com/...">
+                            </div>
+                            <div class="form-group">
+                                <label>Discord URL</label>
+                                <input type="url" id="socialDiscord" placeholder="https://discord.gg/...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO SETTINGS -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🔍 SEO & Analitik</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Meta Açıklama</label>
+                                <textarea id="metaDesc" placeholder="Site açıklaması..." rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Google Analytics ID</label>
+                                <input type="text" id="gaId" placeholder="G-XXXXXXXXXX">
+                            </div>
+                            <div class="form-group">
+                                <label>Anahtar Kelimeler</label>
+                                <input type="text" id="metaKeywords" placeholder="teknoloji, oyun, uygulama...">
+                            </div>
+                            <div
+                                style="padding:1rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:8px; font-size:0.85rem; color:var(--text-secondary);">
+                                ✅ SEO ayarları kaydedildiğinde tüm sayfaları etkiler.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== NEW SETTINGS ROW 2 ===== -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:1.5rem;">
+
+                    <!-- ANNOUNCEMENT TICKER -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">📢 Duyuru Bandı</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label style="display:flex; align-items:center; justify-content:space-between;">
+                                    Duyuru Bandı
+                                    <label class="toggle-switch"
+                                        style="cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                                        <input type="checkbox" id="tickerEnabled" style="width:auto;">
+                                        <span style="font-size:0.8rem; color:var(--text-muted);">Aktif</span>
+                                    </label>
+                                </label>
+                                <textarea id="tickerText"
+                                    placeholder="Duyuru metni... | Birden fazla mesaj | Dikey çubuk ile ayırın"
+                                    rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Bant Rengi</label>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                                    <div>
+                                        <label style="font-size:0.78rem; color:var(--text-muted);">Arka Plan</label>
+                                        <input type="color" id="tickerBg" value="#4f8ef7"
+                                            style="width:100%; height:36px; padding:2px; background:var(--bg-glass); border:1px solid var(--border); border-radius:6px;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.78rem; color:var(--text-muted);">Metin Rengi</label>
+                                        <input type="color" id="tickerColor" value="#ffffff"
+                                            style="width:100%; height:36px; padding:2px; background:var(--bg-glass); border:1px solid var(--border); border-radius:6px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Hız</label>
+                                <select id="tickerSpeed">
+                                    <option value="slow">🐢 Yavaş</option>
+                                    <option value="normal" selected>⚡ Normal</option>
+                                    <option value="fast">🚀 Hızlı</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FONT SIZE & TYPOGRAPHY -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🔤 Yazı Boyutu & Tipografi</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Temel Yazı Boyutu</label>
+                                <select id="baseFontSize">
+                                    <option value="14px">14px — Küçük</option>
+                                    <option value="15px">15px — Standart</option>
+                                    <option value="16px" selected>16px — Varsayılan</option>
+                                    <option value="17px">17px — Büyük</option>
+                                    <option value="18px">18px — Çok Büyük</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Başlık Yazı Boyutu</label>
+                                <select id="headingScale">
+                                    <option value="0.9">0.9× — Kompakt</option>
+                                    <option value="1.0" selected>1.0× — Normal</option>
+                                    <option value="1.1">1.1× — Geniş</option>
+                                    <option value="1.2">1.2× — Büyük</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Satır Aralığı</label>
+                                <select id="lineHeight">
+                                    <option value="1.5">1.5 — Sıkışık</option>
+                                    <option value="1.6" selected>1.6 — Normal</option>
+                                    <option value="1.75">1.75 — Rahat</option>
+                                    <option value="1.9">1.9 — Geniş</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Yazı Tipi</label>
+                                <select id="fontFamily">
+                                    <option value="Inter, system-ui, sans-serif" selected>Inter (Varsayılan)</option>
+                                    <option value="'Roboto', sans-serif">Roboto</option>
+                                    <option value="'Poppins', sans-serif">Poppins</option>
+                                    <option value="'Outfit', sans-serif">Outfit</option>
+                                    <option value="system-ui, sans-serif">Sistem Yazı Tipi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== NEW SETTINGS ROW 3 ===== -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:1.5rem;">
+
+                    <!-- BANNER SETTINGS -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">🖼️ Banner Yönetimi</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label style="display:flex; align-items:center; justify-content:space-between;">
+                                    Hero Banner
+                                    <label style="cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                                        <input type="checkbox" id="bannerEnabled" checked style="width:auto;">
+                                        <span style="font-size:0.8rem; color:var(--text-muted);">Göster</span>
+                                    </label>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>Banner Başlığı</label>
+                                <input type="text" id="bannerTitle" placeholder="Teknolojinin Kalbinde">
+                            </div>
+                            <div class="form-group">
+                                <label>Banner Alt Başlığı</label>
+                                <input type="text" id="bannerSubtitle"
+                                    placeholder="Teknoloji, Oyun ve Uygulama Dünyasına Kapınız">
+                            </div>
+                            <div class="form-group">
+                                <label>Birinci Buton Metni</label>
+                                <input type="text" id="bannerBtn1" placeholder="🚀 Haberleri Keşfet">
+                            </div>
+                            <div class="form-group">
+                                <label>İkinci Buton Metni</label>
+                                <input type="text" id="bannerBtn2" placeholder="💬 Foruma Katıl">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTENT SETTINGS & GOOGLE OAUTH -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">⚙️ İçerik & Google OAuth</div>
+                        </div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group">
+                                <label>Ana Sayfada Makale Sayısı</label>
+                                <select id="homeArticleCount">
+                                    <option value="3">3 makale</option>
+                                    <option value="6" selected>6 makale</option>
+                                    <option value="9">9 makale</option>
+                                    <option value="12">12 makale</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Ana Sayfada Forum Konusu</label>
+                                <select id="homeForumCount">
+                                    <option value="3">3 konu</option>
+                                    <option value="4" selected>4 konu</option>
+                                    <option value="6">6 konu</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Forum Moderasyonu</label>
+                                <select id="forumModMode">
+                                    <option value="manual" selected>Manuel (Admin onayı gerekli)</option>
+                                    <option value="auto">Otomatik (Hemen yayınla)</option>
+                                </select>
+                            </div>
+                            <div style="margin:1rem 0; border-top:1px solid var(--border); padding-top:1rem;">
+                                <div
+                                    style="font-size:0.82rem; font-weight:700; color:#a855f7; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
+                                    🔑 Google OAuth</div>
+                                <div class="form-group">
+                                    <label>Google Client ID</label>
+                                    <input type="text" id="googleClientId"
+                                        placeholder="xxxxx.apps.googleusercontent.com"
+                                        style="font-family:monospace; font-size:0.78rem;">
+                                </div>
+                                <div
+                                    style="font-size:0.78rem; color:var(--text-muted); padding:0.65rem; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:8px;">
+                                    💡 <a href="https://console.cloud.google.com" target="_blank"
+                                        style="color:#a855f7;">Google Cloud Console</a>'dan alın → APIs &amp; Services →
+                                    Credentials
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- DANGER ZONE -->
+                <div class="admin-card" style="margin-top:1.5rem; border-color:rgba(239,68,68,0.3);">
+                    <div class="admin-card-header" style="border-bottom-color:rgba(239,68,68,0.2);">
+                        <div class="admin-card-title" style="color:#ef4444;">⚠️ Tehlikeli Bölge</div>
+                    </div>
+                    <div style="padding:1.5rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                        <div style="flex:1;">
+                            <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.25rem;">Tüm İçerikleri
+                                Sıfırla</div>
+                            <div style="font-size:0.85rem; color:var(--text-secondary);">Tüm makaleler, forum konuları
+                                ve üye verileri silinir. Bu işlem geri alınamaz!</div>
+                        </div>
+                        <button class="btn-action btn-delete" id="resetAllBtn"
+                            style="padding:0.5rem 1rem; font-size:0.875rem;">🗑️ Her Şeyi Sıfırla</button>
+                    </div>
+                </div>
+
+                <!-- ADMIN PASSWORD CHANGE -->
+                <div class="admin-card" style="margin-top:1.5rem; border-color:rgba(168,85,247,0.3);">
+                    <div class="admin-card-header" style="border-bottom-color:rgba(168,85,247,0.2);">
+                        <div class="admin-card-title" style="color:#a855f7;">🔐 Admin Şifresi Değiştir</div>
+                    </div>
+                    <div
+                        style="padding:1.5rem; display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; align-items:end;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Mevcut Admin Şifresi</label>
+                            <input type="password" id="oldAdminPass" placeholder="Mevcut şifreniz">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Yeni Şifre</label>
+                            <input type="password" id="newAdminPass" placeholder="Yeni şifre (min 6)">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Yeni Şifre (Tekrar)</label>
+                            <input type="password" id="newAdminPassConfirm" placeholder="Yeni şifreyi tekrar girin">
+                        </div>
+                    </div>
+                    <div style="padding:0 1.5rem 1.5rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                        <button class="topbar-btn" id="changePassBtn"
+                            style="background:linear-gradient(135deg,#a855f7,#6366f1);">🔐 Şifreyi Değiştir</button>
+                        <div id="passMsg" style="font-size:0.85rem;"></div>
+                    </div>
+                </div>
+
+                <!-- ===== MEMBERSHIP TIERS MANAGEMENT ===== -->
+                <div class="admin-card" style="margin-top:1.5rem;">
+                    <div class="admin-card-header"
+                        style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="admin-card-title">💎 Üyelik Seviyesi Yönetimi</div>
+                        <button class="topbar-btn" onclick="openTierModal()">➕ Yeni Seviye Ekle</button>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>İkon</th>
+                                    <th>Seviye Adı</th>
+                                    <th>Renk</th>
+                                    <th>Özellikler</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tiersTableBody">
+                                <!-- Tiers will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TIER MODAL -->
+    <div class="modal-overlay" id="tierModal" style="display:none; z-index:1000;">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('tierModal')">✕</button>
+            <div class="modal-title" id="tierModalTitle">💎 Üyelik Seviyesi</div>
+            <input type="hidden" id="editTierId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Seviye Adı</label>
+                    <input type="text" id="tierName" placeholder="Örn: Pro Member">
+                </div>
+                <div class="form-group">
+                    <label>Sistem Kimliği (Slug)</label>
+                    <input type="text" id="tierId" placeholder="Örn: pro (sadece harf)">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>İkon / Emoji</label>
+                    <input type="text" id="tierIcon" placeholder="🛡️">
+                </div>
+                <div class="form-group">
+                    <label>Renk (Hex veya CSS Var)</label>
+                    <input type="text" id="tierColor" placeholder="#4f8ef7">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ayrıcalıklar (Her satıra bir tane)</label>
+                <textarea id="tierPerks" rows="5" placeholder="Sınırsız proje izleme&#10;Özel rozet&#10;..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="topbar-btn secondary" onclick="closeModal('tierModal')">İptal</button>
+                <button class="topbar-btn" onclick="saveTier()">💾 Seviyeyi Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load existing settings
+            const s = DB.get('settings') || {};
+            document.getElementById('siteName').value = s.siteName || 'AsiaConsole';
+            document.getElementById('siteSlogan').value = s.siteSlogan || '';
+            document.getElementById('footerText').value = s.footerText || '';
+            document.getElementById('accentColor').value = s.accentColor || '#4f8ef7';
+            document.getElementById('socialTwitter').value = s.socialTwitter || '';
+            document.getElementById('socialGithub').value = s.socialGithub || '';
+            document.getElementById('socialYoutube').value = s.socialYoutube || '';
+            document.getElementById('socialDiscord').value = s.socialDiscord || '';
+
+            // Load logo if exists
+            const savedLogo = localStorage.getItem('tc_site_logo');
+            if (savedLogo) {
+                document.getElementById('logoPreviewImg').src = savedLogo;
+                document.getElementById('logoPreviewImg').style.display = 'block';
+                document.getElementById('logoPlaceholder').style.display = 'none';
+                document.getElementById('logoRemoveRow').style.display = 'block';
+            }
+
+            // Logo file input handler
+            document.getElementById('logoFileInput').addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) {
+                    showAdminToast('Logo 2MB\'dan büyük olamaz!', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const base64 = e.target.result;
+                    localStorage.setItem('tc_site_logo', base64);
+                    document.getElementById('logoPreviewImg').src = base64;
+                    document.getElementById('logoPreviewImg').style.display = 'block';
+                    document.getElementById('logoPlaceholder').style.display = 'none';
+                    document.getElementById('logoRemoveRow').style.display = 'block';
+                    showAdminToast('✅ Logo kaydedildi!', 'success');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Logo remove
+            document.getElementById('logoRemoveBtn').addEventListener('click', () => {
+                localStorage.removeItem('tc_site_logo');
+                document.getElementById('logoPreviewImg').style.display = 'none';
+                document.getElementById('logoPlaceholder').style.display = 'block';
+                document.getElementById('logoRemoveRow').style.display = 'none';
+                document.getElementById('logoFileInput').value = '';
+                showAdminToast('Logo kaldırıldı.', 'error');
+            });
+
+            // Color swatches
+            document.querySelectorAll('.swatch').forEach(sw => {
+                sw.addEventListener('click', () => {
+                    document.getElementById('accentColor').value = sw.dataset.color;
+                    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+                    sw.classList.add('selected');
+                });
+                if (sw.dataset.color === (s.accentColor || '#4f8ef7')) sw.classList.add('selected');
+            });
+
+            // Load new settings fields
+            document.getElementById('brandAnim').value = s.brandAnim || 'none';
+            document.getElementById('brandAnimSpeed').value = s.brandAnimSpeed || 2.0;
+            document.getElementById('navbarStyle').value = s.navbarStyle || 'blur';
+            document.getElementById('aiEnabled').checked = !!s.aiEnabled;
+            document.getElementById('aiName').value = s.aiName || 'AsiaBot';
+            document.getElementById('aiGreeting').value = s.aiGreeting || 'Merhaba! Size nasıl yardımcı olabilirim?';
+            document.getElementById('geminiApiKey').value = s.geminiApiKey || '';
+
+            document.getElementById('tickerEnabled').checked = !!s.tickerEnabled;
+            document.getElementById('tickerText').value = s.tickerText || '';
+            document.getElementById('tickerBg').value = s.tickerBg || '#4f8ef7';
+            document.getElementById('tickerColor').value = s.tickerColor || '#ffffff';
+            document.getElementById('tickerSpeed').value = s.tickerSpeed || 'normal';
+
+            document.getElementById('activeTheme').value = s.activeTheme || 'custom';
+            document.getElementById('baseFontSize').value = s.baseFontSize || '16px';
+            document.getElementById('headingScale').value = s.headingScale || '1.0';
+            document.getElementById('lineHeight').value = s.lineHeight || '1.6';
+            document.getElementById('fontFamily').value = s.fontFamily || 'Inter, system-ui, sans-serif';
+
+            document.getElementById('bannerEnabled').checked = s.bannerEnabled !== false;
+            document.getElementById('bannerTitle').value = s.bannerTitle || '';
+            document.getElementById('bannerSubtitle').value = s.bannerSubtitle || '';
+            document.getElementById('bannerBtn1').value = s.bannerBtn1 || '';
+            document.getElementById('bannerBtn2').value = s.bannerBtn2 || '';
+
+            document.getElementById('homeArticleCount').value = s.homeArticleCount || '6';
+            document.getElementById('homeForumCount').value = s.homeForumCount || '4';
+            document.getElementById('forumModMode').value = s.forumModMode || 'manual';
+            document.getElementById('googleClientId').value = s.googleClientId || '367594063152-0kagipiibbmh7t8ti3c8chjufe335l0j.apps.googleusercontent.com';
+            document.getElementById('contactEmail').value = s.contactEmail || '';
+            document.getElementById('metaDesc').value = s.metaDesc || '';
+            document.getElementById('metaKeywords').value = s.metaKeywords || '';
+            document.getElementById('gaId').value = s.gaId || '';
+
+            // Load category icons
+            document.getElementById('iconTeknoloji').value = s.iconTeknoloji || '💻';
+            document.getElementById('iconOyun').value = s.iconOyun || '🎮';
+            document.getElementById('iconUygulama').value = s.iconUygulama || '📱';
+
+            // Design size sliders
+            function initSlider(id, valId, savedVal, def, unit) {
+                const el = document.getElementById(id);
+                const lbl = document.getElementById(valId);
+                if (!el || !lbl) return;
+                el.value = savedVal || def;
+                lbl.textContent = el.value + unit;
+                el.addEventListener('input', () => { lbl.textContent = el.value + unit; });
+            }
+            initSlider('logoSize', 'logoSizeVal', s.logoSize, 36, 'px');
+            initSlider('siteNameSize', 'siteNameSizeVal', s.siteNameSize, 1.4, 'rem');
+            initSlider('brandAnimSpeed', 'brandAnimSpeedVal', s.brandAnimSpeed, 2.0, 's');
+            initSlider('heroHeight', 'heroHeightVal', s.heroHeight, 100, 'vh');
+            initSlider('heroTitleSize', 'heroTitleSizeVal', s.heroTitleSize, 5.5, 'rem');
+
+            // Save all
+            document.getElementById('saveAllBtn').addEventListener('click', () => {
+                const currentSettings = DB.get('settings') || {};
+                const newSettings = {
+                    ...currentSettings,
+                    siteName: document.getElementById('siteName').value.trim() || 'AsiaConsole',
+                    siteSlogan: document.getElementById('siteSlogan').value.trim(),
+                    footerText: document.getElementById('footerText').value.trim(),
+                    accentColor: document.getElementById('accentColor').value,
+                    contactEmail: document.getElementById('contactEmail').value.trim(),
+                    socialTwitter: document.getElementById('socialTwitter').value.trim() || '#',
+                    socialGithub: document.getElementById('socialGithub').value.trim() || '#',
+                    socialYoutube: document.getElementById('socialYoutube').value.trim() || '#',
+                    socialDiscord: document.getElementById('socialDiscord').value.trim() || '#',
+                    metaDesc: document.getElementById('metaDesc').value.trim(),
+                    metaKeywords: document.getElementById('metaKeywords').value.trim(),
+                    gaId: document.getElementById('gaId').value.trim(),
+                    // New settings
+                    tickerEnabled: document.getElementById('tickerEnabled').checked,
+                    tickerText: document.getElementById('tickerText').value.trim(),
+                    tickerBg: document.getElementById('tickerBg').value,
+                    tickerColor: document.getElementById('tickerColor').value,
+                    tickerSpeed: document.getElementById('tickerSpeed').value,
+                    siteFont: document.getElementById('siteFont').value,
+                    brandAnim: document.getElementById('brandAnim').value,
+                    navbarStyle: document.getElementById('navbarStyle').value,
+                    aiEnabled: document.getElementById('aiEnabled').checked,
+                    aiName: document.getElementById('aiName').value.trim(),
+                    aiGreeting: document.getElementById('aiGreeting').value.trim(),
+                    geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
+                    bannerEnabled: document.getElementById('bannerEnabled').checked,
+                    bannerTitle: document.getElementById('bannerTitle').value.trim(),
+                    bannerSubtitle: document.getElementById('bannerSubtitle').value.trim(),
+                    bannerBtn1: document.getElementById('bannerBtn1').value.trim(),
+                    bannerBtn2: document.getElementById('bannerBtn2').value.trim(),
+                    homeArticleCount: document.getElementById('homeArticleCount').value,
+                    homeForumCount: document.getElementById('homeForumCount').value,
+                    forumModMode: document.getElementById('forumModMode').value,
+                    googleClientId: document.getElementById('googleClientId').value.trim(),
+                    // Theme settings
+                    activeTheme: document.getElementById('activeTheme').value,
+                    // Typography settings
+                    baseFontSize: document.getElementById('baseFontSize').value,
+                    headingScale: document.getElementById('headingScale').value,
+                    lineHeight: document.getElementById('lineHeight').value,
+                    fontFamily: document.getElementById('fontFamily').value,
+                    // Design sizes
+                    logoSize: document.getElementById('logoSize').value,
+                    siteNameSize: document.getElementById('siteNameSize').value,
+                    brandAnimSpeed: document.getElementById('brandAnimSpeed').value,
+                    heroHeight: document.getElementById('heroHeight').value,
+                    heroTitleSize: document.getElementById('heroTitleSize').value,
+                    // Category icons
+                    iconTeknoloji: document.getElementById('iconTeknoloji').value.trim() || '💻',
+                    iconOyun: document.getElementById('iconOyun').value.trim() || '🎮',
+                    iconUygulama: document.getElementById('iconUygulama').value.trim() || '📱'
+                };
+                DB.set('settings', newSettings);
+
+                // ---- FIREBASE SYNC: Write settings to cloud ----
+                // This triggers real-time updates on all other devices
+                if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
+                    FirebaseDB.set('site_data', 'settings', newSettings)
+                        .then(ok => {
+                            if (ok) showAdminToast('✅ Tüm ayarlar kaydedildi ve tüm cihazlara senkronize edildi!', 'success');
+                            else showAdminToast('✅ Ayarlar yerel olarak kaydedildi. (Firebase bağlantısı yok)', 'warning');
+                        });
+                } else {
+                    showAdminToast('✅ Tüm ayarlar kaydedildi!', 'success');
+                }
+
+                document.documentElement.style.setProperty('--accent-blue', newSettings.accentColor);
+
+            });
+
+            // Admin password change
+            document.getElementById('changePassBtn').addEventListener('click', () => {
+                const oldPass = document.getElementById('oldAdminPass').value;
+                const newPass = document.getElementById('newAdminPass').value;
+                const newPass2 = document.getElementById('newAdminPassConfirm').value;
+                const msgEl = document.getElementById('passMsg');
+
+                // Get current admin password (default: admin123)
+                const currentPass = localStorage.getItem('tc_admin_password') || 'admin123';
+
+                if (!oldPass || !newPass || !newPass2) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = '❌ Tüm alanları doldurun.';
+                    return;
+                }
+                if (oldPass !== currentPass) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = '❌ Mevcut şifre hatalı!';
+                    return;
+                }
+                if (newPass.length < 6) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = '❌ Yeni şifre en az 6 karakter olmalı.';
+                    return;
+                }
+                if (newPass !== newPass2) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = '❌ Şifreler eşleşmiyor!';
+                    return;
+                }
+                localStorage.setItem('tc_admin_password', newPass);
+                msgEl.style.color = '#10b981';
+                msgEl.textContent = '✅ Şifre başarıyla değiştirildi!';
+                document.getElementById('oldAdminPass').value = '';
+                document.getElementById('newAdminPass').value = '';
+                document.getElementById('newAdminPassConfirm').value = '';
+                showAdminToast('🔐 Admin şifresi güncellendi!', 'success');
+                setTimeout(() => { msgEl.textContent = ''; }, 4000);
+            });
+
+            // Reset all (Factory Reset)
+            document.getElementById('resetAllBtn').addEventListener('click', () => {
+                if (window.confirm('⚠️ DİKKAT: Tüm içerikler (Makaleler hariç), kullanıcılar (Admin hariç) ve forum verileri silinecek. Üye kayıtları sıfırlanacaktır. Bu işlem GERİ ALINAMAZ! Devam etmek istiyor musunuz?')) {
+                    // Keep Admin user
+                    const users = DB.get('users') || [];
+                    const adminUser = users.find(u => u.username.toLowerCase() === 'admin' || u.id === 1);
+
+                    DB.set('users', adminUser ? [adminUser] : []);
+                    DB.set('forum_posts', []);
+                    DB.set('user_projects', []);
+                    DB.set('project_reviews', []);
+                    // Articles optional: User wants "site content" reset, usually means users/posts
+                    // If they want to keep default articles, we leave them.
+
+                    localStorage.removeItem('tc_user_session'); // Log everyone out
+                    showAdminToast('💣 Site başarıyla sıfırlandı! Yönlendiriliyorsunuz...', 'error');
+                    setTimeout(() => location.reload(), 2000);
+                }
+            });
+            // TIER MANAGEMENT LOGIC
+            function renderTiers() {
+                const tiers = DB.get('user_tiers') || {};
+                const tbody = document.getElementById('tiersTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = Object.keys(tiers).map(id => {
+                    const t = tiers[id];
+                    return `
+                        <tr>
+                            <td style="font-size:1.5rem;">${t.icon || '👤'}</td>
+                            <td><strong style="color:${t.color}">${t.name}</strong> <small style="color:var(--text-muted)">(${id})</small></td>
+                            <td><code>${t.color}</code></td>
+                            <td style="font-size:0.8rem; color:var(--text-secondary);">${t.perks ? t.perks.join(', ') : '-'}</td>
+                            <td>
+                                <div style="display:flex; gap:0.5rem;">
+                                    <button class="btn-action btn-edit" onclick="editTier('${id}')">✏️</button>
+                                    <button class="btn-action btn-delete" onclick="deleteTier('${id}')" ${id === 'standart' ? 'disabled' : ''}>🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            window.openTierModal = function () {
+                document.getElementById('tierModalTitle').textContent = '💎 Yeni Üyelik Seviyesi';
+                document.getElementById('editTierId').value = '';
+                document.getElementById('tierId').readOnly = false;
+                document.getElementById('tierId').value = '';
+                document.getElementById('tierName').value = '';
+                document.getElementById('tierIcon').value = '';
+                document.getElementById('tierColor').value = '';
+                document.getElementById('tierPerks').value = '';
+                openModal('tierModal');
+            };
+
+            window.editTier = function (id) {
+                const tiers = DB.get('user_tiers') || {};
+                const t = tiers[id];
+                if (!t) return;
+
+                document.getElementById('tierModalTitle').textContent = '✏️ Seviyeyi Düzenle';
+                document.getElementById('editTierId').value = id;
+                document.getElementById('tierId').value = id;
+                document.getElementById('tierId').readOnly = true;
+                document.getElementById('tierName').value = t.name;
+                document.getElementById('tierIcon').value = t.icon || '';
+                document.getElementById('tierColor').value = t.color || '';
+                document.getElementById('tierPerks').value = t.perks ? t.perks.join('\n') : '';
+                openModal('tierModal');
+            };
+
+            window.deleteTier = function (id) {
+                if (id === 'standart') return;
+                if (!confirm(`'${id}' seviyesini silmek istediğinizden emin misiniz?`)) return;
+
+                const tiers = DB.get('user_tiers') || {};
+                delete tiers[id];
+                DB.set('user_tiers', tiers);
+                renderTiers();
+                showAdminToast('Üyelik seviyesi silindi.', 'error');
+            };
+
+            window.saveTier = function () {
+                const id = document.getElementById('tierId').value.trim().toLowerCase().replace(/\s+/g, '_');
+                const name = document.getElementById('tierName').value.trim();
+                const icon = document.getElementById('tierIcon').value.trim();
+                const color = document.getElementById('tierColor').value.trim();
+                const perks = document.getElementById('tierPerks').value.split('\n').map(p => p.trim()).filter(p => p);
+
+                if (!id || !name) {
+                    showAdminToast('ID ve İsim alanları zorunludur!', 'error');
+                    return;
+                }
+
+                const tiers = DB.get('user_tiers') || {};
+                tiers[id] = { name, icon, color, perks, bg: color.startsWith('#') ? hexToRgba(color, 0.1) : 'rgba(255,255,255,0.05)' };
+
+                DB.set('user_tiers', tiers);
+                closeModal('tierModal');
+                renderTiers();
+                showAdminToast('✅ Üyelik seviyesi kaydedildi!', 'success');
+            };
+
+            function hexToRgba(hex, alpha) {
+                try {
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                } catch (e) { return 'rgba(255,255,255,0.05)'; }
+            }
+
+            renderTiers();
+        });
+    </script>
+
+
+</body>
+
+</html>

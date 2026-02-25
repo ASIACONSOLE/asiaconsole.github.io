@@ -1,0 +1,15 @@
+# Local storage or sensitive data
+.DS_Store
+Thumbs.db
+
+# Brain / Logs (If any)
+brain/
+.system_generated/
+
+# API Keys (Prevent accidents)
+# Though stored in localStorage, we keep this as a reminder
+*.key
+
+# Common temporary files
+*.tmp
+*.log

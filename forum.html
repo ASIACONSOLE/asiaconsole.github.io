@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum - AsiaConsole</title>
+    <meta name="description" content="Teknoloji, oyun ve uygulama hakkında tartışma forumu.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Branding -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+    <style>
+        .forum-topic {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem 1.5rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .forum-topic:hover {
+            border-color: rgba(79, 142, 247, 0.35);
+            transform: translateX(3px);
+            background: rgba(79, 142, 247, 0.04);
+        }
+
+        .forum-topic.pinned-topic {
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .forum-avatar-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4f8ef7, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .forum-img-upload-label {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            background: rgba(79, 142, 247, 0.1);
+            border: 1px solid rgba(79, 142, 247, 0.25);
+            color: #4f8ef7;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .forum-img-upload-label:hover {
+            background: rgba(79, 142, 247, 0.18);
+        }
+
+        .img-thumbs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+
+        .img-thumb-item {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+
+        .img-thumb-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .img-thumb-del {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background: #ef4444;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .forum-sort-tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .sort-btn {
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sort-btn.active,
+        .sort-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: rgba(79, 142, 247, 0.08);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html" class="active">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="iletisim.html">📩 İletişim</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
+    <div class="page-wrapper">
+
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <div class="page-hero-icon">💬</div>
+                    <h1>Forum</h1>
+                    <p>Topluluğumuzla tartışın, sorularınızı sorun, deneyimlerinizi paylaşın</p>
+                </div>
+                <!-- Quick Stats -->
+                <div style="display:flex; justify-content:center; gap:2.5rem; margin-top:1.5rem; flex-wrap:wrap;"
+                    id="forumQuickStats">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:800;" id="statTopics">0</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Toplam Konu</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:800;" id="statReplies">0</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Toplam Yanıt</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:800;" id="statViews">0</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Toplam Görüntülenme</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div
+                    style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+                    <div class="search-bar" style="margin:0; flex:1; max-width:400px;">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Konularda ara...">
+                    </div>
+                    <button class="new-topic-btn" id="newTopicBtn">✏️ Yeni Konu</button>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="filter-tabs" style="justify-content:flex-start; margin-bottom:0.75rem;">
+                    <button class="filter-tab active" data-filter="all">🌐 Tümü</button>
+                    <button class="filter-tab" data-filter="teknoloji">💻 Teknoloji</button>
+                    <button class="filter-tab" data-filter="oyun">🎮 Oyun</button>
+                    <button class="filter-tab" data-filter="uygulama">📱 Uygulama</button>
+                    <button class="filter-tab" data-filter="donanim">⚙️ Donanım</button>
+                </div>
+
+                <!-- Sort -->
+                <div class="forum-sort-tabs">
+                    <button class="sort-btn active" data-sort="date">🕐 En Yeni</button>
+                    <button class="sort-btn" data-sort="replies">💬 En Çok Yanıt</button>
+                    <button class="sort-btn" data-sort="views">👁️ En Çok Görüntülenen</button>
+                </div>
+
+                <!-- Column Headers -->
+                <div
+                    style="display:flex; gap:1rem; padding:0.6rem 1.5rem; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:0.4rem;">
+                    <div style="flex:1;">Konu</div>
+                    <div style="min-width:70px; text-align:center;">Yanıtlar</div>
+                    <div style="min-width:80px; text-align:center;">Görüntülenme</div>
+                    <div style="min-width:80px; text-align:center;">Tarih</div>
+                </div>
+
+                <div id="forumList"></div>
+
+                <!-- Pagination -->
+                <div id="pagination"
+                    style="display:flex; gap:0.5rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;"></div>
+            </div>
+        </section>
+
+        <!-- NEW TOPIC MODAL -->
+        <div class="modal-overlay" id="newTopicModal" style="display:none;">
+            <div class="modal" style="max-width:600px;">
+                <button class="modal-close" id="closeModal">✕</button>
+                <div class="modal-title">✏️ Yeni Konu Oluştur</div>
+                <div id="modalAuthMsg"
+                    style="display:none; padding:1rem; background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.3); border-radius:8px; color:#f97316; font-size:0.875rem; margin-bottom:1rem;">
+                    Konu açmak için <a href="uye-panel.html" style="color:var(--accent-blue);">giriş yapmanız</a>
+                    gerekiyor.
+                </div>
+                <div id="topicForm">
+                    <div class="form-group">
+                        <label>Konu Başlığı *</label>
+                        <input type="text" id="topicTitle" placeholder="Konunuzu kısaca açıklayın..." maxlength="120">
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori *</label>
+                        <select id="topicCategory">
+                            <option value="teknoloji">💻 Teknoloji</option>
+                            <option value="oyun">🎮 Oyun</option>
+                            <option value="uygulama">📱 Uygulama</option>
+                            <option value="donanim">⚙️ Donanım</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>İçerik *</label>
+                        <textarea id="topicContent" placeholder="Konuyu detaylıca açıklayın... Markdown desteklenir."
+                            rows="5" style="min-height:120px; resize:vertical;"></textarea>
+                    </div>
+                    <!-- Image upload -->
+                    <div class="form-group">
+                        <label>Resim Ekle (opsiyonel)</label>
+                        <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                            <label class="forum-img-upload-label" for="topicImgInput">🖼️ Resim Seç (max 3)</label>
+                            <input type="file" id="topicImgInput" accept="image/*" multiple style="display:none;">
+                            <span style="font-size:0.8rem; color:var(--text-muted);">Her biri max 5MB</span>
+                        </div>
+                        <div class="img-thumbs" id="topicImgThumbs"></div>
+                    </div>
+                    <div id="pendingNotice"
+                        style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:8px; padding:0.75rem 1rem; font-size:0.85rem; color:#fbbf24; margin-bottom:1rem;">
+                        ⏳ Konunuz admin onayına gönderilecek ve onaylandıktan sonra yayınlanacaktır.
+                    </div>
+                    <button class="btn-primary" id="submitTopic" style="width:100%;">📤 Konuyu Gönder</button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+        const TOPICS_PER_PAGE = 15;
+        let currentFilter = 'all';
+        let currentSort = 'date';
+        let currentPage = 1;
+        let topicImages = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let posts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
+            const listEl = document.getElementById('forumList');
+
+            // Quick stats
+            const totalReplies = posts.reduce((a, p) => a + (p.replies || 0), 0);
+            const totalViews = posts.reduce((a, p) => a + (p.views || 0), 0);
+            document.getElementById('statTopics').textContent = posts.length.toLocaleString('tr-TR');
+            document.getElementById('statReplies').textContent = totalReplies.toLocaleString('tr-TR');
+            document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
+
+            function getSorted(list) {
+                const l = [...list];
+                if (currentSort === 'replies') return l.sort((a, b) => (b.replies || 0) - (a.replies || 0));
+                if (currentSort === 'views') return l.sort((a, b) => (b.views || 0) - (a.views || 0));
+                return l.sort((a, b) => b.id - a.id);
+            }
+
+            function getFiltered() {
+                const q = document.getElementById('searchInput').value.toLowerCase();
+                return posts.filter(p => {
+                    if (currentFilter !== 'all' && p.category !== currentFilter) return false;
+                    if (q && !p.title.toLowerCase().includes(q) && !(p.author || '').toLowerCase().includes(q)) return false;
+                    return true;
+                });
+            }
+
+            function getUserAv(username) {
+                const users = DB.get('users') || [];
+                const u = users.find(x => x.username === username);
+                if (u) {
+                    const ph = localStorage.getItem('tc_avatar_' + u.id);
+                    if (ph) return `style="background-image:url(${ph}); background-size:cover; background-position:center;"`;
+                }
+                return '';
+            }
+
+            function render() {
+                const filtered = getSorted(getFiltered());
+                const totalPages = Math.ceil(filtered.length / TOPICS_PER_PAGE);
+                const start = (currentPage - 1) * TOPICS_PER_PAGE;
+                const page = filtered.slice(start, start + TOPICS_PER_PAGE);
+
+                if (!page.length) {
+                    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Konu bulunamadı</h3><p>İlk konuyu siz başlatın!</p></div>';
+                    document.getElementById('pagination').innerHTML = '';
+                    return;
+                }
+
+                listEl.innerHTML = page.map(p => `
+                  <a href="forum-detay.html?id=${p.id}" class="forum-topic ${p.pinned ? 'pinned-topic' : ''}">
+                    <div class="forum-avatar-img" ${getUserAv(p.author)}>${getUserAv(p.author) ? '' : (p.authorInit || (p.author || '?')[0].toUpperCase())}</div>
+                    <div class="forum-content" style="flex:1; min-width:0;">
+                      <div class="forum-title" style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                        ${p.pinned ? '<span style="font-size:0.75rem; color:#a855f7; background:rgba(168,85,247,0.1); padding:0.15rem 0.5rem; border-radius:50px; font-weight:700; flex-shrink:0;">📌 Sabitlendi</span>' : ''}
+                        ${p.images && p.images.length ? '<span style="font-size:0.75rem; color:#4f8ef7; flex-shrink:0;">🖼️</span>' : ''}
+                        <span>${p.title}</span>
+                      </div>
+                      <div class="forum-meta" style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-top:0.25rem;">
+                        <span>@${p.author}</span>
+                        <span style="padding:0.15rem 0.5rem; background:rgba(79,142,247,0.08); border-radius:4px; font-size:0.75rem;">${p.category}</span>
+                      </div>
+                    </div>
+                    <div class="forum-stats">
+                      <div class="forum-stat"><div class="forum-stat-num">${p.replies || 0}</div><div class="forum-stat-label">Yanıt</div></div>
+                      <div class="forum-stat"><div class="forum-stat-num">${(p.views || 0).toLocaleString('tr-TR')}</div><div class="forum-stat-label">Görüntü</div></div>
+                      <div class="forum-stat" style="min-width:80px; text-align:right;"><div style="font-size:0.78rem; color:var(--text-muted);">${p.date || ''}</div></div>
+                    </div>
+                  </a>
+                `).join('');
+
+                // Pagination
+                const pag = document.getElementById('pagination');
+                if (totalPages <= 1) { pag.innerHTML = ''; return; }
+                let html = '';
+                if (currentPage > 1) html += `<button class="sort-btn" onclick="changePage(${currentPage - 1})">‹</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `<button class="sort-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+                if (currentPage < totalPages) html += `<button class="sort-btn" onclick="changePage(${currentPage + 1})">›</button>`;
+                pag.innerHTML = html;
+            }
+
+            window.changePage = (p) => { currentPage = p; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+            document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; render(); });
+
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.dataset.filter || 'all';
+                    currentPage = 1;
+                    render();
+                });
+            });
+
+            document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.sort-btn[data-sort]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSort = btn.dataset.sort;
+                    render();
+                });
+            });
+
+            render();
+
+            // Modal
+            const modal = document.getElementById('newTopicModal');
+            document.getElementById('newTopicBtn').addEventListener('click', () => { modal.style.display = 'flex'; });
+            document.getElementById('closeModal').addEventListener('click', () => { modal.style.display = 'none'; });
+            modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+            const user = Auth.currentUser();
+            if (!user) {
+                document.getElementById('modalAuthMsg').style.display = 'block';
+                document.getElementById('topicForm').style.opacity = '0.4';
+                document.getElementById('topicForm').style.pointerEvents = 'none';
+            }
+
+            // Image upload for topic
+            document.getElementById('topicImgInput').addEventListener('change', function () {
+                const files = Array.from(this.files);
+                if (topicImages.length + files.length > 3) { showToast('En fazla 3 resim ekleyebilirsiniz.', 'error'); return; }
+                files.forEach(file => {
+                    if (file.size > 5 * 1024 * 1024) { showToast(file.name + ' 5MB\'dan büyük.', 'error'); return; }
+                    const fr = new FileReader();
+                    fr.onload = e => { topicImages.push(e.target.result); renderTopicThumbs(); };
+                    fr.readAsDataURL(file);
+                });
+                this.value = '';
+            });
+
+            function renderTopicThumbs() {
+                document.getElementById('topicImgThumbs').innerHTML = topicImages.map((src, i) => `
+                  <div class="img-thumb-item">
+                    <img src="${src}" alt="">
+                    <div class="img-thumb-del" onclick="removeTopicImg(${i})">✕</div>
+                  </div>
+                `).join('');
+            }
+            window.removeTopicImg = (i) => { topicImages.splice(i, 1); renderTopicThumbs(); };
+
+            document.getElementById('submitTopic').addEventListener('click', () => {
+                const u = Auth.currentUser();
+                if (!u) { showToast('Konu açmak için giriş yapın.', 'error'); return; }
+                const title = document.getElementById('topicTitle').value.trim();
+                const cat = document.getElementById('topicCategory').value;
+                const content = document.getElementById('topicContent').value.trim();
+                if (!title) { showToast('Konu başlığı boş olamaz.', 'error'); return; }
+                if (!content) { showToast('İçerik boş olamaz.', 'error'); return; }
+
+                const allPosts = DB.get('forum_posts') || [];
+                const newPost = {
+                    id: Date.now(),
+                    title,
+                    category: cat,
+                    body: content,
+                    preview: content.slice(0, 200),
+                    author: u.username,
+                    authorInit: u.username[0].toUpperCase(),
+                    date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    replies: 0,
+                    views: 0,
+                    likes: 0,
+                    pinned: false,
+                    status: 'pending',
+                    images: [...topicImages]
+                };
+                allPosts.unshift(newPost);
+                DB.set('forum_posts', allPosts);
+                modal.style.display = 'none';
+                document.getElementById('topicTitle').value = '';
+                document.getElementById('topicContent').value = '';
+                topicImages = [];
+                renderTopicThumbs();
+                showToast('⏳ Konunuz admin onayına gönderildi!', 'success');
+            });
+        });
+    </script>
+</body>
+
+</html>

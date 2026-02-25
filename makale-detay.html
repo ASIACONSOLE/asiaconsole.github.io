@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makale - AsiaConsole</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .article-hero {
+            background: linear-gradient(135deg, rgba(13, 17, 23, 0.95), rgba(30, 40, 60, 0.9));
+            padding: 6rem 0 3rem;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(79, 142, 247, 0.12), transparent);
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .article-body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            color: var(--text-secondary);
+        }
+
+        .article-body h2 {
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+        }
+
+        .article-body h3 {
+            color: var(--text-primary);
+            font-size: 1.15rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .article-body p {
+            margin-bottom: 1.25rem;
+        }
+
+        .article-body ul,
+        .article-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .article-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-body blockquote {
+            border-left: 3px solid var(--accent-blue);
+            padding: 1rem 1.5rem;
+            background: rgba(79, 142, 247, 0.06);
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+            font-style: italic;
+        }
+
+        .article-body code {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .article-emoji-hero {
+            font-size: 5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 40px rgba(79, 142, 247, 0.3));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .article-title-main {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 60%, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-share {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-share {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-share:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .related-articles {
+            background: var(--bg-secondary);
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .reading-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 0.3rem 0.75rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+        }
+
+        .article-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), #a855f7);
+            transition: width 0.1s;
+            z-index: 9999;
+            width: 0%;
+        }
+
+        .toc-box {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .toc-box h4 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.75rem;
+        }
+
+        .toc-box a {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.2rem 0;
+            transition: color 0.2s;
+        }
+
+        .toc-box a:hover {
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="articleProgress" class="article-progress"></div>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name" id="navSiteName">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+
+    <div id="articleContent" style="display:none;">
+
+        <!-- HERO -->
+        <div class="article-hero">
+            <div class="container" style="max-width:800px; position:relative; z-index:1;">
+                <div class="article-emoji-hero" id="artEmoji">📄</div>
+
+                <div class="article-meta">
+                    <span class="badge" id="artCategoryBadge" style="font-size:0.85rem;">💻 Teknoloji</span>
+                    <span class="reading-time">⏱️ <span id="readingTime">5</span> dk okuma</span>
+                    <span class="reading-time">👁️ <span id="artViews">0</span> görüntülenme</span>
+                </div>
+
+                <h1 class="article-title-main" id="artTitle">Makale başlığı</h1>
+                <p style="font-size:1.05rem; color:var(--text-secondary); line-height:1.7; margin-bottom:1.5rem;"
+                    id="artDesc"></p>
+
+                <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                        <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,#4f8ef7,#a855f7); display:flex; align-items:center; justify-content:center; font-weight:700; color:white;"
+                            id="artAuthorAvatar">?</div>
+                        <div>
+                            <div style="font-weight:700; font-size:0.9rem;" id="artAuthor">Yazar</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);" id="artDate">Tarih</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="article-body" id="artBody">
+            <!-- Content injected by JS -->
+        </div>
+
+        <!-- SHARE -->
+        <div style="max-width:800px; margin:0 auto; padding: 0 1.5rem 3rem;">
+            <div class="article-share">
+                <span style="font-size:0.9rem; color:var(--text-muted); align-self:center;">Paylaş:</span>
+                <a class="btn-share" id="shareTwitter" href="#" target="_blank">🐦 Twitter</a>
+                <a class="btn-share" id="shareWhatsapp" href="#" target="_blank">💬 WhatsApp</a>
+                <button class="btn-share" onclick="copyLink()">🔗 Bağlantıyı Kopyala</button>
+                <a class="btn-share" href="forum.html">💬 Forum'da Tartış</a>
+            </div>
+        </div>
+
+        <!-- RELATED -->
+        <div class="related-articles">
+            <div class="container">
+                <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:0.5rem;">📚 İlgili Makaleler</h2>
+                <p style="color:var(--text-muted); font-size:0.875rem;">Aynı kategoriden daha fazlası</p>
+                <div class="related-grid" id="relatedGrid"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NOT FOUND -->
+    <div id="notFoundSection" style="display:none; text-align:center; padding:8rem 1rem;">
+        <div style="font-size:4rem; margin-bottom:1rem;">😔</div>
+        <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">Makale bulunamadı</h2>
+        <p style="color:var(--text-muted); margin-bottom:2rem;">Bu makale mevcut değil veya silinmiş olabilir.</p>
+        <a href="index.html" class="btn-primary">← Ana Sayfaya Dön</a>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">← Ana
+                    Sayfaya Dön</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        const catMap = {
+            teknoloji: ['badge-blue', '💻 Teknoloji'],
+            oyun: ['badge-purple', '🎮 Oyun'],
+            uygulama: ['badge-green', '📱 Uygulama']
+        };
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => showToast('Bağlantı kopyalandı! 🔗', 'success'));
+        }
+
+        // Reading progress bar
+        window.addEventListener('scroll', () => {
+            const doc = document.documentElement;
+            const scrollTop = window.scrollY;
+            const docHeight = doc.scrollHeight - doc.clientHeight;
+            const pct = docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+            document.getElementById('articleProgress').style.width = pct + '%';
+        });
+
+        // Estimate reading time
+        function readingTime(text) {
+            const words = text.split(/\s+/).length;
+            return Math.max(1, Math.ceil(words / 200));
+        }
+
+        // Generate article body from template
+        function generateBody(article) {
+            // Build rich body from description + auto-generated sections
+            const sections = [
+                `<p>${article.desc}</p>`,
+                `<h2>📌 Konuya Genel Bakış</h2>`,
+                `<p>Bu makale, ${article.title.toLowerCase()} konusunu ele almaktadır. ${article.category === 'teknoloji' ? 'Teknoloji dünyasındaki' : article.category === 'oyun' ? 'Oyun sektöründeki' : 'Uygulama geliştirme'} en güncel gelişmeleri ve önemli detayları aşağıda bulabilirsiniz.</p>`,
+                `<blockquote>💡 ${article.desc}</blockquote>`,
+                `<h2>🔍 Detaylı İnceleme</h2>`,
+                `<p>Konu hakkındaki detaylı incelememizde, sektörün önde gelen uzmanlarının görüşleri ve kapsamlı analizler yer almaktadır. Bu içerik, hem başlangıç seviyesindeki okuyucular hem de deneyimliler için hazırlanmıştır.</p>`,
+                `<ul><li>Güncel veriler ve istatistikler</li><li>Uzman yorumları ve analizler</li><li>Pratik öneriler ve ipuçları</li><li>Gelecek trendleri ve tahminler</li></ul>`,
+                `<h2>📊 Sonuç</h2>`,
+                `<p>${article.title} konusu, sektörün geleceği açısından büyük önem taşımaktadır. Topluluğumuzda bu konuyu tartışmaya devam edeceğiz. Düşüncelerinizi forum sayfamızda paylaşabilirsiniz.</p>`,
+            ];
+            // Use stored body if exists
+            return article.body || sections.join('\n');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = parseInt(params.get('id'));
+            if (!id) { document.getElementById('notFoundSection').style.display = 'block'; return; }
+
+            const articles = DB.get('articles') || [];
+            const article = articles.find(a => a.id === id);
+
+            if (!article) {
+                document.getElementById('notFoundSection').style.display = 'block';
+                return;
+            }
+
+            // Increment view count
+            article.views = (article.views || 0) + 1;
+            DB.set('articles', articles);
+
+            // Update page title
+            document.title = article.title + ' - AsiaConsole';
+
+            // Fill content
+            const [cls, label] = catMap[article.category] || ['badge-blue', article.category];
+            document.getElementById('artEmoji').textContent = article.image || '📄';
+            document.getElementById('artCategoryBadge').className = 'badge ' + cls;
+            document.getElementById('artCategoryBadge').textContent = label;
+            document.getElementById('artTitle').textContent = article.title;
+            document.getElementById('artDesc').textContent = article.desc;
+            document.getElementById('artAuthor').textContent = '@' + article.author;
+            document.getElementById('artAuthorAvatar').textContent = article.author[0].toUpperCase();
+            document.getElementById('artDate').textContent = article.date;
+            document.getElementById('artViews').textContent = article.views.toLocaleString('tr-TR');
+
+            const body = generateBody(article);
+            document.getElementById('artBody').innerHTML = body;
+            document.getElementById('readingTime').textContent = readingTime(body.replace(/<[^>]*>/g, ''));
+
+            // Share links
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent(article.title);
+            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+            document.getElementById('shareWhatsapp').href = `https://wa.me/?text=${title}%20${url}`;
+
+            // Related articles
+            const related = articles.filter(a => a.category === article.category && a.id !== article.id).slice(0, 3);
+            const relGrid = document.getElementById('relatedGrid');
+            if (related.length) {
+                relGrid.innerHTML = related.map(a => `
+      <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block;">
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '📄'}</div>
+        <div class="article-category"><span class="badge ${catMap[a.category]?.[0] || 'badge-blue'}">${catMap[a.category]?.[1] || a.category}</span></div>
+        <h3 style="font-size:1rem; font-weight:700; margin:0.75rem 0 0.5rem; line-height:1.4;">${a.title}</h3>
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.75rem;">${a.desc.slice(0, 80)}...</p>
+        <div style="font-size:0.8rem; color:var(--text-muted);">👁️ ${a.views.toLocaleString('tr-TR')} • @${a.author}</div>
+      </a>
+    `).join('');
+            } else {
+                relGrid.innerHTML = '<p style="color:var(--text-muted);">Henüz ilgili makale yok.</p>';
+            }
+
+            document.getElementById('articleContent').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>

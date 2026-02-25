@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - AsiaConsole</title>
+    <meta name="description" content="AsiaConsole üye profil sayfası.">
+    <link rel="stylesheet" href="css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+
+
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="iletisim.html">📩 İletişim</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
+
+    <div class="page-wrapper">
+        <!-- COVER PHOTO -->
+        <div class="profile-cover" id="profileCover">
+            <button class="profile-cover-edit" id="coverEditBtn" style="display:none;"
+                onclick="document.getElementById('coverFileInput').click();">
+                📷 Kapak Fotoğrafını Değiştir
+            </button>
+            <input type="file" id="coverFileInput" accept="image/*" style="display:none;">
+        </div>
+
+        <div class="profile-main">
+            <!-- TOP: Avatar + Name + Actions -->
+            <div class="profile-top">
+                <div class="profile-avatar-lg" id="profileAvatar">?</div>
+                <div class="profile-name-block">
+                    <div class="profile-tier-badge" id="profileTierBadge">⭐ Standart</div>
+                    <h1 id="profileUsername">Kullanıcı</h1>
+                    <div style="font-size:0.82rem; color:var(--text-muted);">📅 Üye: <span id="profileJoined">—</span>
+                    </div>
+                </div>
+                <div class="profile-actions" id="profileActions">
+                    <!-- Buttons injected by JS -->
+                </div>
+            </div>
+
+            <!-- STATS BAR -->
+            <div class="profile-stats-bar">
+                <div class="profile-stat">
+                    <div class="profile-stat-num" id="statPosts">0</div>
+                    <div class="profile-stat-label">Forum Konusu</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-num" id="statProjects">0</div>
+                    <div class="profile-stat-label">Proje</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-num" id="statViews">0</div>
+                    <div class="profile-stat-label">Toplam Görüntülenme</div>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="profile-body">
+                <!-- SIDEBAR -->
+                <div class="profile-sidebar">
+                    <div class="card">
+                        <h3 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">👤 Hakkında</h3>
+                        <div class="profile-bio" id="profileBio" style="color:var(--text-muted); font-style:italic;">
+                            Henüz bir tanıtım yazılmadı.</div>
+                        <div class="profile-social-links" id="profileSocialLinks"></div>
+                        <div class="profile-joined" id="profileJoinedFull"></div>
+                    </div>
+                </div>
+
+                <!-- MAIN CONTENT -->
+                <div>
+                    <!-- Projects -->
+                    <div id="projectsSection" style="margin-bottom:2rem;">
+                        <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">🚀 Projeler</h3>
+                        <div id="profileProjects" class="cards-grid"
+                            style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));"></div>
+                    </div>
+
+                    <!-- Forum Posts -->
+                    <div id="forumSection">
+                        <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">💬 Forum Konuları</h3>
+                        <div id="profilePosts" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            applySettings();
+            renderDynamicNav();
+            setNavActive();
+            initHamburger();
+            updateNavAuth();
+
+            const params = new URLSearchParams(location.search);
+            const targetUsername = params.get('user');
+            const me = Auth.currentUser();
+
+            if (!targetUsername) {
+                if (me) {
+                    location.replace('profil.html?user=' + encodeURIComponent(me.username));
+                } else {
+                    location.replace('uye-panel.html');
+                }
+                return;
+            }
+
+            // Find target user
+            const allUsers = DB.get('users') || [];
+            const user = allUsers.find(u => u.username.toLowerCase() === targetUsername.toLowerCase());
+
+            if (!user) {
+                document.querySelector('.profile-main').innerHTML =
+                    '<div class="empty-state" style="margin:4rem auto;"><div class="empty-icon">😕</div><h3>Kullanıcı Bulunamadı</h3><p>' + targetUsername + ' adlı bir üye bulunamadı.</p><a href="index.html" class="btn-primary" style="margin-top:1rem; display:inline-flex;">← Ana Sayfaya Dön</a></div>';
+                document.getElementById('profileCover').style.display = 'none';
+                return;
+            }
+
+            const isOwnProfile = me && me.id === user.id;
+
+            // Load profile extra data
+            const extra = ProfileData.get(user.id);
+
+            // COVER PHOTO
+            const coverKey = 'tc_cover_' + user.id;
+            const savedCover = localStorage.getItem(coverKey) || extra.coverPhoto;
+            if (savedCover) {
+                document.getElementById('profileCover').style.backgroundImage = 'url(' + savedCover + ')';
+            }
+
+            // Show cover edit button for own profile
+            if (isOwnProfile) {
+                const coverBtn = document.getElementById('coverEditBtn');
+                if (coverBtn) coverBtn.style.display = 'block';
+                document.getElementById('coverFileInput').addEventListener('change', function () {
+                    const file = this.files[0];
+                    if (!file) return;
+                    if (file.size > 3 * 1024 * 1024) { showToast('Fotoğraf 3MB\'dan büyük olamaz!', 'error'); return; }
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const b64 = e.target.result;
+                        localStorage.setItem(coverKey, b64);
+                        document.getElementById('profileCover').style.backgroundImage = 'url(' + b64 + ')';
+                        ProfileData.save(user.id, { coverPhoto: b64 });
+                        showToast('✅ Kapak fotoğrafı güncellendi!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // AVATAR
+            const avatarKey = 'tc_avatar_' + user.id;
+            const savedAvatar = localStorage.getItem(avatarKey) || extra.avatar;
+            const avatarEl = document.getElementById('profileAvatar');
+            if (savedAvatar) {
+                avatarEl.style.backgroundImage = 'url(' + savedAvatar + ')';
+                avatarEl.style.backgroundSize = 'cover';
+                avatarEl.style.backgroundPosition = 'center';
+                avatarEl.textContent = '';
+            } else {
+                avatarEl.textContent = user.username[0].toUpperCase();
+            }
+
+            // USERNAME & TIER
+            document.getElementById('profileUsername').textContent = user.username;
+            document.getElementById('profileJoined').textContent = user.joined || '—';
+            document.getElementById('profileJoinedFull').textContent = '📅 ' + (user.joined || '—') + ' tarihinde katıldı';
+
+            const tierId = user.accountType || 'standart';
+            const tierInfo = UserTiers.get(tierId);
+            const tierBadge = document.getElementById('profileTierBadge');
+            tierBadge.textContent = tierInfo.icon + ' ' + tierInfo.name;
+            tierBadge.style.background = tierInfo.color + '22';
+            tierBadge.style.borderColor = tierInfo.color + '44';
+            tierBadge.style.color = tierInfo.color;
+
+            // BIO
+            if (extra.bio) {
+                document.getElementById('profileBio').textContent = extra.bio;
+                document.getElementById('profileBio').style.fontStyle = 'normal';
+            }
+
+            // SOCIAL LINKS
+            const socialLinks = document.getElementById('profileSocialLinks');
+            if (extra.socialTwitter || extra.socialGithub || extra.socialYoutube) {
+                socialLinks.innerHTML = '';
+                if (extra.socialTwitter) socialLinks.innerHTML += `<a href="${extra.socialTwitter}" target="_blank" class="profile-social-link">🐦 Twitter / X</a>`;
+                if (extra.socialGithub) socialLinks.innerHTML += `<a href="${extra.socialGithub}" target="_blank" class="profile-social-link">🐙 GitHub</a>`;
+                if (extra.socialYoutube) socialLinks.innerHTML += `<a href="${extra.socialYoutube}" target="_blank" class="profile-social-link">▶️ YouTube</a>`;
+            }
+
+            // STATS
+            const forumPosts = (DB.get('forum_posts') || []).filter(p => p.author === user.username);
+            const userProjects = (DB.get('user_projects') || []).filter(p => p.author === user.username && p.status === 'approved');
+            const totalViews = userProjects.reduce((s, p) => s + (p.views || 0), 0);
+
+            document.getElementById('statPosts').textContent = forumPosts.length;
+            document.getElementById('statProjects').textContent = userProjects.length;
+            document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
+
+            // ACTION BUTTONS
+            const actionsEl = document.getElementById('profileActions');
+            if (isOwnProfile) {
+                actionsEl.innerHTML = `
+                    <a href="uye-panel.html" class="btn-secondary">⚙️ Profili Düzenle</a>
+                    <a href="mesajlar.html" class="btn-primary">💬 Mesajlarım</a>
+                `;
+            } else if (me) {
+                actionsEl.innerHTML = `
+                    <button class="btn-primary" id="sendMsgBtn">💬 Mesaj Gönder</button>
+                    <a href="profil.html?user=${encodeURIComponent(me.username)}" class="btn-secondary">Profilim</a>
+                `;
+                document.getElementById('sendMsgBtn').addEventListener('click', () => {
+                    location.href = 'mesajlar.html?to=' + encodeURIComponent(user.username);
+                });
+            } else {
+                actionsEl.innerHTML = `<a href="uye-panel.html" class="btn-primary">🔑 Giriş Yap</a>`;
+            }
+
+            // PROJECTS
+            const projGrid = document.getElementById('profileProjects');
+            if (userProjects.length === 0) {
+                projGrid.innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Henüz onaylanmış proje yok.</p>';
+            } else {
+                projGrid.innerHTML = userProjects.map(p => `
+                    <a href="proje-izle.html?id=${p.id}" class="card article-card" style="text-decoration:none; display:block;">
+                        <div class="card-title" style="font-size:0.95rem;">${p.title}</div>
+                        <div class="card-desc">${p.desc}</div>
+                        <div class="card-meta"><span>👁️ ${(p.views || 0).toLocaleString('tr-TR')}</span><span>📅 ${p.date}</span></div>
+                    </a>
+                `).join('');
+            }
+
+            // FORUM POSTS
+            const postsEl = document.getElementById('profilePosts');
+            if (forumPosts.length === 0) {
+                postsEl.innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Henüz forum konusu açılmadı.</p>';
+            } else {
+                postsEl.innerHTML = forumPosts.slice(0, 10).map(p => `
+                    <a href="forum-detay.html?id=${p.id}" class="card" style="padding:1rem; display:block; text-decoration:none; color:var(--text-primary);">
+                        <div style="font-weight:600; font-size:0.92rem; margin-bottom:0.35rem;">${p.title}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">📅 ${p.date} &nbsp;·&nbsp; 💬 ${(p.replies || []).length} yanıt</div>
+                    </a>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+
+</html>

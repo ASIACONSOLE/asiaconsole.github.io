@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Moderasyonu - AsiaConsole Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1><span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link">📊 Dashboard</a>
+                <a href="pages.html" class="sidebar-link">📄 İçerik Yönetimi</a>
+                <a href="forum-moderation.html" class="sidebar-link active">💬 Forum Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link">🚀 Proje Moderasyonu</a>
+                <a href="users.html" class="sidebar-link">👥 Kullanıcılar</a>
+                <a href="settings.html" class="sidebar-link">⚙️ Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank">🌐 Siteye Git</a>
+                <a href="#" class="sidebar-link" id="adminLogoutLink" style="margin-top:auto; color:#ef4444;">🚪
+                    Çıkış</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-info">
+                    <h2>💬 Forum Moderasyonu</h2>
+                    <p>Bekleyen forum konularını onaylayın veya reddedin</p>
+                </div>
+                <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                    <button class="topbar-btn" id="approveAllBtn"
+                        style="background:linear-gradient(135deg,#10b981,#059669);">✅ Tümünü Onayla</button>
+                    <button class="topbar-btn" id="rejectAllBtn"
+                        style="background:linear-gradient(135deg,#ef4444,#dc2626);">🗑️ Tümünü Reddet</button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <!-- Stats -->
+                <div
+                    style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1.25rem; margin-bottom:1.5rem;">
+                    <div class="admin-card" style="padding:1.25rem;">
+                        <div style="font-size:2rem; font-weight:800; color:#fbbf24;" id="pendingCount">0</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary);">Bekleyen Konu</div>
+                    </div>
+                    <div class="admin-card" style="padding:1.25rem;">
+                        <div style="font-size:2rem; font-weight:800; color:#10b981;" id="approvedCount">0</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary);">Onaylanan Konu</div>
+                    </div>
+                    <div class="admin-card" style="padding:1.25rem;">
+                        <div style="font-size:2rem; font-weight:800; color:#ef4444;" id="rejectedCount">0</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary);">Reddedilen Konu</div>
+                    </div>
+                    <div class="admin-card" style="padding:1.25rem;">
+                        <div style="font-size:2rem; font-weight:800; color:var(--accent-blue);" id="totalCount">0</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary);">Toplam Konu</div>
+                    </div>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.25rem;">
+                    <button class="filter-btn active" data-filter="pending" onclick="setFilter('pending', this)">⏳
+                        Bekleyenler</button>
+                    <button class="filter-btn" data-filter="approved" onclick="setFilter('approved', this)">✅
+                        Onaylananlar</button>
+                    <button class="filter-btn" data-filter="rejected" onclick="setFilter('rejected', this)">❌
+                        Reddedilenler</button>
+                    <button class="filter-btn" data-filter="all" onclick="setFilter('all', this)">📋 Tümü</button>
+                </div>
+
+                <!-- Posts List -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title" id="listTitle">⏳ Bekleyen Konular</div>
+                        <input type="text" id="searchInput" placeholder="🔍 Konu ara..."
+                            style="padding:0.5rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.875rem; width:220px;">
+                    </div>
+                    <div id="postsList" style="padding:1rem;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- EDIT POST MODAL -->
+    <div class="modal-overlay" id="editModal" style="display:none;">
+        <div class="modal" style="max-width:680px; max-height:85vh; overflow-y:auto;">
+            <div class="modal-header">
+                <div class="modal-title">Konu Düzenle</div>
+                <button class="modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem;">
+                <input type="hidden" id="editTopicId">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Başlık</label>
+                    <input type="text" id="editTopicTitle"
+                        style="width:100%; padding:0.75rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary);">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Kategori</label>
+                    <select id="editTopicCategory"
+                        style="width:100%; padding:0.75rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary);">
+                        <option value="Teknoloji">💻 Teknoloji</option>
+                        <option value="Oyun">🎮 Oyun</option>
+                        <option value="Uygulama">📱 Uygulama</option>
+                        <option value="Genel">💬 Genel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">İçerik</label>
+                    <textarea id="editTopicBody"
+                        style="width:100%; min-height:200px; padding:0.75rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; gap:0.75rem; padding:1.25rem; border-top:1px solid var(--border);">
+                <button class="topbar-btn" id="saveEditBtn" style="flex:1;">💾 Değişiklikleri Kaydet</button>
+                <button class="topbar-btn secondary" onclick="closeEditModal()" style="flex:1;">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW POST MODAL -->
+    <div class="modal-overlay" id="detailModal" style="display:none;">
+        <div class="modal" style="max-width:680px; max-height:85vh; overflow-y:auto;">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Konu Detayı</div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div style="display:flex; gap:0.75rem; padding:1.25rem; border-top:1px solid var(--border);">
+                <button class="topbar-btn" id="modalApproveBtn"
+                    style="background:linear-gradient(135deg,#10b981,#059669); flex:1;">✅ Onayla</button>
+                <button class="topbar-btn" id="modalRejectBtn"
+                    style="background:linear-gradient(135deg,#ef4444,#dc2626); flex:1;">🗑️ Reddet / Sil</button>
+                <button class="topbar-btn" onclick="closeModal()"
+                    style="background:var(--bg-glass); border:1px solid var(--border); color:var(--text-primary);">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        let currentFilter = 'pending';
+        let activeModalId = null;
+
+        function setFilter(f, el) {
+            currentFilter = f;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            const titles = { pending: '⏳ Bekleyen Konular', approved: '✅ Onaylanan Konular', rejected: '❌ Reddedilen Konular', all: '📋 Tüm Konular' };
+            document.getElementById('listTitle').textContent = titles[f];
+            renderList();
+        }
+
+        function updateStats() {
+            const posts = DB.get('forum_posts') || [];
+            document.getElementById('pendingCount').textContent = posts.filter(p => p.status === 'pending').length;
+            document.getElementById('approvedCount').textContent = posts.filter(p => p.status === 'approved').length;
+            document.getElementById('rejectedCount').textContent = posts.filter(p => p.status === 'rejected').length;
+            document.getElementById('totalCount').textContent = posts.length;
+        }
+
+        function approvePost(id) {
+            const posts = DB.get('forum_posts') || [];
+            const p = posts.find(x => x.id === id);
+            if (p) { p.status = 'approved'; DB.set('forum_posts', posts); }
+            updateStats(); renderList();
+            showAdminToast('✅ Konu onaylandı ve yayınlandı!', 'success');
+        }
+
+        function rejectPost(id) {
+            if (!confirm('Bu konuyu reddetmek ve silmek istiyor musunuz?')) return;
+            let posts = DB.get('forum_posts') || [];
+            posts = posts.filter(x => x.id !== id);
+            DB.set('forum_posts', posts);
+            updateStats(); renderList();
+            showAdminToast('🗑️ Konu reddedildi ve silindi.', 'error');
+            if (activeModalId === id) closeModal();
+        }
+
+        function renderList() {
+            updateStats();
+            const posts = DB.get('forum_posts') || [];
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = posts.filter(p => {
+                if (currentFilter !== 'all' && p.status !== currentFilter) return false;
+                if (query && !p.title.toLowerCase().includes(query) && !p.author.toLowerCase().includes(query)) return false;
+                return true;
+            }).sort((a, b) => b.id - a.id);
+
+            const list = document.getElementById('postsList');
+            if (!filtered.length) {
+                list.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted);"><div style="font-size:3rem; margin-bottom:1rem;">📭</div><p>Bu filtrede konu bulunamadı.</p></div>`;
+                return;
+            }
+
+            const statusColors = { pending: '#fbbf24', approved: '#10b981', rejected: '#ef4444' };
+            const statusLabels = { pending: '⏳ Bekliyor', approved: '✅ Onaylandı', rejected: '❌ Reddedildi' };
+
+            list.innerHTML = filtered.map(p => `
+    <div style="display:flex; align-items:flex-start; gap:1rem; padding:1rem; border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.2s; border-radius:8px;" class="list-row-hover">
+      <div style="flex:1; min-width:0;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.3rem;">
+          <span style="font-size:0.78rem; font-weight:700; color:${statusColors[p.status || 'pending']}; padding:0.15rem 0.5rem; background:${statusColors[p.status || 'pending']}22; border-radius:50px;">${statusLabels[p.status || 'pending']}</span>
+          <span style="font-size:0.78rem; color:var(--text-muted);">${p.category}</span>
+          <span style="font-size:0.78rem; color:var(--text-muted);">@${p.author}</span>
+          <span style="font-size:0.78rem; color:var(--text-muted);">📅 ${p.date}</span>
+        </div>
+        <div style="font-weight:700; font-size:0.95rem; color:var(--text-primary); margin-bottom:0.3rem; cursor:pointer;" onclick="openModal(${p.id})">${p.title}</div>
+        <div style="font-size:0.85rem; color:var(--text-secondary);">${(p.preview || p.body || '').slice(0, 120)}...</div>
+      </div>
+      <div style="display:flex; gap:0.5rem; flex-shrink:0;">
+        <button class="btn-action btn-view" onclick="openModal(${p.id})" title="İncele">👁️</button>
+        <button class="btn-action btn-edit" onclick="openEditModal(${p.id})" title="Düzenle">✏️</button>
+        ${p.status !== 'approved' ? `<button class="btn-action btn-edit" onclick="approvePost(${p.id})" title="Onayla" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#10b981;">✅</button>` : ''}
+        <button class="btn-action btn-delete" onclick="rejectPost(${p.id})" title="Sil">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+        }
+
+        function openModal(id) {
+            const posts = DB.get('forum_posts') || [];
+            const p = posts.find(x => x.id === id);
+            if (!p) return;
+            activeModalId = id;
+            document.getElementById('modalTitle').textContent = p.title;
+            document.getElementById('modalBody').innerHTML = `
+    <div style="padding:1.25rem; border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap; gap:0.5rem;">
+      <span class="badge badge-blue">${p.category}</span>
+      <span style="font-size:0.85rem; color:var(--text-muted);">@${p.author}</span>
+      <span style="font-size:0.85rem; color:var(--text-muted);">📅 ${p.date}</span>
+    </div>
+    <div style="padding:1.25rem; font-size:0.95rem; line-height:1.7; color:var(--text-secondary); white-space:pre-wrap;">${p.body || p.preview || ''}</div>
+    ${p.images && p.images.length ? `<div style="padding:0 1.25rem 1.25rem; display:flex; flex-wrap:wrap; gap:0.5rem;">${p.images.map(s => `<img src="${s}" style="max-width:200px; border-radius:8px; border:1px solid var(--border);">`).join('')}</div>` : ''}
+  `;
+            document.getElementById('modalApproveBtn').onclick = () => { approvePost(id); closeModal(); };
+            document.getElementById('modalRejectBtn').onclick = () => rejectPost(id);
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('detailModal').style.display = 'none'; activeModalId = null; }
+
+        function openEditModal(id) {
+            const posts = DB.get('forum_posts') || [];
+            const p = posts.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('editTopicId').value = id;
+            document.getElementById('editTopicTitle').value = p.title;
+            document.getElementById('editTopicCategory').value = p.category;
+            document.getElementById('editTopicBody').value = p.body || p.preview || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        document.getElementById('saveEditBtn').addEventListener('click', () => {
+            const id = parseInt(document.getElementById('editTopicId').value);
+            const title = document.getElementById('editTopicTitle').value.trim();
+            const category = document.getElementById('editTopicCategory').value;
+            const body = document.getElementById('editTopicBody').value.trim();
+
+            if (!title || !body) {
+                showAdminToast('Başlık ve içerik boş bırakılamaz!', 'error');
+                return;
+            }
+
+            const posts = DB.get('forum_posts') || [];
+            const idx = posts.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                posts[idx].title = title;
+                posts[idx].category = category;
+                posts[idx].body = body;
+                posts[idx].preview = body.slice(0, 150); // Sync preview
+                DB.set('forum_posts', posts);
+                showAdminToast('✅ Konu başarıyla güncellendi.', 'success');
+                closeEditModal();
+                renderList();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('tc_admin_session')) {
+                window.location.href = 'index.html'; return;
+            }
+            renderList();
+
+            document.getElementById('searchInput').addEventListener('input', renderList);
+
+            document.getElementById('approveAllBtn').addEventListener('click', () => {
+                if (!confirm('Tüm bekleyen konuları onaylamak istiyor musunuz?')) return;
+                const posts = DB.get('forum_posts') || [];
+                posts.forEach(p => { if (p.status === 'pending') p.status = 'approved'; });
+                DB.set('forum_posts', posts);
+                renderList();
+                showAdminToast('✅ Tüm konular onaylandı!', 'success');
+            });
+
+            document.getElementById('rejectAllBtn').addEventListener('click', () => {
+                if (!confirm('Tüm bekleyen konuları silmek istiyor musunuz? Bu işlem geri alınamaz!')) return;
+                const posts = DB.get('forum_posts') || [];
+                const cleaned = posts.filter(p => p.status !== 'pending');
+                DB.set('forum_posts', cleaned);
+                renderList();
+                showAdminToast('🗑️ Tüm bekleyen konular silindi.', 'error');
+            });
+
+            document.getElementById('adminLogoutLink').addEventListener('click', e => {
+                e.preventDefault();
+                localStorage.removeItem('tc_admin_session');
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

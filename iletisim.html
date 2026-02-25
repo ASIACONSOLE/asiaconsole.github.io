@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İletişim - AsiaConsole</title>
+    <meta name="description"
+        content="AsiaConsole ile iletişime geçin. Sorularınız, önerileriniz ve geri bildirimleriniz için.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Branding -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="iletisim.html">📩 İletişim</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
+    <div class="page-wrapper">
+
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <div class="page-hero-icon">📩</div>
+                    <h1>İletişim</h1>
+                    <p>Sorularınız, önerileriniz ve geri bildirimleriniz için buradayız</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:3rem; align-items:start;">
+
+                    <!-- Contact Info -->
+                    <div>
+                        <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">Bize Ulaşın</h2>
+                        <div style="display:flex; flex-direction:column; gap:1rem;">
+                            <div class="card" style="padding:1.25rem; cursor:default;">
+                                <div style="font-size:1.5rem; margin-bottom:0.5rem;">📧</div>
+                                <div style="font-weight:600; margin-bottom:0.25rem;">E-posta</div>
+                                <div style="color:var(--text-secondary); font-size:0.875rem;">iletisim@asiaconsole.com
+                                </div>
+                            </div>
+                            <div class="card" style="padding:1.25rem; cursor:default;">
+                                <div style="font-size:1.5rem; margin-bottom:0.5rem;">💬</div>
+                                <div style="font-weight:600; margin-bottom:0.25rem;">Discord</div>
+                                <div style="color:var(--text-secondary); font-size:0.875rem;">discord.gg/asiaconsole
+                                </div>
+                            </div>
+                            <div class="card" style="padding:1.25rem; cursor:default;">
+                                <div style="font-size:1.5rem; margin-bottom:0.5rem;">🐦</div>
+                                <div style="font-weight:600; margin-bottom:0.25rem;">Twitter / X</div>
+                                <div style="color:var(--text-secondary); font-size:0.875rem;">@AsiaConsole</div>
+                            </div>
+                            <div class="card" style="padding:1.25rem; cursor:default;">
+                                <div style="font-size:1.5rem; margin-bottom:0.5rem;">🕐</div>
+                                <div style="font-weight:600; margin-bottom:0.25rem;">Yanıt Süresi</div>
+                                <div style="color:var(--text-secondary); font-size:0.875rem;">Genellikle 24 saat içinde
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div>
+                        <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">Mesaj Gönder</h2>
+                        <div class="contact-form" style="margin:0;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div class="form-group">
+                                    <label>Adınız</label>
+                                    <input type="text" id="contactName" placeholder="Adınız Soyadınız">
+                                </div>
+                                <div class="form-group">
+                                    <label>E-posta</label>
+                                    <input type="email" id="contactEmail" placeholder="ornek@mail.com">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Konu</label>
+                                <select id="contactSubject">
+                                    <option value="">Konu seçin</option>
+                                    <option value="oneri">💡 Öneri</option>
+                                    <option value="hata">🐛 Hata Bildirimi</option>
+                                    <option value="isbirligi">🤝 İş Birliği</option>
+                                    <option value="diger">📝 Diğer</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Mesajınız</label>
+                                <textarea id="contactMessage" placeholder="Mesajınızı buraya yazın..."
+                                    rows="6"></textarea>
+                            </div>
+                            <button class="btn-primary" id="sendBtn" style="width:100%; justify-content:center;">
+                                📤 Mesajı Gönder
+                            </button>
+                            <div id="successMsg"
+                                style="display:none; margin-top:1rem; padding:1rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#10b981; font-size:0.875rem; text-align:center;">
+                                ✅ Mesajınız başarıyla gönderildi! Teşekkür ederiz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('sendBtn').addEventListener('click', () => {
+                const name = document.getElementById('contactName').value.trim();
+                const email = document.getElementById('contactEmail').value.trim();
+                const msg = document.getElementById('contactMessage').value.trim();
+                if (!name || !email || !msg) { showToast('Lütfen tüm alanları doldurun.', 'error'); return; }
+                if (!/\S+@\S+\.\S+/.test(email)) { showToast('Geçerli bir e-posta adresi girin.', 'error'); return; }
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('sendBtn').textContent = '📤 Gönderiliyor...';
+                setTimeout(() => {
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.getElementById('sendBtn').style.display = 'none';
+                    document.getElementById('contactName').value = '';
+                    document.getElementById('contactEmail').value = '';
+                    document.getElementById('contactMessage').value = '';
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+
+</html>

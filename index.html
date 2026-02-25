@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AsiaConsole - Teknoloji, Oyun ve Uygulama Dünyasına Kapınız</title>
+    <meta name="description"
+        content="Teknoloji, oyun ve uygulama haberlerini, forum tartışmalarını ve topluluğu keşfedin.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Branding -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+            </div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="iletisim.html">📩 İletişim</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
+
+    <div class="page-wrapper">
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="dot"></span>
+                        Türkiye'nin Teknoloji Topluluğu
+                    </div>
+                    <h1>
+                        Teknolojinin Kalbinde<br>
+                        <span class="gradient-text">Bir Adım Önde Ol</span>
+                    </h1>
+                    <p class="site-slogan">Teknoloji, Oyun ve Uygulama Dünyasına Kapınız</p>
+                    <div class="hero-buttons">
+                        <a href="teknoloji.html" class="btn-primary">🚀 Haberleri Keşfet</a>
+                        <a href="forum.html" class="btn-secondary">💬 Foruma Katıl</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-card-mini"
+                    style="background:rgba(79,142,247,0.1); border-color:rgba(79,142,247,0.3); display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                    💻</div>
+                <div class="hero-card-mini"
+                    style="background:rgba(168,85,247,0.1); border-color:rgba(168,85,247,0.3); display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                    🎮</div>
+                <div class="hero-card-mini"
+                    style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.3); display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                    📱</div>
+                <div class="hero-card-mini"
+                    style="background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.3); display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                    💬</div>
+            </div>
+        </section>
+
+        <!-- STATS BAR -->
+        <div class="stats-bar">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="statMembers">1,240</div>
+                        <div class="stat-label">Üye</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statArticles">0</div>
+                        <div class="stat-label">Makale</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statTopics">0</div>
+                        <div class="stat-label">Forum Konusu</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Aktif Topluluk</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURED ARTICLES -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-label">⭐ Öne Çıkanlar</span>
+                    <h2>Güncel Haberler</h2>
+                    <p>Teknoloji, oyun ve uygulama dünyasındaki en güncel gelişmeleri takip edin</p>
+                </div>
+                <div class="cards-grid" id="featuredArticles">
+                    <!-- Loaded by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- CATEGORIES -->
+        <section class="section" style="background: var(--bg-secondary);">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-label">📂 Kategoriler</span>
+                    <h2>Tüm İçerikler</h2>
+                    <p>İlgilendiğiniz konuyu seçin</p>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                    <a href="teknoloji.html" class="card"
+                        style="text-align:center; padding:2rem 1rem; text-decoration:none;">
+                        <div style="font-size:3rem; margin-bottom:0.75rem;">💻</div>
+                        <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;">Teknoloji</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);" id="catTechCount">0 makale</div>
+                    </a>
+                    <a href="oyun.html" class="card"
+                        style="text-align:center; padding:2rem 1rem; text-decoration:none;">
+                        <div style="font-size:3rem; margin-bottom:0.75rem;">🎮</div>
+                        <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;">Oyun</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);" id="catGameCount">0 makale</div>
+                    </a>
+                    <a href="uygulama.html" class="card"
+                        style="text-align:center; padding:2rem 1rem; text-decoration:none;">
+                        <div style="font-size:3rem; margin-bottom:0.75rem;">📱</div>
+                        <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;">Uygulama</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);" id="catAppCount">0 makale</div>
+                    </a>
+                    <a href="forum.html" class="card"
+                        style="text-align:center; padding:2rem 1rem; text-decoration:none;">
+                        <div style="font-size:3rem; margin-bottom:0.75rem;">💬</div>
+                        <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;">Forum</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);" id="catForumCount">0 konu</div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- LATEST FORUM -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-label">💬 Forum</span>
+                    <h2>Son Tartışmalar</h2>
+                    <p>Topluluğumuzun güncel forum konuları</p>
+                </div>
+                <div id="homeForumList"></div>
+                <div style="text-align:center; margin-top:2rem;">
+                    <a href="forum.html" class="btn-secondary">Tüm Konuları Gör →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <h3 class="site-name">AsiaConsole</h3>
+                        <p>Teknoloji, oyun ve uygulama dünyasındaki en güncel haberleri ve topluluk tartışmalarını
+                            keşfedin.</p>
+                        <div class="social-links" style="margin-top:1rem;">
+                            <a class="social-link social-twitter" href="#" title="Twitter">𝕏</a>
+                            <a class="social-link social-github" href="#" title="GitHub">⌥</a>
+                            <a class="social-link social-youtube" href="#" title="YouTube">▶</a>
+                            <a class="social-link social-discord" href="#" title="Discord">◈</a>
+                        </div>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Sayfalar</h4>
+                        <ul>
+                            <li><a href="teknoloji.html">Teknoloji</a></li>
+                            <li><a href="oyun.html">Oyun</a></li>
+                            <li><a href="uygulama.html">Uygulama</a></li>
+                            <li><a href="forum.html">Forum</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Hesap</h4>
+                        <ul>
+                            <li><a href="uye-panel.html">Giriş Yap</a></li>
+                            <li><a href="uye-panel.html">Kayıt Ol</a></li>
+                            <li><a href="uye-panel.html">Profilim</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Diğer</h4>
+                        <ul>
+                            <li><a href="iletisim.html">İletişim</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">Sevgiyle yapıldı 💙</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const articles = DB.get('articles') || [];
+            const forumPosts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
+            const users = DB.get('users') || [];
+
+            // Stats
+            document.getElementById('statArticles').textContent = articles.length.toLocaleString('tr-TR');
+            document.getElementById('statTopics').textContent = forumPosts.length.toLocaleString('tr-TR');
+            if (users.length > 3) document.getElementById('statMembers').textContent = (1240 + users.length - 3).toLocaleString('tr-TR');
+
+            // Category counts
+            const techCount = articles.filter(a => a.category === 'teknoloji').length;
+            const gameCount = articles.filter(a => a.category === 'oyun').length;
+            const appCount = articles.filter(a => a.category === 'uygulama').length;
+            document.getElementById('catTechCount').textContent = techCount + ' makale';
+            document.getElementById('catGameCount').textContent = gameCount + ' makale';
+            document.getElementById('catAppCount').textContent = appCount + ' makale';
+            document.getElementById('catForumCount').textContent = forumPosts.length + ' konu';
+
+            // Featured articles
+            const featured = articles.slice(0, 6);
+            const catMap = { teknoloji: 'badge-tech', oyun: 'badge-game', uygulama: 'badge-app' };
+            const catLabel = { teknoloji: '💻 Teknoloji', oyun: '🎮 Oyun', uygulama: '📱 Uygulama' };
+            const grid = document.getElementById('featuredArticles');
+            if (featured.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><h3>Henüz makale yok</h3><p>Admin panelinden makale ekleyebilirsiniz.</p></div>';
+            } else {
+                grid.innerHTML = featured.map(a => `
+      <a href="makale-detay.html?id=${a.id}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer;">
+        <div class="card-badge ${catMap[a.category] || 'badge-tech'}">${catLabel[a.category] || a.category}</div>
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '📄'}</div>
+        <div class="card-title">${a.title}</div>
+        <div class="card-desc">${a.desc}</div>
+        <div class="card-meta">
+          <span>👤 ${a.author}</span>
+          <span>📅 ${a.date}</span>
+          <span>👁️ ${(a.views || 0).toLocaleString('tr-TR')}</span>
+        </div>
+        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
+      </a>
+    `).join('');
+            }
+
+            // Forum list
+            const forumEl = document.getElementById('homeForumList');
+            const topPosts = forumPosts.slice(0, 4);
+            if (topPosts.length === 0) {
+                forumEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Henüz konu yok</h3><p>İlk forum konusunu siz başlatın!</p></div>';
+            } else {
+                forumEl.innerHTML = topPosts.map(p => `
+      <a href="forum-detay.html?id=${p.id}" class="forum-topic" style="text-decoration:none; display:flex;">
+        <div class="forum-avatar">${p.authorInit || (p.author || '?')[0].toUpperCase()}</div>
+        <div class="forum-content">
+          <div class="forum-title">${p.pinned ? '📌 ' : ''}${p.title}</div>
+          <div class="forum-meta">@${p.author} · ${p.date}</div>
+        </div>
+        <div class="forum-stats">
+          <div class="forum-stat">
+            <div class="forum-stat-num">${p.replies || 0}</div>
+            <div class="forum-stat-label">Yanıt</div>
+          </div>
+          <div class="forum-stat">
+            <div class="forum-stat-num">${(p.views || 0).toLocaleString('tr-TR')}</div>
+            <div class="forum-stat-label">Görüntü</div>
+          </div>
+        </div>
+      </a>
+    `).join('');
+            }
+        });
+    </script>
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ai-assistant.js"></script>
+</body>
+
+</html>

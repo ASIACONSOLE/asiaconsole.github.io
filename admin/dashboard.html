@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AsiaConsole Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link active"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu
+                    <span id="sidebarPendingBadge"
+                        style="display:none; background:#f97316; color:white; font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:50px; margin-left:auto;"></span></a>
+                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu
+                    <span id="sidebarProjPendingBadge"
+                        style="display:none; background:var(--accent-cyan); color:white; font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:50px; margin-left:auto;"></span></a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi
+                    Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-user-info">
+                    <div class="admin-avatar">A</div>
+                    <div>
+                        <div class="admin-user-name">Admin</div>
+                        <div class="admin-user-role">Süper Yönetici</div>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-title">📊 Dashboard</div>
+                <div class="topbar-actions">
+                    <a href="pages.html" class="topbar-btn">➕ Yeni İçerik</a>
+                    <a href="../index.html" target="_blank" class="topbar-btn secondary">🌐 Siteyi Gör</a>
+                </div>
+            </div>
+
+            <div class="admin-content">
+
+                <!-- STATS -->
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon blue">📄</div>
+                        <div>
+                            <div class="stat-val" id="statArticles">0</div>
+                            <div class="stat-lbl">Toplam Makale</div>
+                            <div class="stat-trend">↑ Admin'den yönet</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon purple">👥</div>
+                        <div>
+                            <div class="stat-val" id="statUsers">0</div>
+                            <div class="stat-lbl">Kayıtlı Üye</div>
+                            <div class="stat-trend">↑ Aktif topluluk</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon green">💬</div>
+                        <div>
+                            <div class="stat-val" id="statPosts">0</div>
+                            <div class="stat-lbl">Forum Konusu</div>
+                            <div class="stat-trend">↑ Tartışmalar devam ediyor</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card" id="pendingCard"
+                        style="border-color:rgba(249,115,22,0.3); cursor:pointer;"
+                        onclick="location.href='forum-moderation.html'">
+                        <div class="stat-icon orange">⏳</div>
+                        <div>
+                            <div class="stat-val" id="statPending" style="color:#f97316;">0</div>
+                            <div class="stat-lbl">Forum Onayı</div>
+                            <div class="stat-trend" style="color:#f97316;">→ Moderasyona git</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card" id="projPendingCard"
+                        style="border-color:rgba(6,182,212,0.3); cursor:pointer;"
+                        onclick="location.href='projects.html'">
+                        <div class="stat-icon cyan">🚀</div>
+                        <div>
+                            <div class="stat-val" id="statProjPending" style="color:var(--accent-cyan);">0</div>
+                            <div class="stat-lbl">Proje Onayı</div>
+                            <div class="stat-trend" style="color:var(--accent-cyan);">→ Projelere git</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon orange">👁️</div>
+                        <div>
+                            <div class="stat-val" id="statViews">0</div>
+                            <div class="stat-lbl">Toplam Görüntülenme</div>
+                            <div class="stat-trend">↑ Tüm makaleler</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:1.5rem;">
+
+                    <!-- RECENT ARTICLES -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">📄 Son Makaleler</div>
+                            <a href="pages.html" class="topbar-btn"
+                                style="font-size:0.8rem; padding:0.4rem 0.75rem;">Tümünü Yönet</a>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Kategori</th>
+                                    <th>Görüntü</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentArticlesBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div>
+                        <div class="admin-card" style="margin-bottom:1rem;">
+                            <div class="admin-card-header">
+                                <div class="admin-card-title">⚡ Hızlı İşlemler</div>
+                            </div>
+                            <div style="padding:1rem; display:flex; flex-direction:column; gap:0.75rem;">
+                                <a href="pages.html" class="topbar-btn"
+                                    style="justify-content:center; text-decoration:none;">📝 Yeni Makale Ekle</a>
+                                <a href="forum-moderation.html" class="topbar-btn"
+                                    style="justify-content:center; text-decoration:none; border: 1px solid #f97316;"><span
+                                        id="quickModBadge"></span> 💬 Forum Moderasyonu</a>
+                                <a href="projects.html" class="topbar-btn"
+                                    style="justify-content:center; text-decoration:none; background:linear-gradient(135deg,var(--accent-blue),var(--accent-cyan)); font-weight:700;">🚀
+                                    Proje Moderasyonu</a>
+                                <a href="users.html" class="topbar-btn secondary"
+                                    style="justify-content:center; text-decoration:none;">👥 Üyeleri Yönet</a>
+                                <a href="settings.html" class="topbar-btn secondary"
+                                    style="justify-content:center; text-decoration:none;">🎨 Site Ayarları</a>
+                                <a href="../index.html" target="_blank" class="topbar-btn secondary"
+                                    style="justify-content:center; text-decoration:none;">🌐 Siteyi Görüntüle</a>
+                            </div>
+                        </div>
+
+                        <!-- CATEGORY BREAKDOWN -->
+                        <div class="admin-card">
+                            <div class="admin-card-header">
+                                <div class="admin-card-title">📊 Kategori Dağılımı</div>
+                            </div>
+                            <div style="padding:1rem;" id="categoryBreakdown"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RECENT FORUM POSTS -->
+                <div class="admin-card" style="margin-top:1.5rem;">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title">💬 Son Forum Konuları</div>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Konu</th>
+                                <th>Yazar</th>
+                                <th>Kategori</th>
+                                <th>Yanıt</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentForumBody"></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const articles = DB.get('articles') || [];
+            const users = DB.get('users') || [];
+            const posts = DB.get('forum_posts') || [];
+
+            // Stats
+            document.getElementById('statArticles').textContent = articles.length;
+            document.getElementById('statUsers').textContent = users.length;
+            document.getElementById('statPosts').textContent = posts.length;
+            const pendingPosts = posts.filter(p => p.status === 'pending').length;
+            document.getElementById('statPending').textContent = pendingPosts;
+            if (pendingPosts > 0) {
+                const badge = document.getElementById('sidebarPendingBadge');
+                if (badge) { badge.textContent = pendingPosts; badge.style.display = 'inline'; }
+                const qb = document.getElementById('quickModBadge');
+                if (qb) qb.textContent = '⏳ ' + pendingPosts + ' bekliyor — ';
+            }
+            const totalViews = articles.reduce((s, a) => s + (a.views || 0), 0);
+            document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
+
+            const catMap = { teknoloji: ['badge-blue', '💻 Teknoloji'], oyun: ['badge-purple', '🎮 Oyun'], uygulama: ['badge-green', '📱 Uygulama'] };
+
+            // Recent articles
+            const tbody = document.getElementById('recentArticlesBody');
+            tbody.innerHTML = articles.slice(0, 6).map(a => {
+                const [cls, label] = catMap[a.category] || ['badge-blue', a.category];
+                return `<tr>
+      <td><div style="font-weight:600; font-size:0.85rem;">${a.image || '📄'} ${a.title.slice(0, 45)}${a.title.length > 45 ? '...' : ''}</div></td>
+      <td><span class="badge ${cls}">${label}</span></td>
+      <td style="color:var(--text-secondary);">👁️ ${(a.views || 0).toLocaleString('tr-TR')}</td>
+    </tr>`;
+            }).join('');
+
+            // Category breakdown
+            const cats = ['teknoloji', 'oyun', 'uygulama'];
+            const colors = ['#4f8ef7', '#a855f7', '#10b981'];
+            const labels = ['💻 Teknoloji', '🎮 Oyun', '📱 Uygulama'];
+            const breakdown = document.getElementById('categoryBreakdown');
+            breakdown.innerHTML = cats.map((c, i) => {
+                const count = articles.filter(a => a.category === c).length;
+                const pct = articles.length ? Math.round(count / articles.length * 100) : 0;
+                return `<div style="margin-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.4rem;">
+        <span>${labels[i]}</span>
+        <span style="color:var(--text-secondary);">${count} makale</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+        <div style="height:100%; width:${pct}%; background:${colors[i]}; border-radius:3px; transition:width 0.8s ease;"></div>
+      </div>
+    </div>`;
+            }).join('');
+
+            // Recent forum
+            const statusColors = { pending: '#f97316', approved: '#10b981', rejected: '#ef4444' };
+            const statusLabels = { pending: '⏳ Bekliyor', approved: '✅ Onaylandı', rejected: '❌ Reddedildi' };
+            const fbody = document.getElementById('recentForumBody');
+            fbody.innerHTML = posts.slice(0, 5).map(p => `<tr>
+    <td style="font-weight:600; font-size:0.85rem;"><a href="forum-detay.html?id=${p.id}" style="color:inherit; text-decoration:none;" target="_blank">${p.pinned ? '📌 ' : ''}${p.title.slice(0, 50)}${p.title.length > 50 ? '...' : ''}</a></td>
+    <td><span style="color:var(--text-secondary);">@${p.author}</span></td>
+    <td><span class="badge badge-blue">${p.category}</span></td>
+    <td>${p.replies || 0}</td>
+    <td><span style="color:${statusColors[p.status || 'approved'] || '#10b981'}; font-size:0.78rem; font-weight:600;">${statusLabels[p.status || 'approved'] || '✅'}</span></td>
+    <td style="color:var(--text-muted); font-size:0.8rem;">${p.date}</td>
+  </tr>`).join('');
+
+            // Statistics Update (Fixed Redeclaration Lint)
+            const projects = DB.get('user_projects') || [];
+            const pendingProjs = projects.filter(p => (p.status === 'pending')).length;
+
+            document.getElementById('statProjPending').textContent = pendingProjs;
+
+            if (pendingProjs > 0) {
+                document.getElementById('projPendingCard').style.background = 'rgba(6, 182, 212, 0.05)';
+            }
+        });
+    </script>
+</body>
+
+</html>

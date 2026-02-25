@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Yönetimi - AsiaConsole Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1><span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi
+                    Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-user-info">
+                    <div class="admin-avatar">A</div>
+                    <div>
+                        <div class="admin-user-name">Admin</div>
+                        <div class="admin-user-role">Süper Yönetici</div>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-title">👥 Kullanıcı Yönetimi</div>
+                <div class="topbar-actions">
+                    <button class="topbar-btn" id="addUserBtn">➕ Kullanıcı Ekle</button>
+                    <div class="admin-search">
+                        <span class="s-icon">🔍</span>
+                        <input type="text" id="searchUsers" placeholder="Kullanıcı ara...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-content">
+
+                <!-- BACKUP & RESTORE PANEL -->
+                <div class="admin-card"
+                    style="margin-bottom:1.5rem; border: 1px solid rgba(79,142,247,0.3); background: linear-gradient(135deg, rgba(79,142,247,0.05), rgba(168,85,247,0.05));">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title">💾 Veri Yedekleme & Geri Yükleme</div>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">Site sıfırlamadan önce yedeğinizi
+                            alın</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; padding:0.5rem 0;">
+                        <!-- EXPORT -->
+                        <div
+                            style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:12px; padding:1.25rem;">
+                            <div style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">📥 Dışa Aktar</div>
+                            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Tüm veriler
+                                (kullanıcılar, yazılar, forum, ayarlar) JSON dosyası olarak indirilir.</p>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+                                <label
+                                    style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; cursor:pointer;"><input
+                                        type="checkbox" id="expUsers" checked> 👥 Kullanıcılar</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; cursor:pointer;"><input
+                                        type="checkbox" id="expArticles" checked> 📰 Yazılar</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; cursor:pointer;"><input
+                                        type="checkbox" id="expForum" checked> 💬 Forum</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; cursor:pointer;"><input
+                                        type="checkbox" id="expProjects" checked> 🗂️ Projeler</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; cursor:pointer;"><input
+                                        type="checkbox" id="expSettings" checked> ⚙️ Ayarlar</label>
+                            </div>
+                            <button class="topbar-btn" id="exportBtn"
+                                style="background: linear-gradient(135deg, #22c55e, #16a34a); width:100%; justify-content:center;">📥
+                                Yedeği İndir (.json)</button>
+                        </div>
+                        <!-- IMPORT -->
+                        <div
+                            style="background:rgba(79,142,247,0.08); border:1px solid rgba(79,142,247,0.2); border-radius:12px; padding:1.25rem;">
+                            <div style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">📤 İçe Aktar</div>
+                            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Daha önce
+                                aldığınız yedek dosyasını seçerek geri yükleyin.</p>
+                            <div id="importDropZone"
+                                style="border: 2px dashed rgba(79,142,247,0.4); border-radius:10px; padding:1.5rem; text-align:center; cursor:pointer; margin-bottom:1rem; transition:all 0.2s;"
+                                onclick="document.getElementById('importFileInput').click()"
+                                ondragover="event.preventDefault(); this.style.background='rgba(79,142,247,0.12)'"
+                                ondragleave="this.style.background=''" ondrop="handleImportDrop(event)">
+                                <div style="font-size:1.5rem;">📂</div>
+                                <div style="font-size:0.82rem; color:var(--text-muted);">Tıkla veya JSON dosyasını
+                                    sürükle</div>
+                                <div id="importFileName" style="font-size:0.78rem; color:#4f8ef7; margin-top:0.4rem;">
+                                </div>
+                            </div>
+                            <input type="file" id="importFileInput" accept=".json" style="display:none;"
+                                onchange="readImportFile(this)">
+                            <button class="topbar-btn" id="importBtn"
+                                style="width:100%; justify-content:center; opacity:0.5; pointer-events:none;">📤 Geri
+                                Yükle</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem;">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon blue">👥</div>
+                        <div>
+                            <div class="stat-val" id="totalUsers">0</div>
+                            <div class="stat-lbl">Toplam Üye</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon green">✅</div>
+                        <div>
+                            <div class="stat-val" id="activeUsers">0</div>
+                            <div class="stat-lbl">Aktif Üye</div>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon orange">🚫</div>
+                        <div>
+                            <div class="stat-val" id="bannedUsers">0</div>
+                            <div class="stat-lbl">Pasif Üye</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title">Üye Listesi <span id="userCountBadge"
+                                style="font-size:0.8rem; color:var(--text-secondary); font-weight:400;"></span></div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="topbar-btn secondary" data-filter=""
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Tümü</button>
+                            <button class="topbar-btn secondary" data-filter="active"
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Aktif</button>
+                            <button class="topbar-btn secondary" data-filter="banned"
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Pasif</button>
+                        </div>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>E-posta</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Şifre</th>
+                                <th>Forum</th>
+                                <th>Hesap Türü</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody"></tbody>
+                    </table>
+                    <div id="emptyUsers" style="display:none;" class="empty-state">
+                        <div class="ei">👥</div>
+                        <h3>Kullanıcı bulunamadı</h3>
+                        <p>Filtre veya aramayı değiştirin.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD USER MODAL -->
+    <div class="modal-overlay" id="userModal" style="display:none;">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+            <div class="modal-title">➕ Yeni Kullanıcı Ekle</div>
+            <div class="form-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="newUsername" placeholder="kullanici_adi">
+            </div>
+            <div class="form-group">
+                <label>E-posta</label>
+                <input type="email" id="newUserEmail" placeholder="ornek@mail.com">
+            </div>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="newUserPass" placeholder="En az 6 karakter">
+            </div>
+            <div class="form-group">
+                <label>Hesap Türü</label>
+                <select id="newUserTier"
+                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
+                    <!-- Tiers will load here -->
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="topbar-btn secondary" onclick="closeModal('userModal')">İptal</button>
+                <button class="topbar-btn" id="saveUserBtn">💾 Kullanıcı Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        let users = [];
+        let currentFilter = '';
+
+        function countForumPosts(username) {
+            const posts = DB.get('forum_posts') || [];
+            return posts.filter(p => p.author === username).length;
+        }
+
+        function renderUsers(list) {
+            const tbody = document.getElementById('usersBody');
+            const empty = document.getElementById('emptyUsers');
+            document.getElementById('userCountBadge').textContent = `(${list.length})`;
+
+            if (list.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            tbody.innerHTML = list.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg, #4f8ef7, #a855f7); display:flex; align-items:center; justify-content:center; font-weight:700; color:white; font-size:0.9rem;">${u.username[0].toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600; font-size:0.875rem;">@${u.username}</div>
+          </div>
+        </div>
+      </td>
+      <td style="color:var(--text-secondary); font-size:0.85rem;">${u.email}</td>
+      <td style="color:var(--text-muted); font-size:0.8rem;">${u.joined}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <span id="pass_${u.id}" style="font-family:monospace; font-size:0.8rem; color:var(--text-secondary); letter-spacing:2px;">••••••</span>
+          <button onclick="togglePass('${u.id}','${(u.password || '').replace(/'/g, '&#39;')}')" style="background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:0.85rem;">👁</button>
+        </div>
+      </td>
+      <td style="text-align:center;">${countForumPosts(u.username)}</td>
+      <td>
+        <select onchange="changeTier(${u.id}, this.value)" style="padding:0.25rem; border-radius:4px; border:1px solid var(--border); background:var(--bg-glass); color:var(--text-primary); font-size:0.8rem;">
+            ${Object.keys(UserTiers.getAll()).map(id => `
+                <option value="${id}" ${u.accountType === id ? 'selected' : ''}>${UserTiers.get(id).icon || '👤'} ${UserTiers.get(id).name}</option>
+            `).join('')}
+        </select>
+      </td>
+      <td>${u.active ? '<span class="badge badge-green">✅ Aktif</span>' : '<span class="badge badge-red">🚫 Pasif</span>'}</td>
+      <td>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <button class="btn-action ${u.active ? 'btn-warning' : 'btn-success'}" onclick="toggleUser(${u.id})">
+            ${u.active ? '🚫 Pasif' : '✅ Aktif'}
+          </button>
+          <button class="btn-action btn-edit" onclick="resetPass(${u.id})" title="Şifre Sıfırla">🔑</button>
+          <button class="btn-action btn-delete" onclick="deleteUser(${u.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+        }
+
+        function getFiltered() {
+            let list = users;
+            if (currentFilter === 'active') list = list.filter(u => u.active);
+            if (currentFilter === 'banned') list = list.filter(u => !u.active);
+            const q = document.getElementById('searchUsers').value.toLowerCase();
+            if (q) list = list.filter(u => u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+            return list;
+        }
+
+        const _passVisible = {};
+        function togglePass(id, pw) {
+            const el = document.getElementById('pass_' + id);
+            if (!el) return;
+            _passVisible[id] = !_passVisible[id];
+            el.textContent = _passVisible[id] ? (pw || '—') : '••••••';
+        }
+
+        function resetPass(id) {
+            const newPw = prompt('Yeni şifre girin (min. 6 karakter):');
+            if (!newPw || newPw.length < 6) { showAdminToast('Şifre çok kısa!', 'error'); return; }
+            const idx = users.findIndex(u => u.id === id);
+            if (idx === -1) return;
+            users[idx].password = newPw;
+            DB.set('users', users);
+            showAdminToast('✅ Şifre güncellendi.', 'success');
+        }
+
+        function toggleUser(id) {
+            const idx = users.findIndex(u => u.id === id);
+            if (idx === -1) return;
+            users[idx].active = !users[idx].active;
+            DB.set('users', users);
+            updateStats();
+            renderUsers(getFiltered());
+            showAdminToast(users[idx].active ? '✅ Kullanıcı aktif edildi.' : '🚫 Kullanıcı pasif edildi.', users[idx].active ? 'success' : 'error');
+        }
+
+        function changeTier(userId, newTier) {
+            const idx = users.findIndex(u => u.id === userId);
+            if (idx === -1) return;
+            users[idx].accountType = newTier;
+            DB.set('users', users);
+            showAdminToast(`✅ @${users[idx].username} hesabı ${newTier.toUpperCase()} yapıldı.`, 'success');
+        }
+
+        function deleteUser(id) {
+            confirmDelete('Bu kullanıcıyı silmek istediğinizden emin misiniz?', () => {
+                users = users.filter(u => u.id !== id);
+                DB.set('users', users);
+                updateStats();
+                renderUsers(getFiltered());
+                showAdminToast('Kullanıcı silindi! 🗑️', 'error');
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('activeUsers').textContent = users.filter(u => u.active).length;
+            document.getElementById('bannedUsers').textContent = users.filter(u => !u.active).length;
+        }
+
+        function renderTierOptions() {
+            const select = document.getElementById('newUserTier');
+            if (!select) return;
+            const tiers = UserTiers.getAll();
+            select.innerHTML = Object.keys(tiers).map(id => `
+                <option value="${id}">${tiers[id].icon || '👤'} ${tiers[id].name}</option>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            users = DB.get('users') || [];
+            renderTierOptions();
+            updateStats();
+            renderUsers(getFiltered());
+
+            // Filter buttons
+            document.querySelectorAll('[data-filter]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    renderUsers(getFiltered());
+                });
+            });
+
+            // Search
+            document.getElementById('searchUsers').addEventListener('input', () => renderUsers(getFiltered()));
+
+            // Add user
+            document.getElementById('addUserBtn').addEventListener('click', () => openModal('userModal'));
+
+            document.getElementById('saveUserBtn').addEventListener('click', () => {
+                const username = document.getElementById('newUsername').value.trim();
+                const email = document.getElementById('newUserEmail').value.trim();
+                const pass = document.getElementById('newUserPass').value;
+                if (!username || !email || !pass) { showAdminToast('Tüm alanlar zorunlu!', 'error'); return; }
+                if (users.find(u => u.email === email)) { showAdminToast('Bu e-posta zaten kayıtlı.', 'error'); return; }
+                if (users.find(u => u.username === username)) { showAdminToast('Bu kullanıcı adı alınmış.', 'error'); return; }
+                const newUser = {
+                    id: Date.now(),
+                    username,
+                    email,
+                    password: pass,
+                    joined: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    posts: 0,
+                    active: true,
+                    accountType: document.getElementById('newUserTier').value
+                };
+                users.push(newUser);
+                DB.set('users', users);
+                updateStats();
+                renderUsers(getFiltered());
+                closeModal('userModal');
+                document.getElementById('newUsername').value = '';
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPass').value = '';
+                showAdminToast('Kullanıcı eklendi! ✅', 'success');
+            });
+        });
+
+        // ============================================================
+        //  BACKUP & RESTORE FUNCTIONS
+        // ============================================================
+        let _importData = null;
+
+        function exportData() {
+            const backup = {
+                _exported: new Date().toISOString(),
+                _version: '1.0'
+            };
+            if (document.getElementById('expUsers').checked) backup.users = DB.get('users') || [];
+            if (document.getElementById('expArticles').checked) backup.articles = DB.get('articles') || [];
+            if (document.getElementById('expForum').checked) backup.forum_posts = DB.get('forum_posts') || [];
+            if (document.getElementById('expProjects').checked) backup.user_projects = DB.get('user_projects') || [];
+            if (document.getElementById('expSettings').checked) backup.settings = DB.get('settings') || {};
+
+            const json = JSON.stringify(backup, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.download = `asiaconsole-backup-${date}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showAdminToast('✅ Yedek dosyası indirildi!', 'success');
+        }
+
+        function readImportFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('importFileName').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    _importData = JSON.parse(e.target.result);
+                    const btn = document.getElementById('importBtn');
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                    showAdminToast('✅ Dosya okundu. Geri Yükle butonuna basın.', 'success');
+                } catch {
+                    showAdminToast('❌ Geçersiz JSON dosyası!', 'error');
+                    _importData = null;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleImportDrop(e) {
+            e.preventDefault();
+            document.getElementById('importDropZone').style.background = '';
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.name.endsWith('.json')) { showAdminToast('Lütfen .json dosyası sürükleyin.', 'error'); return; }
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            const input = document.getElementById('importFileInput');
+            input.files = dt.files;
+            readImportFile(input);
+        }
+
+        function importData() {
+            if (!_importData) { showAdminToast('Önce bir dosya seçin.', 'error'); return; }
+            const keys = Object.keys(_importData).filter(k => !k.startsWith('_'));
+            const names = { users: '👥 Kullanıcılar', articles: '📰 Yazılar', forum_posts: '💬 Forum', user_projects: '🗂️ Projeler', settings: '⚙️ Ayarlar' };
+            const list = keys.map(k => names[k] || k).join(', ');
+
+            confirmDelete(`Şu veriler geri yüklenecek: ${list}\n\nMevcut veriler ÜZERİNE YAZILACAK. Devam?`, () => {
+                let restored = 0;
+                keys.forEach(k => {
+                    if (_importData[k] !== undefined) { DB.set(k, _importData[k]); restored++; }
+                });
+                showAdminToast(`✅ ${restored} veri grubu geri yüklendi! Sayfa yenileniyor...`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            });
+        }
+
+        // Wire up buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            document.getElementById('importBtn').addEventListener('click', importData);
+        });
+    </script>
+</body>
+
+</html>

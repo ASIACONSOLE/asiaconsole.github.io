@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje Moderasyonu - AsiaConsole Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        .code-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 1rem 0;
+            border: 1px solid #333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link active"><span class="icon">🚀</span> Proje Moderasyonu</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi
+                    Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-title">🚀 Proje Moderasyonu</div>
+            </div>
+
+            <div class="admin-content">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title">🚀 Proje Yönetimi <span id="projectCountBadge"
+                                style="font-size:0.8rem; font-weight:400; color:var(--text-secondary);"></span></div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="topbar-btn secondary" onclick="setFilter('')"
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Tümü</button>
+                            <button class="topbar-btn secondary" onclick="setFilter('pending')"
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Bekleyen</button>
+                            <button class="topbar-btn secondary" onclick="setFilter('approved')"
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Onaylı</button>
+                            <button class="topbar-btn secondary" onclick="setFilter('rejected')"
+                                style="font-size:0.8rem; padding:0.35rem 0.75rem;">Reddedilen</button>
+                        </div>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Proje Adı</th>
+                                <th>Kategori</th>
+                                <th>Gönderen</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- CODE VIEW MODAL -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Proje Kodu</h3>
+            <div class="code-preview" id="codeContent"></div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <div id="moderateActions" style="display:flex; gap:1rem;">
+                    <button class="topbar-btn" id="approveBtn" style="background:#10b981;">✅ Onayla</button>
+                    <button class="topbar-btn" id="rejectBtn" style="background:#ef4444;">❌ Reddet</button>
+                </div>
+                <button class="topbar-btn secondary" onclick="closeModal('codeModal')">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>📝 Proje Düzenle</h3>
+            <div class="form-group" style="margin-top:1.5rem;">
+                <label>Proje Başlığı</label>
+                <input type="text" id="editProjTitle"
+                    style="width:100%; padding:0.75rem; background:var(--bg-glass); border:1px solid var(--border); color:white; border-radius:8px;">
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button class="topbar-btn" onclick="saveProjectEdit()">💾 Kaydet</button>
+                <button class="topbar-btn secondary" onclick="closeModal('editModal')">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        let currentProjId = null;
+        let currentFilter = '';
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            renderProjects();
+        }
+
+        function renderProjects() {
+            const projects = DB.get('user_projects') || [];
+            let list = projects;
+
+            if (currentFilter) {
+                list = projects.filter(p => p.status === currentFilter);
+            }
+
+            document.getElementById('projectCountBadge').textContent = `(${list.length})`;
+            const tbody = document.getElementById('projectsBody');
+
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">Proje bulunamadı.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.sort((a, b) => b.id - a.id).map(p => `
+                <tr>
+                    <td>
+                        <div style="font-weight:600; color:var(--text-primary);">${p.title}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary);">${p.desc.slice(0, 50)}${p.desc.length > 50 ? '...' : ''}</div>
+                    </td>
+                    <td><span class="badge ${p.category === 'oyun' ? 'badge-purple' : 'badge-green'}">${p.category.toUpperCase()}</span></td>
+                    <td>@${p.author}</td>
+                    <td>${p.date}</td>
+                    <td>
+                        ${getStatusBadge(p.status)}
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem;">
+                            <button class="btn-action btn-edit" onclick="viewCode(${p.id})" title="İncele">🔍</button>
+                            <button class="btn-action btn-edit" onclick="openEditModal(${p.id})" title="Düzenle">✏️</button>
+                            <button class="btn-action btn-delete" onclick="deleteProject(${p.id})" title="Sil">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'approved': return '<span class="badge badge-green">Onaylı</span>';
+                case 'rejected': return '<span class="badge badge-red">Reddedildi</span>';
+                default: return '<span class="badge badge-orange">Bekliyor</span>';
+            }
+        }
+
+        function viewCode(id) {
+            const projects = DB.get('user_projects') || [];
+            const proj = projects.find(p => p.id === id);
+            if (!proj) return;
+
+            currentProjId = id;
+            document.getElementById('modalTitle').textContent = proj.title + " - Proje Kodu";
+            document.getElementById('codeContent').textContent = proj.code;
+
+            // Only show approve/reject buttons if pending
+            document.getElementById('moderateActions').style.display = (proj.status === 'pending') ? 'flex' : 'none';
+
+            document.getElementById('codeModal').style.display = 'flex';
+        }
+
+        function openEditModal(id) {
+            const projects = DB.get('user_projects') || [];
+            const proj = projects.find(p => p.id === id);
+            if (!proj) return;
+
+            currentProjId = id;
+            document.getElementById('editProjTitle').value = proj.title;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function saveProjectEdit() {
+            const newTitle = document.getElementById('editProjTitle').value.trim();
+            if (!newTitle) {
+                showAdminToast('Başlık boş olamaz!', 'error');
+                return;
+            }
+
+            const projects = DB.get('user_projects') || [];
+            const idx = projects.findIndex(p => p.id === currentProjId);
+            if (idx !== -1) {
+                projects[idx].title = newTitle;
+                DB.set('user_projects', projects);
+                showAdminToast('Başarı: Proje adı güncellendi! ✅', 'success');
+                closeModal('editModal');
+                renderProjects();
+            }
+        }
+
+        function deleteProject(id) {
+            confirmDelete('Bu projeyi tamamen silmek istediğinize emin misiniz?', () => {
+                let projects = DB.get('user_projects') || [];
+                projects = projects.filter(p => p.id !== id);
+                DB.set('user_projects', projects);
+                showAdminToast('Proje silindi! 🗑️', 'error');
+                renderProjects();
+            });
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function updateStatus(status) {
+            if (!currentProjId) return;
+            const projects = DB.get('user_projects') || [];
+            const idx = projects.findIndex(p => p.id === currentProjId);
+            if (idx !== -1) {
+                projects[idx].status = status;
+                DB.set('user_projects', projects);
+                showAdminToast(`Proje ${status === 'approved' ? 'onaylandı' : 'reddedildi'}!`, 'success');
+                closeModal('codeModal');
+                renderProjects();
+            }
+        }
+
+        // Global closeModal replacement if needed (by admin.js)
+        window.closeModal = closeModal;
+
+        document.getElementById('approveBtn').onclick = () => updateStatus('approved');
+        document.getElementById('rejectBtn').onclick = () => updateStatus('rejected');
+
+        document.addEventListener('DOMContentLoaded', renderProjects);
+    </script>
+</body>
+
+</html>

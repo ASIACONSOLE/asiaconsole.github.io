@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sayfa - AsiaConsole</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="page-container" style="padding-top: 100px; min-height: 80vh;">
+        <div class="container" style="max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem;">
+            <div id="customPageContent">
+                <div style="text-align:center; padding:5rem;">
+                    <div class="loader-spinner"></div>
+                    <p>Sayfa yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('slug');
+
+            if (!slug) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const pages = DB.get('custom_pages') || [];
+            const page = pages.find(p => p.slug === slug);
+
+            if (!page) {
+                document.getElementById('customPageContent').innerHTML = `
+                    <div style="text-align:center; padding:5rem;">
+                        <h1 style="font-size:4rem; margin-bottom:1rem;">404</h1>
+                        <h2>Sayfa Bulunamadı</h2>
+                        <p style="margin-bottom:2rem; color:var(--text-secondary);">Aradığınız sayfa silinmiş veya taşınmış olabilir.</p>
+                        <a href="index.html" class="btn-primary">Ana Sayfaya Dön</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Set Title
+            document.title = `${page.title} - AsiaConsole`;
+
+            // Render Content
+            document.getElementById('customPageContent').innerHTML = page.content;
+
+            // Apply global themes/accent from main.js (already happens via main.js init)
+        });
+    </script>
+</body>
+
+</html>

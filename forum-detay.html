@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Konusu - AsiaConsole</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ===== FORUM DETAIL STYLES ===== */
+        .forum-hero {
+            padding: 5rem 0 2.5rem;
+            background: linear-gradient(180deg, rgba(13, 17, 23, 0.98) 0%, rgba(20, 28, 45, 0.9) 100%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .forum-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 70% 60% at 30% 0%, rgba(168, 85, 247, 0.1), transparent);
+        }
+
+        .topic-post-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .topic-post-card.op-card {
+            border-color: rgba(79, 142, 247, 0.3);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .post-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4f8ef7, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .post-body-text {
+            padding: 1.25rem 1.5rem;
+            font-size: 0.975rem;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+        }
+
+        .post-images {
+            padding: 0 1.5rem 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .post-images img {
+            max-width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .post-images img:hover {
+            transform: scale(1.02);
+        }
+
+        .post-footer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .post-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .post-like-btn:hover,
+        .post-like-btn.liked {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .comment-form-box {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .reply-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            background: none;
+            transition: all 0.2s;
+        }
+
+        .reply-btn:hover {
+            color: var(--accent-blue);
+            border-color: rgba(79, 142, 247, 0.3);
+            background: rgba(79, 142, 247, 0.06);
+        }
+
+        .img-upload-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .img-preview-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            object-fit: cover;
+            position: relative;
+        }
+
+        .img-thumb-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .img-thumb-remove {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: white;
+        }
+
+        .comments-section {
+            margin-top: 2rem;
+        }
+
+        .comment-indent {
+            border-left: 2px solid rgba(79, 142, 247, 0.2);
+            padding-left: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .page-header-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header-breadcrumb a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .page-header-breadcrumb a:hover {
+            color: var(--accent-blue);
+        }
+
+        .topic-stats {
+            display: flex;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .topic-stat {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .page-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .page-btn.active,
+        .page-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        /* Pending banner */
+        .pending-banner {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #fbbf24;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">✕</span>
+        <img id="lightboxImg" src="" alt="">
+    </div>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html" class="active">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+
+    <!-- TOPIC HERO -->
+    <div class="forum-hero" id="forumHero">
+        <div class="container" style="position:relative;z-index:1;">
+            <div class="page-header-breadcrumb">
+                <a href="index.html">🏠 Ana Sayfa</a>
+                <span>›</span>
+                <a href="forum.html">💬 Forum</a>
+                <span>›</span>
+                <span id="breadCategory">Genel</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+                <span class="badge badge-purple" id="topicBadge">Genel</span>
+                <span class="reading-time"
+                    style="font-size:0.8rem; padding:0.25rem 0.65rem; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:50px; color:var(--text-muted);"
+                    id="topicDateBadge">📅 Bugün</span>
+            </div>
+            <h1 style="font-size:clamp(1.5rem,3vw,2.2rem); font-weight:800; line-height:1.3; margin-bottom:0.75rem; max-width:750px;"
+                id="topicTitle">Konu Başlığı</h1>
+            <div class="topic-stats">
+                <span class="topic-stat">💬 <span id="replyCount">0</span> yorum</span>
+                <span class="topic-stat">👁️ <span id="topicViews">0</span> görüntülenme</span>
+                <span class="topic-stat">❤️ <span id="topicLikes">0</span> beğeni</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <section class="section">
+        <div class="container">
+            <div id="pendingBanner" class="pending-banner" style="display:none;">
+                ⏳ <div><strong>Admin onayı bekleniyor</strong> — Bu konu yayınlandıktan sonra herkes tarafından
+                    görülebilir olacak.</div>
+            </div>
+
+            <!-- OP POST -->
+            <div class="topic-post-card op-card" id="opCard">
+            </div>
+
+            <!-- COMMENTS LIST -->
+            <div class="comments-section">
+                <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1.25rem;" id="commentsHeading">💬 Yorumlar
+                </h3>
+                <div id="commentsList"></div>
+                <div class="pagination" id="commentPagination"></div>
+            </div>
+
+            <!-- COMMENT FORM -->
+            <div id="commentFormSection" class="comment-form-box" style="margin-top:2rem;">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">✏️ Yorum Ekle</h3>
+                <div id="commentLoginWarning"
+                    style="display:none; text-align:center; padding:2rem; background:rgba(79,142,247,0.06); border-radius:12px;">
+                    <p style="color:var(--text-muted); margin-bottom:1rem;">Yorum yapabilmek için giriş yapmalısınız.
+                    </p>
+                    <a href="uye-panel.html" class="btn-primary">Giriş Yap / Kayıt Ol</a>
+                </div>
+                <div id="commentForm">
+                    <textarea id="commentText" placeholder="Yorumunuzu buraya yazın... (Markdown desteklenir)"
+                        style="min-height:200px; width:100%; resize:vertical; padding:1.25rem; font-size:1rem;"></textarea>
+                    <div style="display:flex; align-items:center; gap:1rem; margin-top:0.75rem; flex-wrap:wrap;">
+                        <label class="logo-upload-label" for="commentImgInput"
+                            style="cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; background:rgba(79,142,247,0.1); border:1px solid rgba(79,142,247,0.25); color:#4f8ef7; border-radius:8px; font-size:0.85rem; font-weight:600;">
+                            🖼️ Resim Ekle
+                        </label>
+                        <input type="file" id="commentImgInput" accept="image/*" multiple style="display:none;">
+                        <span style="font-size:0.8rem; color:var(--text-muted);">Max 3 resim, her biri 5MB</span>
+                        <button class="btn-primary" id="submitCommentBtn" style="margin-left:auto;">💬 Yorum
+                            Gönder</button>
+                    </div>
+                    <div class="img-upload-preview" id="commentImgPreviews"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p class="footer-text" id="footerText">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                <a href="forum.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                    Foruma Dön</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // ============================================
+        // FORUM DETAIL PAGE LOGIC
+        // ============================================
+
+        // Local toast — works even if main.js doesn't have one
+        function showToast(msg, type) {
+            let t = document.getElementById('_forumToast');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = '_forumToast';
+                t.style.cssText = 'position:fixed;bottom:2rem;right:2rem;z-index:9999;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.9rem;font-weight:600;color:#fff;max-width:320px;transition:opacity 0.3s;';
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            t.style.background = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#4f8ef7';
+            t.style.opacity = '1';
+            clearTimeout(t._to);
+            t._to = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+        }
+
+        const COMMENTS_PER_PAGE = 10;
+        let currentPage = 1;
+        let allComments = [];
+        let topicData = null;
+        let pendingImages = []; // base64 array for comment images
+
+        // Lightbox
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').classList.add('active');
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+        function formatDate(dateStr) {
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d)) return dateStr;
+                return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            } catch { return dateStr; }
+        }
+
+        function getUserAvatar(username) {
+            const users = DB.get('users') || [];
+            const u = users.find(x => x.username === username);
+            if (u) {
+                const photo = localStorage.getItem('tc_avatar_' + u.id);
+                if (photo) return { img: photo };
+            }
+            return { letter: username ? username[0].toUpperCase() : '?' };
+        }
+
+        function renderAvatar(username, size = 44) {
+            const av = getUserAvatar(username);
+            if (av.img) {
+                return `<div class="post-avatar" style="width:${size}px; height:${size}px; background-image:url(${av.img}); background-size:cover; background-position:center;"></div>`;
+            }
+            return `<div class="post-avatar" style="width:${size}px; height:${size}px;">${av.letter}</div>`;
+        }
+
+        function renderImagesHtml(images) {
+            if (!images || !images.length) return '';
+            return `<div class="post-images">` +
+                images.map(src => `<img src="${src}" onclick="openLightbox('${src}')" alt="Ek resim">`).join('') +
+                `</div>`;
+        }
+
+        function renderOP(topic) {
+            const currentUser = Auth.currentUser();
+            const likedSet = JSON.parse(localStorage.getItem('tc_liked_posts') || '[]');
+            const isLiked = likedSet.includes('topic_' + topic.id);
+
+            document.getElementById('opCard').innerHTML = `
+    <div class="post-header">
+      ${renderAvatar(topic.author)}
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          <a href="profil.html?user=${encodeURIComponent(topic.author)}" style="font-weight:700; color:var(--text-primary); text-decoration:none;">@${topic.author}</a>
+          <span style="font-size:0.78rem; background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(168,85,247,0.15)); color:#a855f7; padding:0.2rem 0.6rem; border-radius:50px; font-weight:600;">Konu Açan</span>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">📅 ${topic.date}</span>
+        </div>
+      </div>
+    </div>
+    <div class="post-body-text">${escapeHtml(topic.body || topic.preview || '')}</div>
+    ${renderImagesHtml(topic.images || [])}
+    <div class="post-footer">
+      <button class="post-like-btn ${isLiked ? 'liked' : ''}" onclick="likePost('topic_${topic.id}', this)">
+        ❤️ <span>${(topic.likes || 0)}</span>
+      </button>
+      ${currentUser ? `<button class="reply-btn" onclick="focusCommentForm()">↩️ Yanıtla</button>` : ''}
+      <span style="font-size:0.82rem; color:var(--text-muted); margin-left:auto;">💬 ${allComments.length} yorum</span>
+    </div>
+  `;
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function likePost(key, btn) {
+            const currentUser = Auth.currentUser();
+            if (!currentUser) { showToast('Beğenmek için giriş yapmalısınız.', 'error'); return; }
+            let liked = JSON.parse(localStorage.getItem('tc_liked_posts') || '[]');
+            const span = btn.querySelector('span');
+            if (liked.includes(key)) {
+                liked = liked.filter(l => l !== key);
+                btn.classList.remove('liked');
+                span.textContent = parseInt(span.textContent) - 1;
+            } else {
+                liked.push(key);
+                btn.classList.add('liked');
+                span.textContent = parseInt(span.textContent) + 1;
+            }
+            localStorage.setItem('tc_liked_posts', JSON.stringify(liked));
+
+            // Update data source
+            if (key.startsWith('topic_')) {
+                const id = parseInt(key.replace('topic_', ''));
+                const posts = DB.get('forum_posts') || [];
+                const p = posts.find(x => x.id === id);
+                if (p) { p.likes = parseInt(span.textContent); DB.set('forum_posts', posts); }
+            } else {
+                const commentId = parseInt(key.replace('comment_', ''));
+                const comments = getComments();
+                const c = comments.find(x => x.id === commentId);
+                if (c) { c.likes = parseInt(span.textContent); saveComments(comments); }
+            }
+        }
+
+        function getCommentKey(topicId) { return 'tc_comments_' + topicId; }
+        function getComments() { return JSON.parse(localStorage.getItem(getCommentKey(topicData.id)) || '[]'); }
+        function saveComments(c) { localStorage.setItem(getCommentKey(topicData.id), JSON.stringify(c)); }
+
+        function renderComments(page) {
+            currentPage = page;
+            const start = (page - 1) * COMMENTS_PER_PAGE;
+            const pageComments = allComments.slice(start, start + COMMENTS_PER_PAGE);
+            const currentUser = Auth.currentUser();
+            const likedSet = JSON.parse(localStorage.getItem('tc_liked_posts') || '[]');
+
+            const list = document.getElementById('commentsList');
+            if (!allComments.length) {
+                list.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted);">
+      <div style="font-size:3rem; margin-bottom:1rem;">💬</div>
+      <p>Henüz yorum yok. İlk yorumu sen yap!</p>
+    </div>`;
+                document.getElementById('commentPagination').innerHTML = '';
+                document.getElementById('commentsHeading').textContent = '💬 Yorumlar (0)';
+                return;
+            }
+
+            document.getElementById('commentsHeading').textContent = `💬 Yorumlar (${allComments.length})`;
+            document.getElementById('replyCount').textContent = allComments.length;
+
+            list.innerHTML = pageComments.map((c, i) => {
+                const isLiked = likedSet.includes('comment_' + c.id);
+                const num = start + i + 1;
+                return `
+    <div class="topic-post-card" id="comment-${c.id}">
+      <div class="post-header">
+        ${renderAvatar(c.author)}
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <a href="profil.html?user=${encodeURIComponent(c.author)}" style="font-weight:700; color:var(--text-primary); text-decoration:none;">@${c.author}</a>
+            <span style="font-size:0.8rem; color:var(--text-muted);">#${num}</span>
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">📅 ${formatDate(c.date)}</span>
+          </div>
+        </div>
+      </div>
+      ${c.replyTo ? `<div style="padding:0.5rem 1.5rem; font-size:0.82rem; color:var(--text-muted); background:rgba(79,142,247,0.04); border-bottom:1px solid rgba(255,255,255,0.03);">↩️ <a href="profil.html?user=${encodeURIComponent(c.replyTo)}" style="color:inherit; text-decoration:none; font-weight:600;">@${c.replyTo}</a> kullanıcısına yanıt</div>` : ''}
+      <div class="post-body-text">${escapeHtml(c.text)}</div>
+      ${renderImagesHtml(c.images || [])}
+      <div class="post-footer">
+        <button class="post-like-btn ${isLiked ? 'liked' : ''}" onclick="likePost('comment_${c.id}', this)">❤️ <span>${c.likes || 0}</span></button>
+        ${currentUser ? `<button class="reply-btn" onclick="setReplyTo('${c.author}')">↩️ Yanıtla</button>` : ''}
+        ${currentUser && currentUser.username === c.author ? `<button class="reply-btn" onclick="deleteComment(${c.id})" style="color:#ef4444;">🗑️ Sil</button>` : ''}
+      </div>
+    </div>`;
+            }).join('');
+
+            // Pagination
+            const totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+            const pag = document.getElementById('commentPagination');
+            if (totalPages <= 1) { pag.innerHTML = ''; return; }
+            let pagHtml = '';
+            if (page > 1) pagHtml += `<button class="page-btn" onclick="renderComments(${page - 1})">‹</button>`;
+            for (let p = 1; p <= totalPages; p++) {
+                pagHtml += `<button class="page-btn ${p === page ? 'active' : ''}" onclick="renderComments(${p})">${p}</button>`;
+            }
+            if (page < totalPages) pagHtml += `<button class="page-btn" onclick="renderComments(${page + 1})">›</button>`;
+            pag.innerHTML = pagHtml;
+        }
+
+        function setReplyTo(username) {
+            document.getElementById('commentText').value = `@${username} `;
+            document.getElementById('commentText').focus();
+        }
+
+        function focusCommentForm() {
+            document.getElementById('commentText').focus();
+            document.getElementById('commentText').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function deleteComment(commentId) {
+            if (!confirm('Yorumu silmek istiyor musunuz?')) return;
+            allComments = allComments.filter(c => c.id !== commentId);
+            saveComments(allComments);
+            renderComments(currentPage);
+            showToast('Yorum silindi.', 'error');
+        }
+
+        // Image upload for comments
+        let commentImages = [];
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const topicId = parseInt(params.get('id'));
+
+            // Load site settings
+            const settings = DB.get('settings') || {};
+            document.getElementById('footerText').textContent = settings.footerText || '© 2025 AsiaConsole. Tüm hakları saklıdır.';
+
+            // Nav user
+            const currentUser = Auth.currentUser();
+            if (currentUser) {
+                document.getElementById('navLoginBtn').style.display = 'none';
+                document.getElementById('navRegisterBtn').style.display = 'none';
+                document.getElementById('navUserMenu').style.display = 'flex';
+                document.getElementById('navUsername').textContent = currentUser.username;
+            }
+
+            if (!topicId) { window.location.href = 'forum.html'; return; }
+
+            const posts = DB.get('forum_posts') || [];
+            topicData = posts.find(p => p.id === topicId);
+
+            if (!topicData) { window.location.href = 'forum.html'; return; }
+
+            // Views
+            topicData.views = (topicData.views || 0) + 1;
+            DB.set('forum_posts', posts);
+
+            // Pending banner if own topic and pending
+            if (topicData.status === 'pending') {
+                if (currentUser && currentUser.username === topicData.author) {
+                    document.getElementById('pendingBanner').style.display = 'flex';
+                } else if (!currentUser || currentUser.username !== topicData.author) {
+                    // Redirect non-owners away from pending
+                    window.location.href = 'forum.html'; return;
+                }
+            }
+
+            // Fill hero
+            document.title = topicData.title + ' - AsiaConsole Forum';
+            document.getElementById('topicTitle').textContent = topicData.title;
+            document.getElementById('topicBadge').textContent = topicData.category;
+            document.getElementById('breadCategory').textContent = topicData.category;
+            document.getElementById('topicDateBadge').textContent = '📅 ' + topicData.date;
+            document.getElementById('topicViews').textContent = (topicData.views || 0).toLocaleString('tr-TR');
+            document.getElementById('topicLikes').textContent = (topicData.likes || 0);
+
+            // Load comments
+            allComments = getComments();
+            renderOP(topicData);
+            renderComments(1);
+
+            // Comment form
+            if (!currentUser) {
+                document.getElementById('commentForm').style.display = 'none';
+                document.getElementById('commentLoginWarning').style.display = 'block';
+            }
+
+            // Image picker
+            document.getElementById('commentImgInput').addEventListener('change', function () {
+                const files = Array.from(this.files);
+                if (commentImages.length + files.length > 3) {
+                    showToast('En fazla 3 resim ekleyebilirsiniz.', 'error');
+                    return;
+                }
+                files.forEach(file => {
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast(`${file.name} 5MB'dan büyük.`, 'error');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        commentImages.push(e.target.result);
+                        renderCommentImgPreviews();
+                    };
+                    reader.readAsDataURL(file);
+                });
+                this.value = '';
+            });
+
+            // Submit comment
+            let _loggedUser = currentUser; // cache at load time
+            document.getElementById('submitCommentBtn').addEventListener('click', () => {
+                const cu = _loggedUser || Auth.currentUser();
+                if (!cu) {
+                    showToast('Yorum yapabilmek için giriş yapın.', 'error');
+                    setTimeout(() => { window.location.href = 'uye-panel.html'; }, 1500);
+                    return;
+                }
+                const text = document.getElementById('commentText').value.trim();
+                if (!text && !commentImages.length) {
+                    showToast('Lütfen bir şeyler yazın veya resim ekleyin.', 'error');
+                    return;
+                }
+                const comment = {
+                    id: Date.now(),
+                    author: cu.username,
+                    text,
+                    date: new Date().toISOString(),
+                    images: [...commentImages],
+                    likes: 0,
+                    replyTo: null
+                };
+                // Check if reply
+                const match = text.match(/^@(\S+)\s/);
+                if (match) comment.replyTo = match[1];
+
+                allComments.push(comment);
+                saveComments(allComments);
+
+                // Reset form
+                document.getElementById('commentText').value = '';
+                commentImages = [];
+                renderCommentImgPreviews();
+
+                // Update reply count on topic
+                topicData.replies = (topicData.replies || 0) + 1;
+                DB.set('forum_posts', posts);
+
+                const lastPage = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+                renderComments(lastPage);
+                showToast('💬 Yorum eklendi!', 'success');
+                document.getElementById('commentsList').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        function renderCommentImgPreviews() {
+            document.getElementById('commentImgPreviews').innerHTML = commentImages.map((src, i) => `
+    <div class="img-thumb-wrap">
+      <img class="img-preview-thumb" src="${src}" alt="">
+      <div class="img-thumb-remove" onclick="removeCommentImg(${i})">✕</div>
+    </div>
+  `).join('');
+        }
+
+        function removeCommentImg(idx) {
+            commentImages.splice(idx, 1);
+            renderCommentImgPreviews();
+        }
+    </script>
+</body>
+
+</html>

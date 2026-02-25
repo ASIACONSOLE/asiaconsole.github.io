@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teknoloji - AsiaConsole</title>
+    <meta name="description" content="En güncel teknoloji haberleri, incelemeleri ve analizleri.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Branding -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="iletisim.html">📩 İletişim</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="iletisim.html">📩 İletişim</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
+    <div class="page-wrapper">
+
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <div class="page-hero-icon">💻</div>
+                    <h1>Teknoloji</h1>
+                    <p>Yapay zeka, donanım, yazılım ve dijital dünyadan en güncel haberler</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Teknoloji haberlerinde ara...">
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Tümü</button>
+                    <button class="filter-tab" data-filter="yapay-zeka">🤖 Yapay Zeka</button>
+                    <button class="filter-tab" data-filter="donanim">⚙️ Donanım</button>
+                    <button class="filter-tab" data-filter="yazilim">💾 Yazılım</button>
+                    <button class="filter-tab" data-filter="internet">🌐 İnternet</button>
+                </div>
+                <div class="cards-grid" id="articleGrid"></div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const articles = (DB.get('articles') || []).filter(a => a.category === 'teknoloji');
+            let filtered = [...articles];
+            const grid = document.getElementById('articleGrid');
+
+            function render(list) {
+                if (list.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">💻</div><h3>Makale bulunamadı</h3><p>Arama kriterinizi değiştirmeyi deneyin.</p></div>';
+                    return;
+                }
+                grid.innerHTML = list.map(a => `
+      <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer;">
+        <div class="card-badge badge-tech">💻 Teknoloji</div>
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '💻'}</div>
+        <div class="card-title">${a.title}</div>
+        <div class="card-desc">${a.desc}</div>
+        <div class="card-meta">
+          <span>👤 ${a.author}</span>
+          <span>📅 ${a.date}</span>
+          <span>👁️ ${(a.views || 0).toLocaleString('tr-TR')}</span>
+        </div>
+        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
+      </a>
+    `).join('');
+            }
+
+            render(filtered);
+
+            document.getElementById('searchInput').addEventListener('input', e => {
+                const q = e.target.value.toLowerCase();
+                render(articles.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)));
+            });
+
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    render(articles);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -356,6 +356,8 @@
         }
 
         function initUsers() {
+            // CRITICAL: Initialize global users from DB
+            users = DB.get('users') || [];
             renderTierOptions();
             updateStats();
             renderUsers(getFiltered());
@@ -373,17 +375,21 @@
             });
 
             // Search
-            document.getElementById('searchUsers').addEventListener('input', (e) => {
-                const q = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('#usersBody tr');
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(q) ? '' : 'none';
+            const searchInput = document.getElementById('searchUsers');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const q = e.target.value.toLowerCase();
+                    const rows = document.querySelectorAll('#usersBody tr');
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(q) ? '' : 'none';
+                    });
                 });
-            });
+            }
 
             // Add user
-            document.getElementById('addUserBtn').addEventListener('click', () => openModal('userModal'));
+            const addUserBtn = document.getElementById('addUserBtn');
+            if (addUserBtn) addUserBtn.addEventListener('click', () => openModal('userModal'));
 
             // Save User btn
             const saveUserBtn = document.getElementById('saveUserBtn');
@@ -415,6 +421,7 @@
                     DB.set('users', currentUsers);
                     initUsers(); // Re-render after adding user
                     closeModal('userModal');
+                    // Reset fields
                     document.getElementById('newUsername').value = '';
                     document.getElementById('newUserEmail').value = '';
                     document.getElementById('newUserPass').value = '';
@@ -423,9 +430,11 @@
             }
         });
 
+        // SINGLE, CLEAN SYNC LISTENER
         document.addEventListener('dbUpdated', (e) => {
             if (e.detail?.key === 'users') {
-                initUsers();
+                users = DB.get('users') || []; // Update global users
+                initUsers(); // Re-render everything
             }
         });
 
@@ -505,16 +514,12 @@
             });
         }
 
-        document.addEventListener('dbUpdated', (e) => {
-            if (e.detail?.key === 'users') {
-                renderUsers();
-            }
-        });
-
-        // Wire up buttons
+        // Wire up backup buttons
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('exportBtn').addEventListener('click', exportData);
-            document.getElementById('importBtn').addEventListener('click', importData);
+            const expBtn = document.getElementById('exportBtn');
+            const impBtn = document.getElementById('importBtn');
+            if (expBtn) expBtn.addEventListener('click', exportData);
+            if (impBtn) impBtn.addEventListener('click', importData);
         });
     </script>
 </body>

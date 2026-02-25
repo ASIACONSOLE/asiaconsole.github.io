@@ -185,11 +185,16 @@ const DB = {
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
-                // Use 'set' (overwrite) instead of 'update' (merge) to avoid recursion depth issues
-                // with wrapped data { data: val }.
-                FirebaseDB.set('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
-                    console.warn('[Firebase] Sync failed for ' + key, err);
-                });
+                // Ensure data is a pure POJO (no undefined, no class instances)
+                // to avoid Firestore "invalid nested entity" errors.
+                try {
+                    const cleanData = JSON.parse(JSON.stringify(val));
+                    FirebaseDB.set('site_data', key, { data: cleanData, lastSync: Date.now() }).catch(err => {
+                        console.warn('[Firebase] Sync failed for ' + key, err);
+                    });
+                } catch (e) {
+                    console.error('[Firebase] Serialization failed for ' + key, e);
+                }
             });
         }
     },

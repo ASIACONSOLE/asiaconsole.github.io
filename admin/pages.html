@@ -509,9 +509,15 @@
             renderCustomPages();
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function initPages() {
             articles = DB.get('articles') || [];
             renderTable(getFiltered());
+            renderPages();
+            renderCustomPages();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initPages();
 
             // Filter buttons
             document.querySelectorAll('[data-cat]').forEach(btn => {
@@ -524,66 +530,81 @@
             // Search
             document.getElementById('searchArticles').addEventListener('input', () => renderTable(getFiltered()));
 
-            // New article
-            document.getElementById('newArticleBtn').addEventListener('click', () => {
-                document.getElementById('modalTitle').textContent = '📝 Yeni Makale Ekle';
-                document.getElementById('editId').value = '';
-                ['artTitle', 'artDesc', 'artAuthor', 'artImage', 'artDate'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('artViews').value = '0';
-                document.getElementById('artCategory').value = 'teknoloji';
-                openModal('articleModal');
-            });
+            // New article btn
+            const newArtBtn = document.getElementById('newArticleBtn');
+            if (newArtBtn) {
+                newArtBtn.addEventListener('click', () => {
+                    document.getElementById('modalTitle').textContent = '📝 Yeni Makale Ekle';
+                    document.getElementById('editId').value = '';
+                    ['artTitle', 'artDesc', 'artAuthor', 'artImage', 'artDate'].forEach(id => document.getElementById(id).value = '');
+                    document.getElementById('artViews').value = '0';
+                    document.getElementById('artCategory').value = 'teknoloji';
+                    openModal('articleModal');
+                });
+            }
 
-            // AI News Generator
-            document.getElementById('aiNewsBtn').addEventListener('click', () => {
-                openModal('aiNewsModal');
-                generateAiNews();
-            });
+            // AI News btn
+            const aiBtn = document.getElementById('aiNewsBtn');
+            if (aiBtn) {
+                aiBtn.addEventListener('click', () => {
+                    openModal('aiNewsModal');
+                    generateAiNews();
+                });
+            }
 
-            // Save
-            document.getElementById('saveArticleBtn').addEventListener('click', () => {
-                const title = document.getElementById('artTitle').value.trim();
-                const desc = document.getElementById('artDesc').value.trim();
-                const author = document.getElementById('artAuthor').value.trim();
-                if (!title || !desc || !author) { showAdminToast('Başlık, açıklama ve yazar zorunlu!', 'error'); return; }
+            // Save article btn
+            const saveBtn = document.getElementById('saveArticleBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    const title = document.getElementById('artTitle').value.trim();
+                    const desc = document.getElementById('artDesc').value.trim();
+                    const author = document.getElementById('artAuthor').value.trim();
+                    if (!title || !desc || !author) { showAdminToast('Başlık, açıklama ve yazar zorunlu!', 'error'); return; }
 
-                const editId = document.getElementById('editId').value;
-                const now = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const editId = document.getElementById('editId').value;
+                    const now = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
 
-                if (editId) {
-                    const idx = articles.findIndex(a => a.id == editId);
-                    if (idx !== -1) {
-                        articles[idx] = {
-                            ...articles[idx],
+                    if (editId) {
+                        const idx = articles.findIndex(a => a.id == editId);
+                        if (idx !== -1) {
+                            articles[idx] = {
+                                ...articles[idx],
+                                title,
+                                category: document.getElementById('artCategory').value,
+                                desc,
+                                author,
+                                image: document.getElementById('artImage').value || '📄',
+                                views: parseInt(document.getElementById('artViews').value) || 0,
+                                date: document.getElementById('artDate').value || now
+                            };
+                        }
+                        showAdminToast('Makale güncellendi! ✅', 'success');
+                    } else {
+                        const newArt = {
+                            id: Date.now(),
                             title,
                             category: document.getElementById('artCategory').value,
                             desc,
                             author,
                             image: document.getElementById('artImage').value || '📄',
                             views: parseInt(document.getElementById('artViews').value) || 0,
-                            date: document.getElementById('artDate').value || now
+                            date: document.getElementById('artDate').value || now,
+                            featured: false
                         };
+                        articles.unshift(newArt);
+                        showAdminToast('Yeni makale eklendi! ✅', 'success');
                     }
-                    showAdminToast('Makale güncellendi! ✅', 'success');
-                } else {
-                    const newArt = {
-                        id: Date.now(),
-                        title,
-                        category: document.getElementById('artCategory').value,
-                        desc,
-                        author,
-                        image: document.getElementById('artImage').value || '📄',
-                        views: parseInt(document.getElementById('artViews').value) || 0,
-                        date: document.getElementById('artDate').value || now,
-                        featured: false
-                    };
-                    articles.unshift(newArt);
-                    showAdminToast('Yeni makale eklendi! ✅', 'success');
-                }
-                DB.set('articles', articles);
-                renderTable(getFiltered());
-                closeModal('articleModal');
-            });
+                    DB.set('articles', articles);
+                    renderTable(getFiltered());
+                    closeModal('articleModal');
+                });
+            }
+        });
+
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail?.key === 'articles' || e.detail?.key === 'custom_pages') {
+                initPages();
+            }
         });
 
         async function generateAiNews() {

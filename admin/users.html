@@ -354,11 +354,14 @@
             `).join('');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            users = DB.get('users') || [];
+        function initUsers() {
             renderTierOptions();
             updateStats();
             renderUsers(getFiltered());
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initUsers();
 
             // Filter buttons
             document.querySelectorAll('[data-filter]').forEach(btn => {
@@ -369,38 +372,60 @@
             });
 
             // Search
-            document.getElementById('searchUsers').addEventListener('input', () => renderUsers(getFiltered()));
+            document.getElementById('searchUsers').addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#usersBody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
 
             // Add user
             document.getElementById('addUserBtn').addEventListener('click', () => openModal('userModal'));
 
-            document.getElementById('saveUserBtn').addEventListener('click', () => {
-                const username = document.getElementById('newUsername').value.trim();
-                const email = document.getElementById('newUserEmail').value.trim();
-                const pass = document.getElementById('newUserPass').value;
-                if (!username || !email || !pass) { showAdminToast('Tüm alanlar zorunlu!', 'error'); return; }
-                if (users.find(u => u.email === email)) { showAdminToast('Bu e-posta zaten kayıtlı.', 'error'); return; }
-                if (users.find(u => u.username === username)) { showAdminToast('Bu kullanıcı adı alınmış.', 'error'); return; }
-                const newUser = {
-                    id: Date.now(),
-                    username,
-                    email,
-                    password: pass,
-                    joined: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
-                    posts: 0,
-                    active: true,
-                    accountType: document.getElementById('newUserTier').value
-                };
-                users.push(newUser);
-                DB.set('users', users);
-                updateStats();
-                renderUsers(getFiltered());
-                closeModal('userModal');
-                document.getElementById('newUsername').value = '';
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUserPass').value = '';
-                showAdminToast('Kullanıcı eklendi! ✅', 'success');
-            });
+            // Save User btn
+            const saveUserBtn = document.getElementById('saveUserBtn');
+            if (saveUserBtn) {
+                saveUserBtn.addEventListener('click', () => {
+                    const username = document.getElementById('newUsername').value.trim();
+                    const email = document.getElementById('newUserEmail').value.trim();
+                    const password = document.getElementById('newUserPass').value.trim();
+
+                    if (!username || !email || !password) { showAdminToast('Tüm alanlar zorunlu!', 'error'); return; }
+
+                    const currentUsers = DB.get('users') || [];
+                    if (currentUsers.find(u => u.username === username || u.email === email)) {
+                        showAdminToast('Bu kullanıcı adı veya e-posta zaten kullanımda!', 'error');
+                        return;
+                    }
+
+                    currentUsers.push({
+                        id: Date.now(),
+                        username,
+                        email,
+                        password,
+                        joined: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
+                        posts: 0,
+                        active: true,
+                        accountType: document.getElementById('newUserTier').value
+                    });
+
+                    DB.set('users', currentUsers);
+                    initUsers(); // Re-render after adding user
+                    closeModal('userModal');
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newUserEmail').value = '';
+                    document.getElementById('newUserPass').value = '';
+                    showAdminToast('Kullanıcı eklendi! ✅', 'success');
+                });
+            }
+        });
+
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail?.key === 'users') {
+                initUsers();
+            }
         });
 
         // ============================================================

@@ -310,11 +310,13 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!localStorage.getItem('tc_admin_session')) {
-                window.location.href = 'index.html'; return;
-            }
+        function initForum() {
             renderList();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Admin !== 'undefined' && !Admin.checkSession()) return;
+            initForum();
 
             document.getElementById('searchInput').addEventListener('input', renderList);
 
@@ -328,18 +330,25 @@
             });
 
             document.getElementById('rejectAllBtn').addEventListener('click', () => {
-                if (!confirm('Tüm bekleyen konuları silmek istiyor musunuz? Bu işlem geri alınamaz!')) return;
-                const posts = DB.get('forum_posts') || [];
-                const cleaned = posts.filter(p => p.status !== 'pending');
-                DB.set('forum_posts', cleaned);
-                renderList();
-                showAdminToast('🗑️ Tüm bekleyen konular silindi.', 'error');
+                confirmDelete('Tüm bekleyen konuları silmek istediğinize emin misiniz? Bu işlem geri alınamaz!', () => {
+                    let posts = DB.get('forum_posts') || [];
+                    posts = posts.filter(p => p.status !== 'pending');
+                    DB.set('forum_posts', posts);
+                    renderList();
+                    showAdminToast('🗑️ Tüm bekleyen konular silindi.', 'error');
+                });
             });
 
             document.getElementById('logoutBtn').addEventListener('click', e => {
                 e.preventDefault();
                 Admin.logout();
             });
+        });
+
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail?.key === 'forum_posts') {
+                initForum();
+            }
         });
     </script>
 </body>

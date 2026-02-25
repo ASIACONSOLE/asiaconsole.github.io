@@ -234,34 +234,48 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        function renderHome() {
             const articles = DB.get('articles') || [];
             const forumPosts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
             const users = DB.get('users') || [];
 
             // Stats
-            document.getElementById('statArticles').textContent = articles.length.toLocaleString('tr-TR');
-            document.getElementById('statTopics').textContent = forumPosts.length.toLocaleString('tr-TR');
-            if (users.length > 3) document.getElementById('statMembers').textContent = (1240 + users.length - 3).toLocaleString('tr-TR');
+            const statArticles = document.getElementById('statArticles');
+            const statTopics = document.getElementById('statTopics');
+            const statMembers = document.getElementById('statMembers');
+
+            if (statArticles) statArticles.textContent = articles.length.toLocaleString('tr-TR');
+            if (statTopics) statTopics.textContent = forumPosts.length.toLocaleString('tr-TR');
+            if (statMembers && users.length > 3) {
+                statMembers.textContent = (1240 + users.length - 3).toLocaleString('tr-TR');
+            }
 
             // Category counts
             const techCount = articles.filter(a => a.category === 'teknoloji').length;
             const gameCount = articles.filter(a => a.category === 'oyun').length;
             const appCount = articles.filter(a => a.category === 'uygulama').length;
-            document.getElementById('catTechCount').textContent = techCount + ' makale';
-            document.getElementById('catGameCount').textContent = gameCount + ' makale';
-            document.getElementById('catAppCount').textContent = appCount + ' makale';
-            document.getElementById('catForumCount').textContent = forumPosts.length + ' konu';
+
+            const elTech = document.getElementById('catTechCount');
+            const elGame = document.getElementById('catGameCount');
+            const elApp = document.getElementById('catAppCount');
+            const elForum = document.getElementById('catForumCount');
+
+            if (elTech) elTech.textContent = techCount + ' makale';
+            if (elGame) elGame.textContent = gameCount + ' makale';
+            if (elApp) elApp.textContent = appCount + ' makale';
+            if (elForum) elForum.textContent = forumPosts.length + ' konu';
 
             // Featured articles
             const featured = articles.slice(0, 6);
             const catMap = { teknoloji: 'badge-tech', oyun: 'badge-game', uygulama: 'badge-app' };
             const catLabel = { teknoloji: '💻 Teknoloji', oyun: '🎮 Oyun', uygulama: '📱 Uygulama' };
             const grid = document.getElementById('featuredArticles');
-            if (featured.length === 0) {
-                grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><h3>Henüz makale yok</h3><p>Admin panelinden makale ekleyebilirsiniz.</p></div>';
-            } else {
-                grid.innerHTML = featured.map(a => `
+
+            if (grid) {
+                if (featured.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><h3>Henüz makale yok</h3><p>Admin panelinden makale ekleyebilirsiniz.</p></div>';
+                } else {
+                    grid.innerHTML = featured.map(a => `
       <a href="makale-detay.html?id=${a.id}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer;">
         <div class="card-badge ${catMap[a.category] || 'badge-tech'}">${catLabel[a.category] || a.category}</div>
         <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '📄'}</div>
@@ -275,15 +289,17 @@
         <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
       </a>
     `).join('');
+                }
             }
 
             // Forum list
             const forumEl = document.getElementById('homeForumList');
-            const topPosts = forumPosts.slice(0, 4);
-            if (topPosts.length === 0) {
-                forumEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Henüz konu yok</h3><p>İlk forum konusunu siz başlatın!</p></div>';
-            } else {
-                forumEl.innerHTML = topPosts.map(p => `
+            if (forumEl) {
+                const topPosts = forumPosts.slice(0, 4);
+                if (topPosts.length === 0) {
+                    forumEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Henüz konu yok</h3><p>İlk forum konusunu siz başlatın!</p></div>';
+                } else {
+                    forumEl.innerHTML = topPosts.map(p => `
       <a href="forum-detay.html?id=${p.id}" class="forum-topic" style="text-decoration:none; display:flex;">
         <div class="forum-avatar">${p.authorInit || (p.author || '?')[0].toUpperCase()}</div>
         <div class="forum-content">
@@ -302,8 +318,12 @@
         </div>
       </a>
     `).join('');
+                }
             }
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', renderHome);
+        document.addEventListener('dbUpdated', renderHome);
     </script>
     <script src="js/matrix.js"></script>
     <script src="js/firebase.js"></script>

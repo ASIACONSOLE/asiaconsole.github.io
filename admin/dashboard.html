@@ -210,7 +210,7 @@
     <script src="../js/main.js"></script>
     <script src="../js/admin.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        function renderDashboard() {
             const articles = DB.get('articles') || [];
             const users = DB.get('users') || [];
             const posts = DB.get('forum_posts') || [];
@@ -226,6 +226,13 @@
                 if (badge) { badge.textContent = pendingPosts; badge.style.display = 'inline'; }
                 const qb = document.getElementById('quickModBadge');
                 if (qb) qb.textContent = '⏳ ' + pendingPosts + ' bekliyor — ';
+                document.getElementById('pendingCard').style.background = 'rgba(249,115,22,0.05)';
+            } else {
+                const badge = document.getElementById('sidebarPendingBadge');
+                if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
+                const qb = document.getElementById('quickModBadge');
+                if (qb) qb.textContent = '';
+                document.getElementById('pendingCard').style.background = 'var(--bg-secondary)';
             }
             const totalViews = articles.reduce((s, a) => s + (a.views || 0), 0);
             document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
@@ -245,46 +252,54 @@
 
             // Category breakdown
             const cats = ['teknoloji', 'oyun', 'uygulama'];
-            const colors = ['#4f8ef7', '#a855f7', '#10b981'];
-            const labels = ['💻 Teknoloji', '🎮 Oyun', '📱 Uygulama'];
             const breakdown = document.getElementById('categoryBreakdown');
             breakdown.innerHTML = cats.map((c, i) => {
                 const count = articles.filter(a => a.category === c).length;
-                const pct = articles.length ? Math.round(count / articles.length * 100) : 0;
-                return `<div style="margin-bottom:1rem;">
-      <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.4rem;">
-        <span>${labels[i]}</span>
-        <span style="color:var(--text-secondary);">${count} makale</span>
-      </div>
-      <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
-        <div style="height:100%; width:${pct}%; background:${colors[i]}; border-radius:3px; transition:width 0.8s ease;"></div>
-      </div>
-    </div>`;
+                const perc = articles.length ? (count / articles.length * 100).toFixed(0) : 0;
+                const labels = ['💻 Teknoloji', '🎮 Oyun', '📱 Uygulama'];
+                const colors = ['#4f8ef7', '#a855f7', '#10b981'];
+                return `
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:0.4rem;">
+          <span style="color:var(--text-secondary); font-weight:600;">${labels[i]}</span>
+          <span style="color:var(--text-primary); font-weight:700;">${perc}%</span>
+        </div>
+        <div style="height:6px; background:var(--bg-glass); border-radius:10px; overflow:hidden;">
+          <div style="width:${perc}%; height:100%; background:${colors[i]}; border-radius:10px;"></div>
+        </div>
+      </div>`;
             }).join('');
 
             // Recent forum
-            const statusColors = { pending: '#f97316', approved: '#10b981', rejected: '#ef4444' };
-            const statusLabels = { pending: '⏳ Bekliyor', approved: '✅ Onaylandı', rejected: '❌ Reddedildi' };
-            const fbody = document.getElementById('recentForumBody');
-            fbody.innerHTML = posts.slice(0, 5).map(p => `<tr>
-    <td style="font-weight:600; font-size:0.85rem;"><a href="forum-detay.html?id=${p.id}" style="color:inherit; text-decoration:none;" target="_blank">${p.pinned ? '📌 ' : ''}${p.title.slice(0, 50)}${p.title.length > 50 ? '...' : ''}</a></td>
-    <td><span style="color:var(--text-secondary);">@${p.author}</span></td>
-    <td><span class="badge badge-blue">${p.category}</span></td>
-    <td>${p.replies || 0}</td>
-    <td><span style="color:${statusColors[p.status || 'approved'] || '#10b981'}; font-size:0.78rem; font-weight:600;">${statusLabels[p.status || 'approved'] || '✅'}</span></td>
-    <td style="color:var(--text-muted); font-size:0.8rem;">${p.date}</td>
-  </tr>`).join('');
+            const ftbody = document.getElementById('recentForumBody');
+            ftbody.innerHTML = posts.sort((a, b) => b.id - a.id).slice(0, 5).map(p => `
+    <tr>
+      <td><div style="font-weight:600; font-size:0.85rem; color:var(--text-primary); cursor:pointer;" onclick="location.href='forum-moderation.html'">${p.title.slice(0, 40)}${p.title.length > 40 ? '...' : ''}</div></td>
+      <td style="font-size:0.8rem; color:var(--text-secondary);">@${p.author}</td>
+      <td style="font-size:0.75rem;"><span class="badge badge-blue">${p.category}</span></td>
+      <td style="text-align:center; font-size:0.8rem; color:var(--text-muted);">${p.replies || 0}</td>
+      <td>${p.status === 'pending' ? '<span class="badge badge-orange">⏳ Bekliyor</span>' : '<span class="badge badge-green">✅ Aktif</span>'}</td>
+      <td style="font-size:0.75rem; color:var(--text-muted);">${p.date}</td>
+    </tr>
+  `).join('');
 
-            // Statistics Update (Fixed Redeclaration Lint)
+            // Project stats (Async)
             const projects = DB.get('user_projects') || [];
             const pendingProjs = projects.filter(p => (p.status === 'pending')).length;
-
             document.getElementById('statProjPending').textContent = pendingProjs;
-
             if (pendingProjs > 0) {
                 document.getElementById('projPendingCard').style.background = 'rgba(6, 182, 212, 0.05)';
+                const badge = document.getElementById('sidebarProjPendingBadge');
+                if (badge) { badge.textContent = pendingProjs; badge.style.display = 'inline'; }
+            } else {
+                document.getElementById('projPendingCard').style.background = 'var(--bg-secondary)';
+                const badge = document.getElementById('sidebarProjPendingBadge');
+                if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
             }
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', renderDashboard);
+        document.addEventListener('dbUpdated', renderDashboard);
     </script>
 </body>
 

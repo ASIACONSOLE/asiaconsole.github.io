@@ -172,12 +172,21 @@ const DB = {
         } catch { return null; }
     },
     set(key, val, syncToCloud = true) {
+        // Prepare data for comparison
+        const oldVal = localStorage.getItem('tc_' + key);
+        const newVal = JSON.stringify(val);
+
+        // Skip if data hasn't changed (save performance)
+        if (oldVal === newVal) return;
+
         // Save to local for instant access
-        localStorage.setItem('tc_' + key, JSON.stringify(val));
+        localStorage.setItem('tc_' + key, newVal);
 
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
-            FirebaseDB.update('site_data', key, { data: val }).catch(err => {
+            // Use update with merge for settings, full set for others
+            const method = (key === 'settings') ? 'update' : 'set';
+            FirebaseDB[method]('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
                 console.warn('[Firebase] Sync failed for ' + key, err);
             });
         }
@@ -751,15 +760,30 @@ DB.init();
 // Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {
     FirebaseDB.onReady(() => {
-        // Initial load from cloud to ensure data is fresh
-        // Using listenAll for real-time updates across multiple devices
-        FirebaseDB.listenAll('site_data', (docs) => {
-            docs.forEach(doc => {
-                localStorage.setItem('tc_' + doc._id, JSON.stringify(doc.data));
+        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo', 'user_projects'];
+
+        syncKeys.forEach(key => {
+            FirebaseDB.listen('site_data', key, (remote) => {
+                if (!remote || !remote.data) return;
+
+                const local = localStorage.getItem('tc_' + key);
+                const remoteJSON = JSON.stringify(remote.data);
+
+                // Only update and re-render if data is actually different
+                if (local !== remoteJSON) {
+                    console.log(`[Firebase] Syncing ${key} from cloud...`);
+                    localStorage.setItem('tc_' + key, remoteJSON);
+
+                    // Specific re-renders depending on what changed
+                    if (key === 'settings') {
+                        if (typeof applySettings === 'function') applySettings();
+                    }
+                    if (key === 'articles' || key === 'forum_posts') {
+                        // Dispatch event for pages that need to re-render
+                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key } }));
+                    }
+                }
             });
-            // Re-apply settings if they changed from cloud
-            if (typeof applySettings === 'function') applySettings();
-            if (typeof renderDynamicNav === 'function') renderDynamicNav();
         });
     });
 }

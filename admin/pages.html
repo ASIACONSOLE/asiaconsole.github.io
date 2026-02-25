@@ -681,6 +681,13 @@
                 msgEl.innerHTML = `❌ Hata: ${err.message}<br><small>Lütfen API anahtarınızı veya internet bağlantınızı kontrol edip tekrar deneyin.</small>`;
             }
         }
+
+        document.addEventListener('dbUpdated', (e) => {
+            const key = e.detail?.key;
+            if (key === 'articles') renderArticles();
+            if (key === 'custom_pages') renderCustomPages();
+            if (key === 'settings') renderStaticPages();
+        });
     </script>
 </body>
 

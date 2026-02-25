@@ -184,9 +184,13 @@ const DB = {
 
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
-            // Always use onReady to ensure it's not lost
             FirebaseDB.onReady(() => {
-                const method = (key === 'settings') ? 'update' : 'set';
+                // Determine if we should use update (merge) or set (overwrite)
+                // Settings usually benefit from update to avoid losing keys, 
+                // but arrays like articles/posts should use set.
+                const isObject = val && typeof val === 'object' && !Array.isArray(val);
+                const method = (key === 'settings' || (isObject && key !== 'user_tiers')) ? 'update' : 'set';
+
                 FirebaseDB[method]('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
                     console.warn('[Firebase] Sync failed for ' + key, err);
                 });
@@ -743,14 +747,17 @@ DB.init();
 // Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {
     FirebaseDB.onReady(() => {
-        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo', 'user_projects'];
+        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo', 'user_projects', 'user_tiers', 'profiles', 'custom_pages'];
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {
-                if (!remote || !remote.data) return;
+                // CRITICAL: Extract .data from wrapper before saving to LocalStorage
+                if (!remote || typeof remote !== 'object') return;
+                const remoteData = remote.data !== undefined ? remote.data : remote;
+                if (!remoteData) return;
 
                 const local = localStorage.getItem('tc_' + key);
-                const remoteJSON = JSON.stringify(remote.data);
+                const remoteJSON = JSON.stringify(remoteData);
 
                 // Only update if data is actually different
                 if (local !== remoteJSON) {
@@ -758,10 +765,11 @@ if (typeof FirebaseDB !== 'undefined') {
                     localStorage.setItem('tc_' + key, remoteJSON);
 
                     // Specific re-renders depending on what changed
-                    if (key === 'settings' && typeof applySettings === 'function') applySettings();
+                    if ((key === 'settings' || key === 'site_logo') && typeof applySettings === 'function') applySettings();
+                    if (key === 'custom_pages' && typeof renderDynamicNav === 'function') renderDynamicNav();
 
                     // Dispatch event for UI updates
-                    document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: remote.data } }));
+                    document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: remoteData } }));
                 }
             });
         });

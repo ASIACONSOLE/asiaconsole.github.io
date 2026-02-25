@@ -290,6 +290,12 @@
         document.getElementById('approveBtn').onclick = () => updateStatus('approved');
         document.getElementById('rejectBtn').onclick = () => updateStatus('rejected');
 
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail?.key === 'user_projects') {
+                renderProjects();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', renderProjects);
     </script>
 </body>

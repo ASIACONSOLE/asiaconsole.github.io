@@ -505,6 +505,12 @@
             });
         }
 
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail?.key === 'users') {
+                renderUsers();
+            }
+        });
+
         // Wire up buttons
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('exportBtn').addEventListener('click', exportData);

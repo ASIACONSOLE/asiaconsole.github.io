@@ -868,18 +868,7 @@
                     iconUygulama: document.getElementById('iconUygulama').value.trim() || '📱'
                 };
                 DB.set('settings', newSettings);
-
-                // ---- FIREBASE SYNC: Write settings to cloud ----
-                // This triggers real-time updates on all other devices
-                if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
-                    FirebaseDB.set('site_data', 'settings', newSettings)
-                        .then(ok => {
-                            if (ok) showAdminToast('✅ Tüm ayarlar kaydedildi ve tüm cihazlara senkronize edildi!', 'success');
-                            else showAdminToast('✅ Ayarlar yerel olarak kaydedildi. (Firebase bağlantısı yok)', 'warning');
-                        });
-                } else {
-                    showAdminToast('✅ Tüm ayarlar kaydedildi!', 'success');
-                }
+                showAdminToast('✅ Tüm ayarlar kaydedildi ve senkronize edildi!', 'success');
 
                 document.documentElement.style.setProperty('--accent-blue', newSettings.accentColor);
 

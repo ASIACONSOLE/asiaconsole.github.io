@@ -185,13 +185,9 @@ const DB = {
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
-                // Determine if we should use update (merge) or set (overwrite)
-                // Settings usually benefit from update to avoid losing keys, 
-                // but arrays like articles/posts should use set.
-                const isObject = val && typeof val === 'object' && !Array.isArray(val);
-                const method = (key === 'settings' || (isObject && key !== 'user_tiers')) ? 'update' : 'set';
-
-                FirebaseDB[method]('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
+                // Use 'set' (overwrite) instead of 'update' (merge) to avoid recursion depth issues
+                // with wrapped data { data: val }.
+                FirebaseDB.set('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
                     console.warn('[Firebase] Sync failed for ' + key, err);
                 });
             });
@@ -751,10 +747,10 @@ if (typeof FirebaseDB !== 'undefined') {
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {
-                // CRITICAL: Extract .data from wrapper before saving to LocalStorage
-                if (!remote || typeof remote !== 'object') return;
-                const remoteData = remote.data !== undefined ? remote.data : remote;
-                if (!remoteData) return;
+                // CRITICAL: Extract .data from wrapper if it exists, otherwise use remote as is
+                if (!remote) return;
+                const remoteData = (typeof remote === 'object' && remote !== null && 'data' in remote) ? remote.data : remote;
+                if (remoteData === undefined || remoteData === null) return;
 
                 const local = localStorage.getItem('tc_' + key);
                 const remoteJSON = JSON.stringify(remoteData);

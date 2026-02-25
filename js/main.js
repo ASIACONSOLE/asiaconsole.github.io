@@ -786,20 +786,23 @@ if (typeof FirebaseDB !== 'undefined') {
         });
 
         // Detect connectivity status for UI
-        const updateBadge = (status) => {
+        const updateBadge = (status, message = '') => {
             const badge = document.getElementById('cloudSyncStatus');
             if (badge) {
                 if (status === 'connected') {
                     badge.innerHTML = '● Bulut Bağlı';
                     badge.style.color = '#10b981';
+                    badge.title = 'Veriler güvenle senkronize ediliyor.';
                 } else if (status === 'error') {
                     badge.innerHTML = '○ Bulut Hatası';
                     badge.style.color = '#ef4444';
+                    badge.title = 'Hata: ' + (message || 'Bilinmeyen bir sorun oluştu.');
+                    console.error('[Firebase Status] Hata:', message);
                 }
             }
         };
 
-        document.addEventListener('firebaseStatus', (e) => updateBadge(e.detail.status));
+        document.addEventListener('firebaseStatus', (e) => updateBadge(e.detail.status, e.detail.message));
 
         // Initial check if already ready
         if (FirebaseDB._ready) updateBadge('connected');

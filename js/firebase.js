@@ -53,7 +53,10 @@ const FirebaseDB = {
             const s = document.createElement('script');
             s.src = src;
             s.onload = onLoad;
-            s.onerror = () => console.warn('[Firebase] Could not load SDK from', src);
+            s.onerror = (err) => {
+                console.warn('[Firebase] Could not load SDK from', src);
+                this._triggerConnectionEvent('error', `SDK yüklenemedi: ${src}`);
+            };
             document.head.appendChild(s);
         });
     },
@@ -174,16 +177,16 @@ const FirebaseDB = {
                     this._triggerConnectionEvent('connected');
                     resolve(true);
                 } catch (e) {
-                    console.warn('[Firebase] Update error:', e);
-                    this._triggerConnectionEvent('error');
+                    console.warn('[Firebase] Operation error:', e);
+                    this._triggerConnectionEvent('error', e.message);
                     resolve(false);
                 }
             });
         });
     },
 
-    _triggerConnectionEvent(status) {
-        document.dispatchEvent(new CustomEvent('firebaseStatus', { detail: { status } }));
+    _triggerConnectionEvent(status, message = '') {
+        document.dispatchEvent(new CustomEvent('firebaseStatus', { detail: { status, message } }));
     }
 };
 

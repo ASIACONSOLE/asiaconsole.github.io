@@ -785,7 +785,9 @@ if (typeof FirebaseDB !== 'undefined') {
 
         document.addEventListener('firebaseStatus', (e) => updateBadge(e.detail.status, e.detail.message));
 
-        // Initial check if already ready
-        if (FirebaseDB._ready) updateBadge('connected');
+        // Initial check if already ready or failed
+        if (typeof FirebaseDB !== 'undefined' && FirebaseDB._lastStatus !== 'connecting') {
+            updateBadge(FirebaseDB._lastStatus, FirebaseDB._lastErrorMessage);
+        }
     });
 }

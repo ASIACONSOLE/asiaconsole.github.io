@@ -16,11 +16,16 @@ const FIREBASE_CONFIG = {
     measurementId: "G-50B31ZJV6C"
 };
 
+// Global instance variable
+var FirebaseDB;
+
 // ---- FIREBASE REALTIME DB WRAPPER ----
-const FirebaseDB = {
+FirebaseDB = {
     db: null,
     _listeners: {},
     _ready: false,
+    _lastStatus: 'connecting',
+    _lastErrorMessage: '',
     _readyCallbacks: [],
 
     // Initialize Firebase & Firestore
@@ -39,12 +44,14 @@ const FirebaseDB = {
                     firebase.initializeApp(FIREBASE_CONFIG);
                     this.db = firebase.firestore();
                     this._ready = true;
+                    this._triggerConnectionEvent('connected');
                     console.log('[Firebase] Connected to Firestore ✓');
                     // Run pending callbacks
                     this._readyCallbacks.forEach(cb => cb());
                     this._readyCallbacks = [];
                 } catch (e) {
                     console.warn('[Firebase] Init failed:', e);
+                    this._triggerConnectionEvent('error', `Başlatma hatası: ${e.message}`);
                 }
             }
         };
@@ -77,7 +84,7 @@ const FirebaseDB = {
                     resolve(true);
                 } catch (e) {
                     console.warn('[Firebase] Write error:', e);
-                    this._triggerConnectionEvent('error');
+                    this._triggerConnectionEvent('error', `Yazma hatası: ${e.message}`);
                     resolve(false);
                 }
             });
@@ -185,8 +192,12 @@ const FirebaseDB = {
         });
     },
 
+    // Event trigger for UI
     _triggerConnectionEvent(status, message = '') {
-        document.dispatchEvent(new CustomEvent('firebaseStatus', { detail: { status, message } }));
+        this._lastStatus = status;
+        this._lastErrorMessage = message;
+        const ev = new CustomEvent('firebaseStatus', { detail: { status, message } });
+        document.dispatchEvent(ev);
     }
 };
 

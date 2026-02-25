@@ -121,16 +121,28 @@
 
             render(filtered);
 
+            // REAL-TIME SYNC: Listen for database updates
+            document.addEventListener('dbUpdated', (e) => {
+                const key = e.detail?.key;
+                if (key === 'articles' || key === 'users' || key === 'profiles') {
+                    console.log(`[Sync] ${key} updated`);
+                    const newArticles = (DB.get('articles') || []).filter(a => a.category === 'teknoloji');
+                    render(newArticles);
+                }
+            });
+
             document.getElementById('searchInput').addEventListener('input', e => {
                 const q = e.target.value.toLowerCase();
-                render(articles.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)));
+                const currentArts = (DB.get('articles') || []).filter(a => a.category === 'teknoloji');
+                render(currentArts.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)));
             });
 
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    render(articles);
+                    const currentArts = (DB.get('articles') || []).filter(a => a.category === 'teknoloji');
+                    render(currentArts);
                 });
             });
         });

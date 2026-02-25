@@ -142,17 +142,32 @@
 
             render(articles, projects);
 
+            // REAL-TIME SYNC: Listen for database updates
+            document.addEventListener('dbUpdated', (e) => {
+                const key = e.detail?.key;
+                if (key === 'articles' || key === 'user_projects' || key === 'users' || key === 'profiles') {
+                    console.log(`[Sync] ${key} updated`);
+                    const newArticles = (DB.get('articles') || []).filter(a => a.category === 'uygulama');
+                    const newProjects = (DB.get('user_projects') || []).filter(p => p.category === 'uygulama' && p.status === 'approved');
+                    render(newArticles, newProjects);
+                }
+            });
+
             document.getElementById('searchInput').addEventListener('input', e => {
                 const q = e.target.value.toLowerCase();
-                const filtered = articles.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q));
-                const filteredProjs = projects.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+                const currentArts = (DB.get('articles') || []).filter(a => a.category === 'uygulama');
+                const currentProjs = (DB.get('user_projects') || []).filter(p => p.category === 'uygulama' && p.status === 'approved');
+                const filtered = currentArts.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q));
+                const filteredProjs = currentProjs.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
                 render(filtered, filteredProjs);
             });
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    render(articles, projects);
+                    const currentArts = (DB.get('articles') || []).filter(a => a.category === 'uygulama');
+                    const currentProjs = (DB.get('user_projects') || []).filter(p => p.category === 'uygulama' && p.status === 'approved');
+                    render(currentArts, currentProjs);
                 });
             });
         });

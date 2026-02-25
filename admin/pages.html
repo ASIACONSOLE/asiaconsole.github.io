@@ -593,7 +593,8 @@
                             image: document.getElementById('artImage').value || '📄',
                             views: parseInt(document.getElementById('artViews').value) || 0,
                             date: document.getElementById('artDate').value || now,
-                            featured: false
+                            featured: false,
+                            status: 'approved' // Added status as requested
                         };
                         articles.unshift(newArt);
                         showAdminToast('Yeni makale eklendi! ✅', 'success');
@@ -630,9 +631,12 @@
                 "title" (string), "category" (either "teknoloji", "oyun", or "uygulama"), "desc" (string, max 200 chars), "image" (one emoji).
                 The language must be Turkish. Return ONLY the JSON array.`;
 
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': API_KEY
+                    },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }]
                     })
@@ -640,7 +644,8 @@
 
                 if (!resp.ok) {
                     const errorData = await resp.json().catch(() => ({}));
-                    throw new Error(errorData.error?.message || `API Hatası: ${resp.status}`);
+                    const errorMsg = errorData.error?.message || `API Hatası: ${resp.status}`;
+                    throw new Error(errorMsg);
                 }
 
                 const data = await resp.json();

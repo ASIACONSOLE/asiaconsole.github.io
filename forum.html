@@ -420,6 +420,27 @@
 
             render();
 
+            // REAL-TIME SYNC: Listen for database updates
+            document.addEventListener('dbUpdated', (e) => {
+                const key = e.detail?.key;
+                if (key === 'articles' || key === 'user_projects' || key === 'users' || key === 'profiles') {
+                    console.log(`[Sync] ${key} updated`);
+                    posts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
+
+                    // Update stats
+                    const totalReplies = posts.reduce((a, p) => a + (p.replies || 0), 0);
+                    const totalViews = posts.reduce((a, p) => a + (p.views || 0), 0);
+                    const stTopics = document.getElementById('statTopics');
+                    const stReplies = document.getElementById('statReplies');
+                    const stViews = document.getElementById('statViews');
+                    if (stTopics) stTopics.textContent = posts.length.toLocaleString('tr-TR');
+                    if (stReplies) stReplies.textContent = totalReplies.toLocaleString('tr-TR');
+                    if (stViews) stViews.textContent = totalViews.toLocaleString('tr-TR');
+
+                    render();
+                }
+            });
+
             // Modal
             const modal = document.getElementById('newTopicModal');
             document.getElementById('newTopicBtn').addEventListener('click', () => { modal.style.display = 'flex'; });
@@ -479,7 +500,7 @@
                     views: 0,
                     likes: 0,
                     pinned: false,
-                    status: 'pending',
+                    status: 'approved',
                     images: [...topicImages]
                 };
                 allPosts.unshift(newPost);

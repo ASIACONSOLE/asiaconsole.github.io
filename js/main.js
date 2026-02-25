@@ -200,7 +200,7 @@ const DB = {
                     const finalData = JSON.parse(JSON.stringify(cleanVal));
 
                     // Firestore Document Limit Check (Approx 1MB)
-                    const size = new Blob([JSON.stringify(cleanData)]).size;
+                    const size = new Blob([JSON.stringify(finalData)]).size;
                     if (size > 1000000) {
                         console.error(`[Firebase] Data size too large for ${key}: ${size} bytes. (Limit: 1MB)`);
                         if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük (1MB limit), buluta yüklenemedi!`, 'error');

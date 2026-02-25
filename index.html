@@ -235,16 +235,33 @@
 
     <script>
         function renderHome() {
-            const articles = DB.get('articles') || [];
+            const articles = (DB.get('articles') || []).map(a => ({ ...a, type: 'article' }));
+            const userProjects = (DB.get('user_projects') || [])
+                .filter(p => p.status === 'approved')
+                .map(p => ({
+                    ...p,
+                    type: 'project',
+                    // Map project categories to article-like categories for styling
+                    category: p.category || 'oyun'
+                }));
+
             const forumPosts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
             const users = DB.get('users') || [];
+
+            // Combine and Sort by Date (descending)
+            // Note: Since IDs are Date.now(), we can use them for sorting too
+            const combinedFeed = [...articles, ...userProjects].sort((a, b) => {
+                const dateA = a.id || 0;
+                const dateB = b.id || 0;
+                return dateB - dateA;
+            }).slice(0, 8); // Show top 8 latest items
 
             // Stats
             const statArticles = document.getElementById('statArticles');
             const statTopics = document.getElementById('statTopics');
             const statMembers = document.getElementById('statMembers');
 
-            if (statArticles) statArticles.textContent = articles.length.toLocaleString('tr-TR');
+            if (statArticles) statArticles.textContent = (articles.length + userProjects.length).toLocaleString('tr-TR');
             if (statTopics) statTopics.textContent = forumPosts.length.toLocaleString('tr-TR');
             if (statMembers && users.length > 3) {
                 statMembers.textContent = (1240 + users.length - 3).toLocaleString('tr-TR');
@@ -252,8 +269,8 @@
 
             // Category counts
             const techCount = articles.filter(a => a.category === 'teknoloji').length;
-            const gameCount = articles.filter(a => a.category === 'oyun').length;
-            const appCount = articles.filter(a => a.category === 'uygulama').length;
+            const gameCount = articles.filter(a => a.category === 'oyun').length + userProjects.filter(p => p.category === 'oyun').length;
+            const appCount = articles.filter(a => a.category === 'uygulama').length + userProjects.filter(p => p.category === 'uygulama').length;
 
             const elTech = document.getElementById('catTechCount');
             const elGame = document.getElementById('catGameCount');
@@ -261,41 +278,47 @@
             const elForum = document.getElementById('catForumCount');
 
             if (elTech) elTech.textContent = techCount + ' makale';
-            if (elGame) elGame.textContent = gameCount + ' makale';
-            if (elApp) elApp.textContent = appCount + ' makale';
+            if (elGame) elGame.textContent = gameCount + ' haber/proje';
+            if (elApp) elApp.textContent = appCount + ' haber/proje';
             if (elForum) elForum.textContent = forumPosts.length + ' konu';
 
-            // Featured articles
-            const featured = articles.slice(0, 6);
+            // News Feed (Combined Articles & Projects)
             const catMap = { teknoloji: 'badge-tech', oyun: 'badge-game', uygulama: 'badge-app' };
             const catLabel = { teknoloji: '💻 Teknoloji', oyun: '🎮 Oyun', uygulama: '📱 Uygulama' };
             const grid = document.getElementById('featuredArticles');
 
             if (grid) {
-                if (featured.length === 0) {
-                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><h3>Henüz makale yok</h3><p>Admin panelinden makale ekleyebilirsiniz.</p></div>';
+                if (combinedFeed.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><h3>Henüz içerik yok</h3><p>Yeni içerikler yakında burada olacak.</p></div>';
                 } else {
-                    grid.innerHTML = featured.map(a => `
-      <a href="makale-detay.html?id=${a.id}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer;">
-        <div class="card-badge ${catMap[a.category] || 'badge-tech'}">${catLabel[a.category] || a.category}</div>
-        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '📄'}</div>
-        <div class="card-title">${a.title}</div>
-        <div class="card-desc">${a.desc}</div>
+                    grid.innerHTML = combinedFeed.map(item => {
+                        const isProj = item.type === 'project';
+                        const link = isProj ? `proje-izle.html?id=${item.id}` : `makale-detay.html?id=${item.id}`;
+                        const badgeClass = catMap[item.category] || 'badge-tech';
+                        const labelText = isProj ? `🚀 Proje: ${item.title}` : (catLabel[item.category] || item.category);
+
+                        return `
+      <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
+        <div class="card-badge ${badgeClass}">${labelText}</div>
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${isProj ? '🚀' : (item.image || '📄')}</div>
+        <div class="card-title">${item.title}</div>
+        <div class="card-desc">${item.desc || (isProj ? 'Bu bir kullanıcı projesidir. İncelemek için tıklayın.' : '')}</div>
         <div class="card-meta">
-          <span>👤 ${a.author}</span>
-          <span>📅 ${a.date}</span>
-          <span>👁️ ${(a.views || 0).toLocaleString('tr-TR')}</span>
+          <span>👤 ${item.author}</span>
+          <span>📅 ${item.date}</span>
+          <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
         </div>
-        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
+        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">${isProj ? '🎮 Hemen İzle/Oyna →' : '📚 Devamını oku →'}</div>
       </a>
-    `).join('');
+    `;
+                    }).join('');
                 }
             }
 
             // Forum list
             const forumEl = document.getElementById('homeForumList');
             if (forumEl) {
-                const topPosts = forumPosts.slice(0, 4);
+                const topPosts = forumPosts.slice(0, 6);
                 if (topPosts.length === 0) {
                     forumEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Henüz konu yok</h3><p>İlk forum konusunu siz başlatın!</p></div>';
                 } else {

@@ -697,7 +697,7 @@
             document.getElementById('socialDiscord').value = s.socialDiscord || '';
 
             // Load logo if exists
-            const savedLogo = localStorage.getItem('tc_site_logo');
+            const savedLogo = DB.get('site_logo');
             if (savedLogo) {
                 document.getElementById('logoPreviewImg').src = savedLogo;
                 document.getElementById('logoPreviewImg').style.display = 'block';
@@ -716,7 +716,7 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     const base64 = e.target.result;
-                    localStorage.setItem('tc_site_logo', base64);
+                    DB.set('site_logo', base64);
                     document.getElementById('logoPreviewImg').src = base64;
                     document.getElementById('logoPreviewImg').style.display = 'block';
                     document.getElementById('logoPlaceholder').style.display = 'none';
@@ -728,7 +728,7 @@
 
             // Logo remove
             document.getElementById('logoRemoveBtn').addEventListener('click', () => {
-                localStorage.removeItem('tc_site_logo');
+                DB.set('site_logo', null);
                 document.getElementById('logoPreviewImg').style.display = 'none';
                 document.getElementById('logoPlaceholder').style.display = 'block';
                 document.getElementById('logoRemoveRow').style.display = 'none';

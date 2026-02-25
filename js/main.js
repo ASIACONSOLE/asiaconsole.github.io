@@ -368,7 +368,7 @@ function applySettings() {
         }
     }
     // Site logo
-    const savedLogo = localStorage.getItem('tc_site_logo');
+    const savedLogo = DB.get('site_logo');
     document.querySelectorAll('.brand-icon').forEach(el => {
         const sz = s.logoSize ? s.logoSize + 'px' : '36px';
         el.style.width = sz;

@@ -670,25 +670,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initHamburger();
     updateNavAuth();
     setTimeout(initScrollAnimations, 100);
-
-    // ---- FIREBASE REAL-TIME SETTINGS SYNC ----
-    // When Firebase is initialized, start listening for settings changes.
-    // Any update from any device will instantly apply to all open pages.
-    if (typeof FirebaseDB !== 'undefined') {
-        FirebaseDB.onReady(() => {
-            FirebaseDB.listen('site_data', 'settings', (firebaseSettings) => {
-                if (!firebaseSettings) return;
-                // Merge Firebase settings into localStorage cache
-                const localSettings = DB.get('settings') || {};
-                const merged = { ...localSettings, ...firebaseSettings };
-                DB.set('settings', merged);
-                // Re-apply settings instantly on this page
-                applySettings();
-                renderDynamicNav();
-                console.log('[Firebase] Settings synced from cloud ✓');
-            });
-        });
-    }
 });
 
 /* ================================================

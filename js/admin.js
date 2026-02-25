@@ -21,6 +21,9 @@ const Admin = {
         const s = localStorage.getItem(ADMIN_SESSION_KEY);
         if (!s) { window.location.href = 'index.html'; return false; }
         return true;
+    },
+    checkSession() {
+        return this.check();
     }
 };
 
@@ -94,6 +97,19 @@ function initMobileMenu() {
             }
         });
     });
+}
+
+// ---- LOGOUT BINDING ----
+function initLogout() {
+    const btn = document.getElementById('logoutBtn');
+    if (btn) {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            confirmDelete('Çıkış yapmak istediğinizden emin misiniz?', () => {
+                Admin.logout();
+            });
+        };
+    }
 }
 
 // ---- INIT ----

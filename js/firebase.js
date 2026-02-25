@@ -7,7 +7,7 @@
 
 // ---- FIREBASE CONFIG ----
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyAY2-JMHxNgBvM8jHmadiCRHi--eDTSW_Q",
+    apiKey: "AIzaSyBhpI-7c08eB6VN_LhS5jNIrSQ_NDvFbYA",
     authDomain: "asia-console.firebaseapp.com",
     projectId: "asia-console",
     storageBucket: "asia-console.firebasestorage.app",

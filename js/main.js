@@ -171,12 +171,12 @@ const DB = {
             return local || null;
         } catch { return null; }
     },
-    set(key, val) {
+    set(key, val, syncToCloud = true) {
         // Save to local for instant access
         localStorage.setItem('tc_' + key, JSON.stringify(val));
 
-        // Sync to Firebase Cloud if initialized
-        if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
+        // Sync to Firebase Cloud if initialized AND requested
+        if (syncToCloud && typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
             FirebaseDB.update('site_data', key, { data: val }).catch(err => {
                 console.warn('[Firebase] Sync failed for ' + key, err);
             });
@@ -237,7 +237,7 @@ const DB = {
         if (!currentSettings.googleClientId && defaultSettings.googleClientId) {
             currentSettings.googleClientId = defaultSettings.googleClientId;
         }
-        this.set('settings', { ...defaultSettings, ...currentSettings });
+        this.set('settings', { ...defaultSettings, ...currentSettings }, false);
         // Default articles...
         if (!this.get('articles')) {
             this.set('articles', [
@@ -249,7 +249,7 @@ const DB = {
                 { id: 6, title: 'React Native vs Flutter 2025 Karşılaştırması', category: 'uygulama', desc: 'Hangi framework daha iyi? Performans, ekosistem ve geliştirici deneyimi açısından kapsamlı karşılaştırma.', author: 'DevTeam', date: '19 Şub 2025', views: 1560, image: '⚖️', featured: false },
                 { id: 7, title: 'Cyberpunk 2077 Phantom Liberty Genişlemesi', category: 'oyun', desc: 'CD Projekt RED\'in beklenen genişleme paketi incelemesi. Yeni hikaye, karakterler ve Night City.', author: 'GameEditor', date: '18 Şub 2025', views: 2890, image: '🌆', featured: false },
                 { id: 8, title: 'Apple Vision Pro Kullanıcı Deneyimi', category: 'teknoloji', desc: 'Spatial computing çağını başlatan Vision Pro ile bir ay geçirdikten sonra gerçek düşüncelerimiz.', author: 'TechWriter', date: '17 Şub 2025', views: 4200, image: '👓', featured: false },
-            ]);
+            ], false);
         }
         // Default forum posts
         if (!this.get('forum_posts')) {
@@ -260,7 +260,7 @@ const DB = {
                 { id: 4, title: 'iOS 18 gizlilik ayarları rehberi', category: 'uygulama', author: 'AppDev', authorInit: 'A', date: '22 Şub 2025', replies: 12, views: 234, pinned: false },
                 { id: 5, title: 'Yapay zeka kodlama için ne kadar faydalı?', category: 'teknoloji', author: 'DevGuru', authorInit: 'D', date: '21 Şub 2025', replies: 56, views: 1120, pinned: false },
                 { id: 6, title: 'Steam Deck oyunlarım neden çalışmıyor?', category: 'oyun', author: 'SteamUser', authorInit: 'S', date: '20 Şub 2025', replies: 8, views: 167, pinned: false },
-            ]);
+            ], false);
         }
         // Default users
         if (!this.get('users')) {
@@ -275,15 +275,15 @@ const DB = {
                 { id: 8, username: 'TechFan', email: 'fan@asiaconsole.com', password: '123456', joined: '22 Oca 2025', active: true },
                 { id: 9, username: 'DevGuru', email: 'guru@asiaconsole.com', password: '123456', joined: '25 Oca 2025', active: true },
                 { id: 10, username: 'SteamUser', email: 'steam@asiaconsole.com', password: '123456', joined: '30 Oca 2025', active: true }
-            ]);
+            ], false);
         }
         // User projects init
         if (!this.get('user_projects')) {
-            this.set('user_projects', []);
+            this.set('user_projects', [], false);
         }
         // Default project reviews init
         if (!this.get('project_reviews')) {
-            this.set('project_reviews', []);
+            this.set('project_reviews', [], false);
         }
         // Default membership tiers
         if (!this.get('user_tiers')) {
@@ -291,7 +291,7 @@ const DB = {
                 standart: { name: 'Standart', color: 'var(--text-secondary)', bg: 'rgba(255,255,255,0.05)', icon: '👤', perks: ['Sınırsız proje izleme', 'Topluluk forumu erişimi', 'Haftalık haber bülteni'] },
                 pro: { name: 'Pro Member', color: 'var(--accent-blue)', bg: 'rgba(79,142,247,0.1)', icon: '🛡️', perks: ['Tüm Standart özellikler', 'Proje yükleme sınırı: 10', 'Özel rozet', 'Reklamsız deneyim'] },
                 vip: { name: 'VIP Elite', color: 'var(--accent-purple)', bg: 'rgba(168,85,247,0.1)', icon: '💎', perks: ['Tüm Pro özellikler', 'Sınırsız proje yükleme', 'Öncelikli onay', 'VIP forum bölümü', 'Doğrudan destek'] }
-            });
+            }, false);
         }
     }
 };

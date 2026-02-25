@@ -598,6 +598,7 @@
                         articles.unshift(newArt);
                         showAdminToast('Yeni makale eklendi! ✅', 'success');
                     }
+                    console.log(`[Admin] Saving articles, total count: ${articles.length}`);
                     DB.set('articles', articles);
                     renderTable(getFiltered());
                     closeModal('articleModal');

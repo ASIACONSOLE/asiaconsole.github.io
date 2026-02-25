@@ -185,13 +185,29 @@ const DB = {
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
-                // Ensure data is a pure POJO (no undefined, no class instances)
-                // to avoid Firestore "invalid nested entity" errors.
                 try {
+                    // Ensure data is a pure POJO (no undefined, no class instances)
                     const cleanData = JSON.parse(JSON.stringify(val));
-                    FirebaseDB.set('site_data', key, { data: cleanData, lastSync: Date.now() }).catch(err => {
-                        console.warn('[Firebase] Sync failed for ' + key, err);
-                    });
+
+                    // Firestore Document Limit Check (Approx 1MB)
+                    const size = new Blob([JSON.stringify(cleanData)]).size;
+                    if (size > 1000000) {
+                        console.error(`[Firebase] Data size too large for ${key}: ${size} bytes. (Limit: 1MB)`);
+                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük (1MB limit), buluta yüklenemedi!`, 'error');
+                        return;
+                    }
+
+                    console.log(`[Firebase] Syncing ${key} to cloud...`);
+                    FirebaseDB.set('site_data', key, { data: cleanData, lastSync: Date.now() })
+                        .then(ok => {
+                            if (ok) {
+                                console.log(`[Firebase] ${key} synced successfully ✓`);
+                                // Toast only for manual saves (explicit calls) if showAdminToast exists
+                                // we check if it's broad enough to avoid spam.
+                            } else {
+                                console.warn(`[Firebase] ${key} sync failed.`);
+                            }
+                        });
                 } catch (e) {
                     console.error('[Firebase] Serialization failed for ' + key, e);
                 }

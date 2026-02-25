@@ -196,6 +196,7 @@ FirebaseDB = {
     _triggerConnectionEvent(status, message = '') {
         this._lastStatus = status;
         this._lastErrorMessage = message;
+        if (status === 'error') console.error('[Firebase Error]', message);
         const ev = new CustomEvent('firebaseStatus', { detail: { status, message } });
         document.dispatchEvent(ev);
     }

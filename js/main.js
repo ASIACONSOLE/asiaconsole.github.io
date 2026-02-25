@@ -183,11 +183,13 @@ const DB = {
         localStorage.setItem('tc_' + key, newVal);
 
         // Sync to Firebase Cloud if initialized AND requested
-        if (syncToCloud && typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
-            // Use update with merge for settings, full set for others
-            const method = (key === 'settings') ? 'update' : 'set';
-            FirebaseDB[method]('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
-                console.warn('[Firebase] Sync failed for ' + key, err);
+        if (syncToCloud && typeof FirebaseDB !== 'undefined') {
+            // Always use onReady to ensure it's not lost
+            FirebaseDB.onReady(() => {
+                const method = (key === 'settings') ? 'update' : 'set';
+                FirebaseDB[method]('site_data', key, { data: val, lastSync: Date.now() }).catch(err => {
+                    console.warn('[Firebase] Sync failed for ' + key, err);
+                });
             });
         }
     },
@@ -769,22 +771,37 @@ if (typeof FirebaseDB !== 'undefined') {
                 const local = localStorage.getItem('tc_' + key);
                 const remoteJSON = JSON.stringify(remote.data);
 
-                // Only update and re-render if data is actually different
+                // Only update if data is actually different
                 if (local !== remoteJSON) {
-                    console.log(`[Firebase] Syncing ${key} from cloud...`);
+                    console.log(`[Firebase] Remote change for ${key}`);
                     localStorage.setItem('tc_' + key, remoteJSON);
 
                     // Specific re-renders depending on what changed
-                    if (key === 'settings') {
-                        if (typeof applySettings === 'function') applySettings();
-                    }
-                    if (key === 'articles' || key === 'forum_posts') {
-                        // Dispatch event for pages that need to re-render
-                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key } }));
-                    }
+                    if (key === 'settings' && typeof applySettings === 'function') applySettings();
+
+                    // Dispatch event for UI updates
+                    document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: remote.data } }));
                 }
             });
         });
+
+        // Detect connectivity status for UI
+        const updateBadge = (status) => {
+            const badge = document.getElementById('cloudSyncStatus');
+            if (badge) {
+                if (status === 'connected') {
+                    badge.innerHTML = '● Bulut Bağlı';
+                    badge.style.color = '#10b981';
+                } else if (status === 'error') {
+                    badge.innerHTML = '○ Bulut Hatası';
+                    badge.style.color = '#ef4444';
+                }
+            }
+        };
+
+        document.addEventListener('firebaseStatus', (e) => updateBadge(e.detail.status));
+
+        // Initial check if already ready
+        if (FirebaseDB._ready) updateBadge('connected');
     });
 }
-

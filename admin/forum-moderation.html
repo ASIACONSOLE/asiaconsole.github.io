@@ -53,13 +53,12 @@
                     </div>
                     <div class="topbar-title">💬 Forum Moderasyonu</div>
                 </div>
-                <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                    <button class="topbar-btn" id="approveAllBtn"
-                        style="background:linear-gradient(135deg,#10b981,#059669); white-space:nowrap;">✅ Tümünü
-                        Onayla</button>
-                    <button class="topbar-btn" id="rejectAllBtn"
-                        style="background:linear-gradient(135deg,#ef4444,#dc2626); white-space:nowrap;">🗑️
-                        Temizle</button>
+                <div class="topbar-actions">
+                    <span id="cloudSyncStatus" style="margin-right:0.5rem;">◌ Bağlanıyor...</span>
+                    <button class="topbar-btn" id="approveAllBtn">✅ Tümünü Onayla</button>
+                    <button class="topbar-btn secondary" id="rejectAllBtn"
+                        style="background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.2);">🗑️
+                        Tümünü Sil</button>
                 </div>
             </div>
 

@@ -66,38 +66,53 @@ const FirebaseDB = {
 
     // Write a full document to a collection
     async set(collection, docId, data) {
-        if (!this._ready || !this.db) return false;
-        try {
-            await this.db.collection(collection).doc(docId).set(data);
-            return true;
-        } catch (e) {
-            console.warn('[Firebase] Write error:', e);
-            return false;
-        }
+        return new Promise((resolve) => {
+            this.onReady(async () => {
+                try {
+                    await this.db.collection(collection).doc(docId).set(data);
+                    this._triggerConnectionEvent('connected');
+                    resolve(true);
+                } catch (e) {
+                    console.warn('[Firebase] Write error:', e);
+                    this._triggerConnectionEvent('error');
+                    resolve(false);
+                }
+            });
+        });
     },
 
     // Get a document from a collection
     async get(collection, docId) {
-        if (!this._ready || !this.db) return null;
-        try {
-            const doc = await this.db.collection(collection).doc(docId).get();
-            return doc.exists ? doc.data() : null;
-        } catch (e) {
-            console.warn('[Firebase] Read error:', e);
-            return null;
-        }
+        return new Promise((resolve) => {
+            this.onReady(async () => {
+                try {
+                    const doc = await this.db.collection(collection).doc(docId).get();
+                    this._triggerConnectionEvent('connected');
+                    resolve(doc.exists ? doc.data() : null);
+                } catch (e) {
+                    console.warn('[Firebase] Read error:', e);
+                    this._triggerConnectionEvent('error');
+                    resolve(null);
+                }
+            });
+        });
     },
 
     // Get all documents from a collection
     async getAll(collection) {
-        if (!this._ready || !this.db) return [];
-        try {
-            const snap = await this.db.collection(collection).get();
-            return snap.docs.map(d => ({ _id: d.id, ...d.data() }));
-        } catch (e) {
-            console.warn('[Firebase] GetAll error:', e);
-            return [];
-        }
+        return new Promise((resolve) => {
+            this.onReady(async () => {
+                try {
+                    const snap = await this.db.collection(collection).get();
+                    this._triggerConnectionEvent('connected');
+                    resolve(snap.docs.map(d => ({ _id: d.id, ...d.data() })));
+                } catch (e) {
+                    console.warn('[Firebase] GetAll error:', e);
+                    this._triggerConnectionEvent('error');
+                    resolve([]);
+                }
+            });
+        });
     },
 
     // Real-time listener on a document — calls callback instantly on change
@@ -135,26 +150,40 @@ const FirebaseDB = {
 
     // Delete a document
     async delete(collection, docId) {
-        if (!this._ready || !this.db) return false;
-        try {
-            await this.db.collection(collection).doc(docId).delete();
-            return true;
-        } catch (e) {
-            console.warn('[Firebase] Delete error:', e);
-            return false;
-        }
+        return new Promise((resolve) => {
+            this.onReady(async () => {
+                try {
+                    await this.db.collection(collection).doc(docId).delete();
+                    this._triggerConnectionEvent('connected');
+                    resolve(true);
+                } catch (e) {
+                    console.warn('[Firebase] Delete error:', e);
+                    this._triggerConnectionEvent('error');
+                    resolve(false);
+                }
+            });
+        });
     },
 
     // Merge (partial update) instead of full overwrite
     async update(collection, docId, data) {
-        if (!this._ready || !this.db) return false;
-        try {
-            await this.db.collection(collection).doc(docId).set(data, { merge: true });
-            return true;
-        } catch (e) {
-            console.warn('[Firebase] Update error:', e);
-            return false;
-        }
+        return new Promise((resolve) => {
+            this.onReady(async () => {
+                try {
+                    await this.db.collection(collection).doc(docId).set(data, { merge: true });
+                    this._triggerConnectionEvent('connected');
+                    resolve(true);
+                } catch (e) {
+                    console.warn('[Firebase] Update error:', e);
+                    this._triggerConnectionEvent('error');
+                    resolve(false);
+                }
+            });
+        });
+    },
+
+    _triggerConnectionEvent(status) {
+        document.dispatchEvent(new CustomEvent('firebaseStatus', { detail: { status } }));
     }
 };
 

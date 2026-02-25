@@ -594,7 +594,7 @@
                             views: parseInt(document.getElementById('artViews').value) || 0,
                             date: document.getElementById('artDate').value || now,
                             featured: false,
-                            status: 'approved' // Added status as requested
+                            status: 'pending' // Reverted to pending as requested
                         };
                         articles.unshift(newArt);
                         showAdminToast('Yeni makale eklendi! ✅', 'success');

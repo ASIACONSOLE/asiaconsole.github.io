@@ -625,9 +625,27 @@
 
             const getLocalNewsFallback = () => {
                 const templates = [
-                    { title: "Yeni Nesil İşlemciler Duyuruldu", category: "teknoloji", desc: "Verimlilikte %40 artış vaat eden yeni işlemci mimarisi resmi olarak tanıtıldı.", image: "💻" },
-                    { title: "Yılın En Çok Beklenen Oyunu Yayında", category: "oyun", desc: "Açık dünya mekanikleriyle devrim yaratacağı söylenen yeni RPG oyunu bugün çıktı.", image: "🎮" },
-                    { title: "Popüler Uygulamaya Büyük Güncelleme", category: "uygulama", desc: "Milyonlarca kullanıcısı olan sosyal medya uygulaması, arayüzünü tamamen yeniledi.", image: "📱" }
+                    {
+                        title: "Yeni Nesil İşlemciler Duyuruldu",
+                        category: "teknoloji",
+                        desc: "Verimlilikte %40 artış vaat eden yeni işlemci mimarisi resmi olarak tanıtıldı.",
+                        image: "💻",
+                        body: "<h2>Geleceğin Gücü Burada</h2><p>Yeni nesil işlemciler, enerji verimliliğini korurken performansı ikiye katlıyor. Bu mimari, yapay zeka işlemlerinde devrim yaratacak.</p>"
+                    },
+                    {
+                        title: "Yılın En Çok Beklenen Oyunu Yayında",
+                        category: "oyun",
+                        desc: "Açık dünya mekanikleriyle devrim yaratacağı söylenen yeni RPG oyunu bugün çıktı.",
+                        image: "🎮",
+                        body: "<h2>Destansı Bir Macera Başlıyor</h2><p>Grafikleri ve hikaye derinliği ile dikkat çeken bu oyun, RPG tutkunlarını saatlerce ekrana bağlayacak gibi görünüyor.</p>"
+                    },
+                    {
+                        title: "Popüler Uygulamaya Büyük Güncelleme",
+                        category: "uygulama",
+                        desc: "Milyonlarca kullanıcısı olan sosyal medya uygulaması, arayüzünü tamamen yeniledi.",
+                        image: "📱",
+                        body: "<h2>Kullanıcı Deneyimi Yeniden Tanımlandı</h2><p>Yeni arayüz, kullanım kolaylığı ve hız odaklı geliştirildi. Ayrıca yeni gizlilik özellikleri de eklendi.</p>"
+                    }
                 ];
                 return templates;
             };
@@ -637,7 +655,7 @@
 
                 const prompt = `Generate 3 trending technology news articles for a tech portal called AsiaConsole. 
                 Return them strictly as a JSON array of objects with these properties:
-                "title" (string), "category" (either "teknoloji", "oyun", or "uygulama"), "desc" (string, max 200 chars), "image" (one emoji).
+                "title" (string), "category" (either "teknoloji", "oyun", or "uygulama"), "desc" (string, short summary), "body" (string, HTML formatted full article content), "image" (one emoji).
                 The language must be Turkish. Return ONLY the JSON array.`;
 
                 const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
@@ -682,6 +700,7 @@
                         title: a.title,
                         category: a.category || 'teknoloji',
                         desc: a.desc,
+                        body: a.body || '', // Full article content
                         author: 'AsiaBot',
                         image: a.image || '📄',
                         views: Math.floor(Math.random() * 500) + 100,

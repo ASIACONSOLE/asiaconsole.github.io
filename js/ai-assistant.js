@@ -304,15 +304,16 @@ const AIAssistant = (() => {
 
     const getLocalResponse = (text) => {
         const q = text.toLowerCase();
-        if (q.includes('merhaba') || q.includes('selam')) return "Selam! Ben AsiaBot. Sana nasıl yardımcı olabilirim? 🤖";
-        if (q.includes('kim') || q.includes('hazırladı') || q.includes('yapan')) return "Ben AsiaConsole ekibi tarafından geliştirilmiş bir yapay zekayım. 💻";
-        if (q.includes('forum')) return "Forum sayfamızda teknoloji, oyun ve yazılım hakkında yardımlaşabilirsin. Mutlaka göz at! 💬";
-        if (q.includes('oyun')) return "Oyun sayfamızda en son çıkan oyun haberlerini ve incelemelerini bulabilirsin. 🎮";
-        if (q.includes('admin') || q.includes('panel')) return "Admin paneline yetkin varsa soldaki menüden ulaşabilir, siteyi yönetebilirsin. ⚙️";
-        if (q.includes('kayıt') || q.includes('üye')) return "Üye olmak için sağ üstteki giriş butonuna basıp Google ile hızlıca bağlanabilirsin. 👤";
-        if (q.includes('teşekkür')) return "Rica ederim! Her zaman buradayım. Başka bir sorun var mı? 😊";
+        if (q.includes('merhaba') || q.includes('selam')) return "Selam! Ben AsiaBot. AsiaConsole dünyasına hoş geldin! Sana forum, teknoloji haberleri veya oyunlar hakkında nasıl yardımcı olabilirim? 🤖✨";
+        if (q.includes('kim') || q.includes('hazırladı') || q.includes('yapan')) return "Ben AsiaConsole ekibi tarafından geliştirilmiş özel bir yapay zekayım. Sitenin her köşesini bilirim! 💻";
+        if (q.includes('forum')) return "Forum sayfamızda teknoloji, oyun ve yazılım hakkında harika bir topluluk var. Orada soru sorabilir veya bildiklerini paylaşabilirsin. 💬";
+        if (q.includes('oyun')) return "Oyun sayfamızda en son çıkan oyun haberlerini, incelemelerini ve e-spor dünyasından gelişmeleri bulabilirsin. 🎮";
+        if (q.includes('admin') || q.includes('panel')) return "Yönetici yetkin varsa Admin paneline soldaki menüden ulaşabilirsin. Orada site içeriğini ve ayarlarını yönetebilirsin. ⚙️";
+        if (q.includes('kayıt') || q.includes('üye')) return "Üye olmak çok kolay! Sağ üstteki giriş butonuna basıp Google hesabınla saniyeler içinde bağlanabilirsin. 👤";
+        if (q.includes('teşekkür')) return "Rica ederim! AsiaConsole'da vakit geçirdiğin için teşekkürler. Başka bir sorun olursa buradayım! 😊";
+        if (q.includes('nasılsın')) return "Harikayım! Teknoloji dünyasını takip etmekten ve kullanıcılara yardımcı olmaktan mutluluk duyuyorum. Sen nasılsın? 🚀";
 
-        return "Şu an canlı yapay zeka servisine (Gemini) bağlanamıyorum ama AsiaConsole hakkında her şeyi bana sorabilirsin! Forum, Oyun ve Teknoloji sayfalarımızı gezdin mi? 🚀";
+        return "Şu an canlı yapay zeka servisine (Gemini) bağlanırken bir yoğunluk/kota limiti yaşıyorum. Ama merak etme, AsiaConsole hakkında her şeyi bana sorabilirsin! Forum, Oyun ve Teknoloji sayfalarımızda yeni içerikler seni bekliyor. 💎";
     };
 
     const fetchGeminiResponse = async (userText) => {

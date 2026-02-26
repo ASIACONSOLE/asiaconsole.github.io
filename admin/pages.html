@@ -1104,37 +1104,42 @@
 
         async function fetchGeminiWithRetry(prompt, apiKey) {
             const MODEL = 'gemini-2.0-flash';
-            const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
             const reqBody = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] });
             const headers = { 'Content-Type': 'application/json' };
 
-            setStepState(2, 'active', 'Gemini 2.0 Flash ile analiz ediliyor...');
-            let resp = await fetch(apiUrl, { method: 'POST', headers, body: reqBody });
+            const maxRetries = 3;
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                setStepState(2, 'active', attempt === 1 ? 'Gemini 2.0 Flash ile analiz ediliyor...' : `Deneme ${attempt}/${maxRetries}...`);
+                console.log(`[FetchNews] Gemini attempt ${attempt}/${maxRetries}`);
 
-            if (resp.status === 429) {
-                setStepState(2, 'active', 'API yoğun, 4 saniye bekleniyor...');
-                console.warn('[FetchNews] 429, waiting 4s...');
-                await _delay(4000);
-
-                setStepState(2, 'active', 'Tekrar deneniyor...');
-                resp = await fetch(apiUrl, { method: 'POST', headers, body: reqBody });
+                let resp = await fetch(apiUrl, { method: 'POST', headers, body: reqBody });
 
                 if (resp.status === 429) {
+                    if (attempt < maxRetries) {
+                        const waitSec = attempt * 5; // 5s, 10s
+                        setStepState(2, 'active', `API yoğun, ${waitSec} saniye bekleniyor... (${attempt}/${maxRetries})`);
+                        console.warn(`[FetchNews] 429, waiting ${waitSec}s...`);
+                        await _delay(waitSec * 1000);
+                        continue;
+                    }
                     return { error: 'QUOTA', message: 'API kotası doldu. 1-2 dakika bekleyip tekrar deneyin.' };
                 }
-            }
 
-            if (!resp.ok) {
-                return { error: 'API_ERROR', message: `API hatası (${resp.status}). API anahtarınızı kontrol edin.` };
-            }
+                if (!resp.ok) {
+                    return { error: 'API_ERROR', message: `API hatası (${resp.status}). API anahtarınızı kontrol edin.` };
+                }
 
-            const data = await resp.json();
-            if (!data.candidates || !data.candidates[0]) {
-                return { error: 'NO_CONTENT', message: 'AI yanıt üretmedi. Farklı bir URL deneyin.' };
-            }
+                const data = await resp.json();
+                if (!data.candidates || !data.candidates[0]) {
+                    return { error: 'NO_CONTENT', message: 'AI yanıt üretmedi. Farklı bir URL deneyin.' };
+                }
 
-            setStepState(2, 'done', 'AI analizi tamamlandı (✓)');
-            return { data: data.candidates[0].content.parts[0].text };
+                setStepState(2, 'done', 'AI analizi tamamlandı (✓)');
+                return { data: data.candidates[0].content.parts[0].text };
+            }
+            // Should not reach here, but just in case
+            return { error: 'UNKNOWN', message: 'Bilinmeyen bir hata oluştu.' };
         }
 
         async function processUrlFetch() {

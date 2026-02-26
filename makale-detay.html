@@ -380,6 +380,15 @@
             document.getElementById('artDate').textContent = article.date;
             document.getElementById('artViews').textContent = article.views.toLocaleString('tr-TR');
 
+            // Apply cover image if exists
+            if (article.cover) {
+                const hero = document.querySelector('.article-hero');
+                hero.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${article.cover})`;
+                hero.style.backgroundSize = 'cover';
+                hero.style.backgroundPosition = 'center';
+                document.getElementById('artEmoji').style.display = 'none';
+            }
+
             const body = generateBody(article);
             document.getElementById('artBody').innerHTML = body;
             document.getElementById('readingTime').textContent = readingTime(body.replace(/<[^>]*>/g, ''));

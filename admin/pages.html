@@ -196,6 +196,10 @@
                     <label>Yazar</label>
                     <input type="text" id="artAuthor" placeholder="Örn: Admin">
                 </div>
+                <div class="form-group">
+                    <label>İkon (Emoji)</label>
+                    <input type="text" id="artImage" placeholder="📄">
+                </div>
             </div>
 
             <div class="form-group">
@@ -1012,7 +1016,7 @@
                         articles.unshift(newArt);
                         showAdminToast('Yeni makale eklendi! ✅', 'success');
                     }
-                    console.log(`[Admin] Saving articles, total count: ${articles.length}`);
+                    console.log(`[Admin] Saving articles, count: ${articles.length}`, articles);
                     DB.set('articles', articles);
                     renderArticles();
                     closeModal('articleModal');
@@ -1281,11 +1285,6 @@
             }
         }
 
-        document.addEventListener('dbUpdated', (e) => {
-            if (e.detail?.key === 'articles' || e.detail?.key === 'custom_pages') {
-                initPages();
-            }
-        });
 
         async function generateAiNews() {
             const settings = DB.get('settings') || {};
@@ -1394,14 +1393,21 @@
                             if (ch === '\t') return '\\t';
                             return '';
                         });
+                        try {
+                            const parsed = JSON.parse(jsonStr);
+                            newArticles = Array.isArray(parsed) ? parsed : [parsed];
+                        } catch (e) {
+                            console.error('[Admin AI] JSON Parse Error:', e);
+                            newArticles = getLocalNewsFallback();
+                        }
                     }
                 }
 
-                let currentArticles = DB.get('articles') || [];
                 const date = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
 
+                // Update both local variable and DB
                 newArticles.forEach((a, index) => {
-                    currentArticles.unshift({
+                    articles.unshift({
                         id: Date.now() + index + Math.floor(Math.random() * 100),
                         title: a.title,
                         category: a.category || 'teknoloji',
@@ -1414,19 +1420,20 @@
                     });
                 });
 
-                DB.set('articles', currentArticles);
+                DB.set('articles', articles);
+                renderArticles(); // Refreshes the table
                 document.getElementById('aiNewsStatus').style.display = 'none';
                 document.getElementById('aiNewsResult').style.display = 'block';
 
             } catch (err) {
                 console.error('AI News Error:', err);
                 const fallback = getLocalNewsFallback();
-                let currentArticles = DB.get('articles') || [];
                 fallback.forEach((f, idx) => {
                     const id = Date.now() + idx + Math.floor(Math.random() * 100);
-                    currentArticles.unshift({ ...f, id: id, author: 'AsiaBot', date: new Date().toLocaleDateString('tr-TR'), views: 100 });
+                    articles.unshift({ ...f, id: id, author: 'AsiaBot', date: new Date().toLocaleDateString('tr-TR'), views: 100 });
                 });
-                DB.set('articles', currentArticles);
+                DB.set('articles', articles);
+                renderArticles();
                 document.getElementById('aiNewsStatus').style.display = 'none';
                 document.getElementById('aiNewsResult').style.display = 'block';
             }
@@ -1435,7 +1442,13 @@
         document.addEventListener('dbUpdated', (e) => {
             const key = e.detail?.key;
             if (key === 'articles') {
-                articles = DB.get('articles') || [];
+                let data = DB.get('articles');
+                // Protection: recursive unwrap
+                while (data && typeof data === 'object' && 'data' in data && data.data !== undefined) {
+                    data = data.data;
+                }
+                articles = Array.isArray(data) ? data : [];
+                console.log('[Admin] Articles updated from DB:', articles.length);
                 renderArticles();
             }
             if (key === 'custom_pages') renderCustomPages();

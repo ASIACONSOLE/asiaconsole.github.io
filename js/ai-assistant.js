@@ -329,12 +329,18 @@ const AIAssistant = (() => {
                 })
             });
 
-            if (!response.ok) throw new Error('API request failed');
+            if (!response.ok) {
+                if (response.status === 429) throw new Error('QUOTA_EXCEEDED');
+                throw new Error('API_FAILED');
+            }
 
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
         } catch (err) {
             console.error('Gemini API Error:', err);
+            if (err.message === 'QUOTA_EXCEEDED') {
+                return "Şu an çok yoğunum (Ücretsiz kullanım kotası doldu). Lütfen 1-2 dakika sonra tekrar sormayı deneyin! 😊";
+            }
             return "Şu an canlı yapay zeka servisine bağlanamıyorum. Lütfen daha sonra tekrar deneyin veya yönetici ayarlarından API anahtarını kontrol edin.";
         }
     };

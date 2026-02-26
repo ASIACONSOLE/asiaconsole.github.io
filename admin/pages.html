@@ -1238,7 +1238,15 @@
                     return;
                 }
 
-                const articleData = JSON.parse(resultText.substring(startIdx, endIdx + 1));
+                let jsonStr = resultText.substring(startIdx, endIdx + 1);
+                // Sanitize: remove control characters inside JSON strings (Groq/Llama can inject raw newlines)
+                jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, (ch) => {
+                    if (ch === '\n') return '\\n';
+                    if (ch === '\r') return '';
+                    if (ch === '\t') return '\\t';
+                    return '';
+                });
+                const articleData = JSON.parse(jsonStr);
                 setStepState(3, 'done', 'Makale hazır! (✓)');
 
                 await _delay(500);

@@ -54,6 +54,9 @@
                 <div class="topbar-actions">
                     <span id="cloudSyncStatus" style="margin-right:0.5rem;">◌ Bağlanıyor...</span>
                     <button class="topbar-btn" id="newArticleBtn">➕ Yeni Makale</button>
+                    <button class="topbar-btn secondary" id="fetchUrlBtn"
+                        style="background:linear-gradient(135deg,#3b82f6,#8b5cf6); color:#fff; border:none;">🔗 Linkten
+                        Çek</button>
                     <button class="topbar-btn secondary" id="aiNewsBtn">🤖 Haber Üret (AI)</button>
                     <div class="admin-search">
                         <span class="s-icon">🔍</span>
@@ -331,6 +334,71 @@
         </div>
     </div>
 
+    <!-- PROFESSIONAL URL FETCH MODAL -->
+    <div class="modal-overlay" id="fetchUrlModal" style="display:none;">
+        <div class="modal fetch-modal">
+            <button class="modal-close" onclick="closeModal('fetchUrlModal')">✕</button>
+            <div class="modal-title" style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:1.4rem;">🔗</span> Linkten Haber Çek
+            </div>
+            <div style="padding:1rem 1.5rem;">
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.6;">
+                    Herhangi bir haber sitesinin URL'sini yapıştırın.<br>
+                    AsiaBot içeriği okuyup Türkçe makaleye dönüştürsün.
+                </p>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <div style="position:relative;">
+                        <input type="url" id="fetchUrlInput" placeholder="https://shiftdelete.net/haber-linki"
+                            style="width:100%; padding-right:3rem;">
+                        <span
+                            style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:1.2rem;">🌐</span>
+                    </div>
+                </div>
+
+                <!-- Step Progress -->
+                <div id="fetchProgress" style="display:none;">
+                    <div class="fetch-steps">
+                        <div class="fetch-step" id="fetchStep1">
+                            <div class="step-icon">📡</div>
+                            <div class="step-info">
+                                <div class="step-title">Kaynak Okunuyor</div>
+                                <div class="step-desc" id="fetchStep1Desc">Haber sitesine bağlanılıyor...</div>
+                            </div>
+                            <div class="step-status" id="fetchStep1Status">⏳</div>
+                        </div>
+                        <div class="fetch-step" id="fetchStep2">
+                            <div class="step-icon">🤖</div>
+                            <div class="step-info">
+                                <div class="step-title">AI Analiz</div>
+                                <div class="step-desc" id="fetchStep2Desc">Yapay zeka içeriği işleyecek...</div>
+                            </div>
+                            <div class="step-status" id="fetchStep2Status">⏳</div>
+                        </div>
+                        <div class="fetch-step" id="fetchStep3">
+                            <div class="step-icon">📝</div>
+                            <div class="step-info">
+                                <div class="step-title">Makale Hazır</div>
+                                <div class="step-desc" id="fetchStep3Desc">Düzenleme için hazırlanacak...</div>
+                            </div>
+                            <div class="step-status" id="fetchStep3Status">⏳</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error display -->
+                <div id="fetchError"
+                    style="display:none; background:rgba(239,68,68,0.1); color:#ef4444; padding:1rem; border-radius:10px; margin-top:1rem; font-size:0.85rem; line-height:1.5;">
+                </div>
+
+                <div class="modal-footer" style="padding:1rem 0 0 0;">
+                    <button class="topbar-btn secondary" onclick="closeModal('fetchUrlModal')">İptal</button>
+                    <button class="topbar-btn" id="startFetchBtn"
+                        style="background:linear-gradient(135deg,#3b82f6,#8b5cf6); border:none;">🚀 Haberi
+                        Getir</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <style>
         .ai-loader {
@@ -433,6 +501,83 @@
 
         #artBody {
             border-radius: 0 0 8px 8px;
+        }
+
+        /* Professional Fetch Modal Styles */
+        .fetch-modal {
+            max-width: 520px;
+            width: 95%;
+        }
+
+        .fetch-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .fetch-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            transition: all 0.4s ease;
+        }
+
+        .fetch-step.active {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .fetch-step.done {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .fetch-step.error {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .step-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .step-info {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .step-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .step-status {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .fetch-step.active .step-status {
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 
@@ -795,6 +940,24 @@
                 });
             }
 
+            // Fetch URL btn
+            const fetchBtn = document.getElementById('fetchUrlBtn');
+            if (fetchBtn) {
+                fetchBtn.addEventListener('click', () => {
+                    document.getElementById('fetchUrlInput').value = '';
+                    document.getElementById('fetchProgress').style.display = 'none';
+                    document.getElementById('fetchError').style.display = 'none';
+                    document.getElementById('startFetchBtn').disabled = false;
+                    document.getElementById('startFetchBtn').textContent = '🚀 Haberi Getir';
+                    resetFetchSteps();
+                    openModal('fetchUrlModal');
+                });
+            }
+
+            const startFetchBtn = document.getElementById('startFetchBtn');
+            if (startFetchBtn) {
+                startFetchBtn.addEventListener('click', processUrlFetch);
+            }
 
             // Save article btn
             const saveBtn = document.getElementById('saveArticleBtn');
@@ -850,6 +1013,213 @@
             }
         });
 
+
+        // === PROFESSIONAL URL FETCH SYSTEM ===
+        function resetFetchSteps() {
+            [1, 2, 3].forEach(i => {
+                const step = document.getElementById(`fetchStep${i}`);
+                if (step) step.className = 'fetch-step';
+                const status = document.getElementById(`fetchStep${i}Status`);
+                if (status) status.textContent = '⏳';
+            });
+            const d1 = document.getElementById('fetchStep1Desc');
+            const d2 = document.getElementById('fetchStep2Desc');
+            const d3 = document.getElementById('fetchStep3Desc');
+            if (d1) d1.textContent = 'Haber sitesine bağlanılıyor...';
+            if (d2) d2.textContent = 'Yapay zeka içeriği işleyecek...';
+            if (d3) d3.textContent = 'Düzenleme için hazırlanacak...';
+        }
+
+        function setStepState(stepNum, state, desc) {
+            const step = document.getElementById(`fetchStep${stepNum}`);
+            if (!step) return;
+            step.className = `fetch-step ${state}`;
+            const statusEl = document.getElementById(`fetchStep${stepNum}Status`);
+            if (statusEl) {
+                if (state === 'done') statusEl.textContent = '✅';
+                else if (state === 'active') statusEl.textContent = '🔄';
+                else if (state === 'error') statusEl.textContent = '❌';
+            }
+            if (desc) {
+                const descEl = document.getElementById(`fetchStep${stepNum}Desc`);
+                if (descEl) descEl.textContent = desc;
+            }
+        }
+
+        function showFetchError(msg) {
+            const errEl = document.getElementById('fetchError');
+            if (errEl) {
+                errEl.innerHTML = msg;
+                errEl.style.display = 'block';
+            }
+        }
+
+        const _delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function fetchContentViaProxy(url) {
+            const proxies = [
+                { name: 'Jina Reader', build: (u) => `https://r.jina.ai/${u}` },
+                { name: 'CorsProxy', build: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}` },
+                { name: 'CORS.lol', build: (u) => `https://api.cors.lol/?url=${encodeURIComponent(u)}` }
+            ];
+
+            for (const proxy of proxies) {
+                try {
+                    setStepState(1, 'active', `${proxy.name} üzerinden okunuyor...`);
+                    console.log(`[FetchNews] Trying proxy: ${proxy.name}`);
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                    const resp = await fetch(proxy.build(url), {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (resp.status === 451 || resp.status === 403) {
+                        console.warn(`[FetchNews] ${proxy.name}: ${resp.status}, trying next...`);
+                        continue;
+                    }
+                    if (!resp.ok) {
+                        console.warn(`[FetchNews] ${proxy.name}: ${resp.status}, trying next...`);
+                        continue;
+                    }
+
+                    const text = await resp.text();
+                    if (text.length < 200) {
+                        console.warn(`[FetchNews] ${proxy.name}: too short (${text.length} chars)`);
+                        continue;
+                    }
+
+                    console.log(`[FetchNews] Success via ${proxy.name} (${text.length} chars)`);
+                    setStepState(1, 'done', `${proxy.name} ile okundu (✓)`);
+                    return text;
+                } catch (err) {
+                    console.warn(`[FetchNews] ${proxy.name} error:`, err.message);
+                    continue;
+                }
+            }
+            return null;
+        }
+
+        async function fetchGeminiWithRetry(prompt, apiKey) {
+            const MODEL = 'gemini-2.0-flash';
+            const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${apiKey}`;
+            const reqBody = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] });
+            const headers = { 'Content-Type': 'application/json' };
+
+            setStepState(2, 'active', 'Gemini 2.0 Flash ile analiz ediliyor...');
+            let resp = await fetch(apiUrl, { method: 'POST', headers, body: reqBody });
+
+            if (resp.status === 429) {
+                setStepState(2, 'active', 'API yoğun, 4 saniye bekleniyor...');
+                console.warn('[FetchNews] 429, waiting 4s...');
+                await _delay(4000);
+
+                setStepState(2, 'active', 'Tekrar deneniyor...');
+                resp = await fetch(apiUrl, { method: 'POST', headers, body: reqBody });
+
+                if (resp.status === 429) {
+                    return { error: 'QUOTA', message: 'API kotası doldu. 1-2 dakika bekleyip tekrar deneyin.' };
+                }
+            }
+
+            if (!resp.ok) {
+                return { error: 'API_ERROR', message: `API hatası (${resp.status}). API anahtarınızı kontrol edin.` };
+            }
+
+            const data = await resp.json();
+            if (!data.candidates || !data.candidates[0]) {
+                return { error: 'NO_CONTENT', message: 'AI yanıt üretmedi. Farklı bir URL deneyin.' };
+            }
+
+            setStepState(2, 'done', 'AI analizi tamamlandı (✓)');
+            return { data: data.candidates[0].content.parts[0].text };
+        }
+
+        async function processUrlFetch() {
+            const url = document.getElementById('fetchUrlInput').value.trim();
+            if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+                showAdminToast('Lütfen geçerli bir URL girin! (https://...)', 'error');
+                return;
+            }
+
+            const settings = DB.get('settings') || {};
+            const API_KEY = settings.geminiApiKey;
+            if (!API_KEY) {
+                showAdminToast('Gemini API anahtarı eksik! Site Ayarlarından ekleyin.', 'error');
+                return;
+            }
+
+            resetFetchSteps();
+            document.getElementById('fetchProgress').style.display = 'block';
+            document.getElementById('fetchError').style.display = 'none';
+            document.getElementById('startFetchBtn').disabled = true;
+            document.getElementById('startFetchBtn').textContent = '⏳ Çekiliyor...';
+
+            try {
+                // STEP 1: Read content
+                setStepState(1, 'active', 'Kaynak okunuyor...');
+                const pageContent = await fetchContentViaProxy(url);
+
+                if (!pageContent) {
+                    setStepState(1, 'error', 'Hiçbir proxy ile okunamadı');
+                    showFetchError('⚠️ <strong>Kaynak okunamadı.</strong><br>Bu site bot erişimini engelliyor olabilir.<br><br>💡 <strong>Öneri:</strong> ShiftDelete.net, DonanımHaber, Webtekno gibi Türk teknoloji sitelerini deneyin.');
+                    return;
+                }
+
+                // STEP 2: AI Analysis
+                const prompt = `Aşağıdaki metin bir haber sayfasından alınmıştır:\n---\n${pageContent.substring(0, 12000)}\n---\nBu içeriği "AsiaConsole" teknoloji portalı için profesyonel bir makaleye dönüştür.\nAşağıdaki JSON formatında döndür:\n{"title": "Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Kısa özet (max 2 cümle)", "body": "HTML formatlı tam makale içeriği (<h2>, <p>, <ul> vb. kullan)", "image": "tek emoji"}\nKurallar:\n- Türkçe yaz\n- body içinde en az 3 paragraf olsun\n- Sadece JSON döndür, başka bir şey yazma`;
+
+                const aiResult = await fetchGeminiWithRetry(prompt, API_KEY);
+
+                if (aiResult.error) {
+                    setStepState(2, 'error', aiResult.message);
+                    const icon = aiResult.error === 'QUOTA' ? '⏳' : '❌';
+                    showFetchError(`${icon} <strong>${aiResult.message}</strong>`);
+                    return;
+                }
+
+                // STEP 3: Parse and load
+                setStepState(3, 'active', 'Makale hazırlanıyor...');
+
+                let resultText = aiResult.data;
+                const startIdx = resultText.indexOf('{');
+                const endIdx = resultText.lastIndexOf('}');
+
+                if (startIdx === -1 || endIdx === -1) {
+                    setStepState(3, 'error', 'JSON parse hatası');
+                    showFetchError('❌ <strong>AI çıktısı işlenemedi.</strong><br>Farklı bir URL ile tekrar deneyin.');
+                    return;
+                }
+
+                const articleData = JSON.parse(resultText.substring(startIdx, endIdx + 1));
+                setStepState(3, 'done', 'Makale hazır! (✓)');
+
+                await _delay(500);
+
+                closeModal('fetchUrlModal');
+                document.getElementById('modalTitle').textContent = '📝 Çekilen Haberi Onayla';
+                document.getElementById('editId').value = '';
+                document.getElementById('artTitle').value = articleData.title || '';
+                document.getElementById('artCategory').value = articleData.category || 'teknoloji';
+                document.getElementById('artDesc').value = articleData.desc || '';
+                document.getElementById('artBody').value = articleData.body || '';
+                document.getElementById('artAuthor').value = 'AsiaBot (Source: URL)';
+                document.getElementById('artImage').value = articleData.image || '📄';
+                document.getElementById('artViews').value = Math.floor(Math.random() * 50) + 10;
+                openModal('articleModal');
+
+                showAdminToast('Haber başarıyla çekildi! Kontrol edip kaydedin. ✅', 'success');
+
+            } catch (err) {
+                console.error('[FetchNews] Error:', err);
+                showFetchError(`❌ <strong>Beklenmeyen hata:</strong> ${err.message}`);
+            } finally {
+                document.getElementById('startFetchBtn').disabled = false;
+                document.getElementById('startFetchBtn').textContent = '🚀 Haberi Getir';
+            }
+        }
 
         document.addEventListener('dbUpdated', (e) => {
             if (e.detail?.key === 'articles' || e.detail?.key === 'custom_pages') {

@@ -13,3 +13,4 @@ brain/
 # Common temporary files
 *.tmp
 *.log
+.env

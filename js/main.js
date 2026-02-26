@@ -257,7 +257,7 @@ const DB = {
             aiEnabled: true,
             aiName: 'AsiaBot',
             aiGreeting: 'Merhaba! Ben AsiaBot, size nasıl yardımcı olabilirim?',
-            geminiApiKey: 'AIzaSyASFArCh81LfG_aglNdFTrADBPOVLDqRFg', // Canlı yapay zeka anahtarı
+            geminiApiKey: '', // Yönetici panelinden ayarlanmalı
             siteFont: "'Inter', sans-serif",
             brandAnim: 'none',
             brandAnimSpeed: 2.0,

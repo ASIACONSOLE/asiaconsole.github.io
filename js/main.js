@@ -762,8 +762,6 @@ const Messaging = {
 };
 
 /* ================================================
-   PROFILE DATA
-   ================================================ */
 const ProfileData = {
     get(userId) {
         const profiles = DB.get('profiles') || [];
@@ -777,12 +775,55 @@ const ProfileData = {
         DB.set('profiles', profiles);
     }
 };
+
+/* ================================================
+   ARTICLE COMMENTS SYSTEM
+   ================================================ */
+const Comments = {
+    getAll() {
+        let data = DB.get('article_comments') || [];
+        // Triple-Guard unwrap
+        while (data && typeof data === 'object' && 'data' in data && data.data !== undefined) {
+            data = data.data;
+        }
+        return Array.isArray(data) ? data : [];
+    },
+    getByArticle(articleId) {
+        return this.getAll().filter(c => c.articleId === articleId).sort((a, b) => b.ts - a.ts);
+    },
+    add(articleId, username, text) {
+        if (!text.trim()) return false;
+        const all = this.getAll();
+        const newComm = {
+            id: Date.now() + Math.random(),
+            articleId,
+            username,
+            text: text.trim(),
+            ts: Date.now(),
+            date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        };
+        all.push(newComm);
+        DB.set('article_comments', all);
+        return newComm;
+    },
+    delete(commentId, username) {
+        let all = this.getAll();
+        const idx = all.findIndex(c => c.id === commentId && c.username === username);
+        if (idx !== -1) {
+            all.splice(idx, 1);
+            DB.set('article_comments', all);
+            return true;
+        }
+        return false;
+    }
+};
+
 DB.init();
 
 // Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {
     FirebaseDB.onReady(() => {
-        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo', 'user_projects', 'user_tiers', 'profiles', 'custom_pages'];
+        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments'];
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {

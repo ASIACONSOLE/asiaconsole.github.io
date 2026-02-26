@@ -195,6 +195,149 @@
         .toc-box a:hover {
             color: var(--accent-blue);
         }
+
+        /* Comments Styling */
+        .comments-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        .comments-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .comment-item:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .comment-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .comment-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .comment-form {
+            margin-bottom: 3rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .comment-login-msg {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(79, 142, 247, 0.05);
+            border: 1px dashed var(--accent-blue);
+            border-radius: 12px;
+            color: var(--text-secondary);
+        }
+
+        .btn-comment {
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-comment:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .comment-delete {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .comment-delete:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -269,6 +412,21 @@
                 <a class="btn-share" id="shareWhatsapp" href="#" target="_blank">💬 WhatsApp</a>
                 <button class="btn-share" onclick="copyLink()">🔗 Bağlantıyı Kopyala</button>
                 <a class="btn-share" href="forum.html">💬 Forum'da Tartış</a>
+            </div>
+        </div>
+
+        <!-- COMMENTS -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <h3 style="font-size:1.25rem; font-weight:700;">💬 Yorumlar (<span id="commentCount">0</span>)</h3>
+            </div>
+
+            <div id="commentFormContainer">
+                <!-- Form or Login message injected by JS -->
+            </div>
+
+            <div id="commentsList">
+                <p style="text-align:center; color:var(--text-muted); padding:2rem;">Yorumlar yükleniyor...</p>
             </div>
         </div>
 
@@ -417,6 +575,93 @@
             }
 
             document.getElementById('articleContent').style.display = 'block';
+
+            // --- Comment System ---
+            const currentUser = DB.get('currentUser');
+            let currentId = id;
+
+            function renderComments() {
+                const comments = Comments.getByArticle(currentId);
+                const list = document.getElementById('commentsList');
+                const countBadge = document.getElementById('commentCount');
+
+                countBadge.textContent = comments.length;
+
+                if (comments.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:3rem;">Henüz yorum yapılmamış. İlk yorumu sen yap!</p>';
+                    return;
+                }
+
+                list.innerHTML = comments.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-avatar">${c.username[0].toUpperCase()}</div>
+                        <div class="comment-content">
+                            <div class="comment-meta">
+                                <span class="comment-author">@${c.username}</span>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <span class="comment-date">${c.date}</span>
+                                    ${currentUser && currentUser.username === c.username ? `
+                                        <button class="comment-delete" onclick="deleteComment('${c.id}')">Sil</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <div class="comment-text">${c.text}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function setupCommentForm() {
+                const container = document.getElementById('commentFormContainer');
+                if (!currentUser) {
+                    container.innerHTML = `
+                        <div class="comment-login-msg">
+                            Yorum yapabilmek için <a href="uye-panel.html" style="color:var(--accent-blue); font-weight:700;">giriş yapmalısınız</a>.
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="comment-form">
+                        <textarea class="comment-textarea" id="commentInput" placeholder="Düşüncelerinizi paylaşın..."></textarea>
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button class="btn-comment" id="postCommentBtn">Yorum Gönder</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('postCommentBtn').addEventListener('click', () => {
+                    const text = document.getElementById('commentInput').value;
+                    if (Comments.add(currentId, currentUser.username, text)) {
+                        document.getElementById('commentInput').value = '';
+                        showToast('Yorumun eklendi! ✨', 'success');
+                        renderComments();
+                    } else {
+                        showToast('Lütfen bir şeyler yazın.', 'error');
+                    }
+                });
+            }
+
+            window.deleteComment = (commentId) => {
+                if (confirm('Yorumu silmek istediğine emin misin?')) {
+                    if (Comments.delete(Number(commentId), currentUser.username)) {
+                        showToast('Yorum silindi. 🗑️', 'success');
+                        renderComments();
+                    }
+                }
+            };
+
+            // Initial render
+            setupCommentForm();
+            renderComments();
+
+            // Real-time updates
+            document.addEventListener('dbUpdated', (e) => {
+                if (e.detail?.key === 'article_comments') {
+                    renderComments();
+                }
+            });
         });
     </script>
 </body>

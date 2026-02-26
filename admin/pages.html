@@ -54,7 +54,6 @@
                 <div class="topbar-actions">
                     <span id="cloudSyncStatus" style="margin-right:0.5rem;">◌ Bağlanıyor...</span>
                     <button class="topbar-btn" id="newArticleBtn">➕ Yeni Makale</button>
-                    <button class="topbar-btn secondary" id="fetchUrlBtn">🔗 Linkten Çek</button>
                     <button class="topbar-btn secondary" id="aiNewsBtn">🤖 Haber Üret (AI)</button>
                     <div class="admin-search">
                         <span class="s-icon">🔍</span>
@@ -332,30 +331,6 @@
         </div>
     </div>
 
-    <!-- FETCH FROM URL MODAL -->
-    <div class="modal-overlay" id="fetchUrlModal" style="display:none;">
-        <div class="modal" style="max-width:500px;">
-            <button class="modal-close" onclick="closeModal('fetchUrlModal')">✕</button>
-            <div class="modal-title">🔗 Linkten Haber Çek</div>
-            <div style="padding:1rem;">
-                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
-                    Haberin URL'sini yapıştırın, AsiaBot içeriği okuyup sizin için hazırlasın.
-                </p>
-                <div class="form-group">
-                    <input type="url" id="fetchUrlInput" placeholder="https://example.com/haber-linki"
-                        style="width:100%;">
-                </div>
-                <div id="fetchStatus" style="display:none; text-align:center; padding:1rem;">
-                    <div class="ai-loader" style="font-size:2rem; margin-bottom:0.5rem;">🔍</div>
-                    <p id="fetchMsg" style="font-size:0.9rem;">Haber okunuyor...</p>
-                </div>
-                <div class="modal-footer" style="padding:1rem 0 0 0;">
-                    <button class="topbar-btn secondary" onclick="closeModal('fetchUrlModal')">İptal</button>
-                    <button class="topbar-btn" id="startFetchBtn">🚀 Haberi Getir</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <style>
         .ai-loader {
@@ -820,20 +795,6 @@
                 });
             }
 
-            // Fetch URL btn
-            const fetchBtn = document.getElementById('fetchUrlBtn');
-            if (fetchBtn) {
-                fetchBtn.addEventListener('click', () => {
-                    document.getElementById('fetchUrlInput').value = '';
-                    document.getElementById('fetchStatus').style.display = 'none';
-                    openModal('fetchUrlModal');
-                });
-            }
-
-            const startFetchBtn = document.getElementById('startFetchBtn');
-            if (startFetchBtn) {
-                startFetchBtn.addEventListener('click', processUrlFetch);
-            }
 
             // Save article btn
             const saveBtn = document.getElementById('saveArticleBtn');
@@ -889,107 +850,6 @@
             }
         });
 
-        async function processUrlFetch() {
-            const url = document.getElementById('fetchUrlInput').value.trim();
-            if (!url) { showAdminToast('Lütfen geçerli bir URL girin!', 'error'); return; }
-
-            const settings = DB.get('settings') || {};
-            const API_KEY = settings.geminiApiKey;
-            if (!API_KEY) { showAdminToast('Gemini API anahtarı eksik!', 'error'); return; }
-
-            const statusEl = document.getElementById('fetchStatus');
-            const msgEl = document.getElementById('fetchMsg');
-            statusEl.style.display = 'block';
-
-            try {
-                msgEl.textContent = 'Haber kaynağından veri çekiliyor...';
-                const jinaResp = await fetch(`https://r.jina.ai/${url}`);
-
-                if (jinaResp.status === 451) {
-                    throw new Error('Bu site erişime engelli (451). Başka bir kaynak deneyin.');
-                }
-                if (!jinaResp.ok) throw new Error('Kaynak okunamadı. Site bot engelliyor olabilir.');
-
-                const pageContent = await jinaResp.text();
-
-                msgEl.textContent = 'Yapay zeka içeriği analiz ediyor...';
-                const prompt = `Following represents the content of a news page:
-                ---
-                ${pageContent.substring(0, 10000)}
-                ---
-                Analyze this and format it as an article for "AsiaConsole" tech portal.
-                Return strictly as a JSON object with these properties:
-                "title", "category" (teknoloji, oyun, or uygulama), "desc" (short summary), "body" (HTML formatted full article content), "image" (one emoji).
-                The language must be Turkish. Return ONLY the JSON object.`;
-
-                const fetchGemini = async (model) => {
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${API_KEY}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    if (resp.status === 429) return { error: 'QUOTA' };
-                    if (!resp.ok) return { error: 'API_ERROR' };
-                    const data = await resp.json();
-                    return { data };
-                };
-
-                // Try multiple models in order of preference
-                const models = ['gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
-                let result = { error: 'NO_MODEL' };
-
-                for (const model of models) {
-                    msgEl.textContent = `Analiz ediliyor (${model})...`;
-                    const attempt = await fetchGemini(model);
-
-                    if (!attempt.error) {
-                        result = attempt;
-                        break;
-                    }
-
-                    if (attempt.error === 'QUOTA' || attempt.error === 'API_ERROR') {
-                        console.warn(`Model ${model} failed. Trying next...`);
-                        result = attempt;
-                        continue;
-                    }
-                }
-
-                if (result.error) {
-                    const errorMsg = result.error === 'QUOTA' ? 'API Kotası doldu, lütfen biraz bekleyin.' : 'AI modellerine ulaşılamadı (404/Quota).';
-                    throw new Error(errorMsg);
-                }
-
-                const data = result.data;
-                if (!data.candidates || !data.candidates[0]) throw new Error('AI yanıt vermedi.');
-
-                let resultText = data.candidates[0].content.parts[0].text;
-                const startIdx = resultText.indexOf('{');
-                const endIdx = resultText.lastIndexOf('}');
-                if (startIdx === -1) throw new Error('Format hatası.');
-
-                const articleData = JSON.parse(resultText.substring(startIdx, endIdx + 1));
-
-                closeModal('fetchUrlModal');
-                document.getElementById('modalTitle').textContent = '📝 Çekilen Haberi Onayla';
-                document.getElementById('editId').value = '';
-                document.getElementById('artTitle').value = articleData.title;
-                document.getElementById('artCategory').value = articleData.category || 'teknoloji';
-                document.getElementById('artDesc').value = articleData.desc;
-                document.getElementById('artBody').value = articleData.body;
-                document.getElementById('artAuthor').value = 'AsiaBot (Source: URL)';
-                document.getElementById('artImage').value = articleData.image || '📄';
-                document.getElementById('artViews').value = Math.floor(Math.random() * 50) + 10;
-                openModal('articleModal');
-
-                showAdminToast('Haber başarıyla çekildi! Kontrol edin.', 'success');
-
-            } catch (err) {
-                console.error('Fetch Error:', err);
-                showAdminToast('Hata: ' + err.message, 'error');
-            } finally {
-                statusEl.style.display = 'none';
-            }
-        }
 
         document.addEventListener('dbUpdated', (e) => {
             if (e.detail?.key === 'articles' || e.detail?.key === 'custom_pages') {

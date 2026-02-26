@@ -306,7 +306,7 @@ const AIAssistant = (() => {
         // Re-read settings just in case it was updated in main.js
         const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
         const API_KEY = s.geminiApiKey;
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
 
         // Construct a simple context for the bot
         const siteContext = `

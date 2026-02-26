@@ -934,16 +934,30 @@
                     return { data };
                 };
 
-                // Try Gemini 2.0 first
-                let result = await fetchGemini('gemini-2.0-flash');
+                // Try multiple models in order of preference
+                const models = ['gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
+                let result = { error: 'NO_MODEL' };
 
-                // Fallback to Gemini 1.5 if quota hit
-                if (result.error === 'QUOTA') {
-                    msgEl.textContent = 'Kota doldu, yedek modele (1.5 Flash) bağlanılıyor...';
-                    result = await fetchGemini('gemini-1.5-flash');
+                for (const model of models) {
+                    msgEl.textContent = `Analiz ediliyor (${model})...`;
+                    const attempt = await fetchGemini(model);
+
+                    if (!attempt.error) {
+                        result = attempt;
+                        break;
+                    }
+
+                    if (attempt.error === 'QUOTA' || attempt.error === 'API_ERROR') {
+                        console.warn(`Model ${model} failed. Trying next...`);
+                        result = attempt;
+                        continue;
+                    }
                 }
 
-                if (result.error) throw new Error(result.error === 'QUOTA' ? 'API Kotası doldu, lütfen bekleyin.' : 'AI yanıt vermedi.');
+                if (result.error) {
+                    const errorMsg = result.error === 'QUOTA' ? 'API Kotası doldu, lütfen biraz bekleyin.' : 'AI modellerine ulaşılamadı (404/Quota).';
+                    throw new Error(errorMsg);
+                }
 
                 const data = result.data;
                 if (!data.candidates || !data.candidates[0]) throw new Error('AI yanıt vermedi.');

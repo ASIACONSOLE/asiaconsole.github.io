@@ -1102,45 +1102,86 @@
             return null;
         }
 
-        async function fetchGeminiWithRetry(prompt, apiKey) {
-            const MODEL = 'gemini-2.0-flash';
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
-            const reqBody = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] });
-            const headers = { 'Content-Type': 'application/json' };
-
-            const maxRetries = 3;
-            for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                setStepState(2, 'active', attempt === 1 ? 'Gemini 2.0 Flash ile analiz ediliyor...' : `Deneme ${attempt}/${maxRetries}...`);
-                console.log(`[FetchNews] Gemini attempt ${attempt}/${maxRetries}`);
-
-                let resp = await fetch(apiUrl, { method: 'POST', headers, body: reqBody });
-
-                if (resp.status === 429) {
-                    if (attempt < maxRetries) {
-                        const waitSec = attempt * 5; // 5s, 10s
-                        setStepState(2, 'active', `API yoğun, ${waitSec} saniye bekleniyor... (${attempt}/${maxRetries})`);
-                        console.warn(`[FetchNews] 429, waiting ${waitSec}s...`);
-                        await _delay(waitSec * 1000);
-                        continue;
-                    }
-                    return { error: 'QUOTA', message: 'API kotası doldu. 1-2 dakika bekleyip tekrar deneyin.' };
-                }
-
-                if (!resp.ok) {
-                    return { error: 'API_ERROR', message: `API hatası (${resp.status}). API anahtarınızı kontrol edin.` };
-                }
-
-                const data = await resp.json();
-                if (!data.candidates || !data.candidates[0]) {
-                    return { error: 'NO_CONTENT', message: 'AI yanıt üretmedi. Farklı bir URL deneyin.' };
-                }
-
-                setStepState(2, 'done', 'AI analizi tamamlandı (✓)');
-                return { data: data.candidates[0].content.parts[0].text };
-            }
-            // Should not reach here, but just in case
-            return { error: 'UNKNOWN', message: 'Bilinmeyen bir hata oluştu.' };
+        async function fetchViaGemini(prompt, apiKey) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const resp = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            if (resp.status === 429) return { error: 'QUOTA' };
+            if (!resp.ok) return { error: 'API_ERROR' };
+            const data = await resp.json();
+            if (!data.candidates || !data.candidates[0]) return { error: 'NO_CONTENT' };
+            return { data: data.candidates[0].content.parts[0].text };
         }
+
+        async function fetchViaGroq(prompt, apiKey) {
+            const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.7,
+                    max_tokens: 4096
+                })
+            });
+            if (resp.status === 429) return { error: 'QUOTA' };
+            if (!resp.ok) return { error: 'API_ERROR' };
+            const data = await resp.json();
+            if (!data.choices || !data.choices[0]) return { error: 'NO_CONTENT' };
+            return { data: data.choices[0].message.content };
+        }
+
+        async function fetchAIAnalysis(prompt, settings) {
+            const geminiKey = settings.geminiApiKey;
+            const groqKey = settings.groqApiKey;
+
+            // Try Gemini first
+            if (geminiKey) {
+                setStepState(2, 'active', 'Gemini 2.0 Flash ile analiz ediliyor...');
+                console.log('[FetchNews] Trying Gemini...');
+                const result = await fetchViaGemini(prompt, geminiKey);
+                if (!result.error) {
+                    setStepState(2, 'done', 'Gemini ile tamamlandı (✓)');
+                    return result;
+                }
+                if (result.error === 'QUOTA' && groqKey) {
+                    console.warn('[FetchNews] Gemini quota, switching to Groq...');
+                    setStepState(2, 'active', 'Gemini kotası doldu → Groq (Llama 3) deneniyor...');
+                    await _delay(500);
+                } else if (result.error === 'QUOTA') {
+                    setStepState(2, 'active', 'API yoğun, 5 sn bekleniyor...');
+                    await _delay(5000);
+                    const retry = await fetchViaGemini(prompt, geminiKey);
+                    if (!retry.error) { setStepState(2, 'done', 'Gemini ile tamamlandı (✓)'); return retry; }
+                    return { error: 'QUOTA', message: 'Gemini kotası doldu. Groq API anahtarı ekleyin veya 1-2 dk bekleyin.' };
+                } else {
+                    if (!groqKey) return { error: result.error, message: 'Gemini hatası. API anahtarınızı kontrol edin.' };
+                    setStepState(2, 'active', 'Gemini başarısız → Groq deneniyor...');
+                }
+            }
+
+            // Try Groq
+            if (groqKey) {
+                setStepState(2, 'active', 'Groq (Llama 3.3) ile analiz ediliyor...');
+                console.log('[FetchNews] Trying Groq...');
+                const result = await fetchViaGroq(prompt, groqKey);
+                if (!result.error) {
+                    setStepState(2, 'done', 'Groq (Llama 3) ile tamamlandı (✓)');
+                    return result;
+                }
+                if (result.error === 'QUOTA') return { error: 'QUOTA', message: 'Tüm AI servisleri kota limitinde. Birkaç dk bekleyin.' };
+                return { error: result.error, message: 'Groq hatası. API anahtarınızı kontrol edin.' };
+            }
+
+            return { error: 'NO_KEY', message: 'API anahtarı gerekli! Site Ayarlarından Gemini veya Groq ekleyin.' };
+        }
+
 
         async function processUrlFetch() {
             const url = document.getElementById('fetchUrlInput').value.trim();
@@ -1150,9 +1191,8 @@
             }
 
             const settings = DB.get('settings') || {};
-            const API_KEY = settings.geminiApiKey;
-            if (!API_KEY) {
-                showAdminToast('Gemini API anahtarı eksik! Site Ayarlarından ekleyin.', 'error');
+            if (!settings.geminiApiKey && !settings.groqApiKey) {
+                showAdminToast('API anahtarı eksik! Site Ayarlarından Gemini veya Groq anahtarı ekleyin.', 'error');
                 return;
             }
 
@@ -1176,7 +1216,7 @@
                 // STEP 2: AI Analysis
                 const prompt = `Aşağıdaki metin bir haber sayfasından alınmıştır:\n---\n${pageContent.substring(0, 12000)}\n---\nBu içeriği "AsiaConsole" teknoloji portalı için profesyonel bir makaleye dönüştür.\nAşağıdaki JSON formatında döndür:\n{"title": "Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Kısa özet (max 2 cümle)", "body": "HTML formatlı tam makale içeriği (<h2>, <p>, <ul> vb. kullan)", "image": "tek emoji"}\nKurallar:\n- Türkçe yaz\n- body içinde en az 3 paragraf olsun\n- Sadece JSON döndür, başka bir şey yazma`;
 
-                const aiResult = await fetchGeminiWithRetry(prompt, API_KEY);
+                const aiResult = await fetchAIAnalysis(prompt, settings);
 
                 if (aiResult.error) {
                     setStepState(2, 'error', aiResult.message);

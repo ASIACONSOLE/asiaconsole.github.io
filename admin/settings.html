@@ -279,6 +279,20 @@
                                         style="color:var(--accent-blue);">Google AI Studio</a>'ya gidin ve "Create API
                                     Key" butonuna basın.
                                 </div>
+                                <div class="form-group" style="margin-top:0.75rem;">
+                                    <label>Groq API Anahtarı <span
+                                            style="font-size:0.75rem; color:var(--text-muted);">(Yedek
+                                            AI)</span></label>
+                                    <input type="password" id="groqApiKey"
+                                        placeholder="Groq Console'dan aldığınız anahtar" style="font-family:monospace;">
+                                </div>
+                                <div
+                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:8px;">
+                                    💡 Gemini kotası dolduğunda <strong>Groq (Llama 3)</strong> otomatik devreye
+                                    girer.<br>
+                                    <a href="https://console.groq.com" target="_blank"
+                                        style="color:#a855f7;">console.groq.com</a>'dan ücretsiz anahtar alın.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -762,6 +776,7 @@
             document.getElementById('aiName').value = s.aiName || 'AsiaBot';
             document.getElementById('aiGreeting').value = s.aiGreeting || 'Merhaba! Size nasıl yardımcı olabilirim?';
             document.getElementById('geminiApiKey').value = s.geminiApiKey || '';
+            document.getElementById('groqApiKey').value = s.groqApiKey || '';
 
             document.getElementById('tickerEnabled').checked = !!s.tickerEnabled;
             document.getElementById('tickerText').value = s.tickerText || '';
@@ -840,6 +855,7 @@
                     aiName: document.getElementById('aiName').value.trim(),
                     aiGreeting: document.getElementById('aiGreeting').value.trim(),
                     geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
+                    groqApiKey: document.getElementById('groqApiKey').value.trim(),
                     bannerEnabled: document.getElementById('bannerEnabled').checked,
                     bannerTitle: document.getElementById('bannerTitle').value.trim(),
                     bannerSubtitle: document.getElementById('bannerSubtitle').value.trim(),

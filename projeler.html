@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeler - AsiaConsole</title>
+    <meta name="description"
+        content="AsiaConsole üyeleri tarafından geliştirilen en yeni projeler, oyunlar ve uygulamalar.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts for Branding -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg></div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="projeler.html" class="active">🚀 Projeler</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="projeler.html" class="active">🚀 Projeler</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
+    <div class="page-wrapper">
+
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <div class="page-hero-icon">🚀</div>
+                    <h1>Topluluk Projeleri</h1>
+                    <p>Üyelerimiz tarafından geliştirilen oyun ve uygulamaları keşfedin</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Projelerde ara...">
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Tümü</button>
+                    <button class="filter-tab" data-filter="oyun">🎮 Oyunlar</button>
+                    <button class="filter-tab" data-filter="uygulama">📱 Uygulamalar</button>
+                </div>
+                <div class="cards-grid" id="projectGrid"></div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let userProjects = (DB.get('user_projects') || []).filter(p => p.status === 'approved');
+            const grid = document.getElementById('projectGrid');
+            const searchInput = document.getElementById('searchInput');
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            let currentFilter = 'all';
+
+            function render() {
+                let filtered = userProjects;
+
+                // Category Filter
+                if (currentFilter !== 'all') {
+                    filtered = filtered.filter(p => p.category === currentFilter);
+                }
+
+                // Search Filter
+                const q = searchInput.value.toLowerCase().trim();
+                if (q) {
+                    filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+                }
+
+                filtered.sort((a, b) => b.id - a.id);
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🚀</div><h3>Proje bulunamadı</h3><p>Henüz bu kategoride onaylanmış proje yok veya arama sonuçsuz kaldı.</p></div>';
+                    return;
+                }
+
+                grid.innerHTML = filtered.map(p => `
+                    <a href="proje-izle.html?id=${p.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer; border: 1px solid var(--border); transition: transform 0.2s, border-color 0.2s;">
+                        <div class="card-badge badge-game" style="background:var(--accent-purple);">${p.category === 'oyun' ? '🎮 Oyun' : '📱 Uygulama'}</div>
+                        <div style="font-size:3rem; margin-bottom:1rem; text-align:center;">${p.category === 'oyun' ? '🕹️' : '💻'}</div>
+                        <div class="card-title" style="text-align:center;">${p.title}</div>
+                        <div class="card-desc" style="text-align:center;">${p.desc.slice(0, 80)}${p.desc.length > 80 ? '...' : ''}</div>
+                        <div class="card-meta" style="justify-content:center; margin-top:1rem; gap:1.5rem;">
+                            <span>👤 ${p.author}</span>
+                            <span>👁️ ${(p.views || 0).toLocaleString('tr-TR')}</span>
+                        </div>
+                        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); text-align:center; font-size:0.875rem; color:var(--accent-blue); font-weight:600;">Projeyi İncele →</div>
+                    </a>
+                `).join('');
+            }
+
+            // Bind Events
+            searchInput.addEventListener('input', render);
+
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.getAttribute('data-filter');
+                    render();
+                });
+            });
+
+            // Initial render
+            render();
+
+            // Listen for project approvals dynamically
+            document.addEventListener('dbUpdated', (e) => {
+                if (e.detail?.key === 'user_projects') {
+                    userProjects = (DB.get('user_projects') || []).filter(p => p.status === 'approved');
+                    render();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

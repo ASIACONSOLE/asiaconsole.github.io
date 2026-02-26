@@ -128,7 +128,7 @@
                     return `
       <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden;">
         <div style="${coverStyle} height:160px; display:flex; align-items:center; justify-content:center; position:relative;">
-          <span style="font-size:3.5rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${a.image || '🎮'}</span>
+          ${!a.cover ? `<span style="font-size:3.5rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${a.image || '🎮'}</span>` : ''}
           <div class="card-badge badge-game" style="position:absolute; top:0.75rem; left:0.75rem;">🎮 Oyun Haberi</div>
         </div>
         <div style="padding:1.25rem;">

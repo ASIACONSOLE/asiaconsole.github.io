@@ -655,6 +655,19 @@ function updateNavAuth() {
             msgIcon.innerHTML = '💬 <span id="navMsgBadgeGlobal" class="badge-dot" style="display:none;"></span>';
             userMenuEl.appendChild(msgIcon);
         }
+        // Add logout button
+        let logoutBtn = document.getElementById('navLogoutBtnGlobal');
+        if (!logoutBtn && userMenuEl) {
+            logoutBtn = document.createElement('button');
+            logoutBtn.id = 'navLogoutBtnGlobal';
+            logoutBtn.className = 'btn-nav-logout';
+            logoutBtn.innerHTML = '🚪 Çıkış Yap';
+            logoutBtn.style.cssText = 'font-size:0.75rem; padding:0.25rem 0.5rem; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); border-radius:6px; cursor:pointer; margin-left:0.5rem; transition:all 0.2s;';
+            logoutBtn.onmouseover = () => { logoutBtn.style.background = 'rgba(239,68,68,0.2)'; };
+            logoutBtn.onmouseout = () => { logoutBtn.style.background = 'rgba(239,68,68,0.1)'; };
+            logoutBtn.onclick = () => { Auth.logout(); window.location.reload(); };
+            userMenuEl.appendChild(logoutBtn);
+        }
         // Show unread count
         const unread = Messaging.unreadCount(user.username);
         const badgeEl = document.getElementById('navMsgBadgeGlobal');

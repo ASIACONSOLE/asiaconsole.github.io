@@ -158,9 +158,9 @@
                 return;
             }
 
-            // Find target user
-            const allUsers = DB.get('users') || [];
-            const user = allUsers.find(u => u.username.toLowerCase() === targetUsername.toLowerCase());
+            // Find target user (be resilient to spaces vs underscores)
+            const normalize = s => s.toLowerCase().replace(/[\s_]/g, '');
+            const user = allUsers.find(u => normalize(u.username) === normalize(targetUsername));
 
             if (!user) {
                 document.querySelector('.profile-main').innerHTML =

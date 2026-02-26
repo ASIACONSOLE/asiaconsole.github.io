@@ -1225,7 +1225,7 @@
                 }
 
                 // STEP 2: AI Analysis
-                const prompt = `Aşağıdaki metin bir haber sayfasından alınmıştır:\n---\n${pageContent.substring(0, 12000)}\n---\nBu içeriği "AsiaConsole" teknoloji portalı için profesyonel bir makaleye dönüştür.\nAşağıdaki JSON formatında döndür:\n{"title": "Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Kısa özet (max 2 cümle)", "body": "HTML formatlı tam makale içeriği (<h2>, <p>, <ul> vb. kullan)", "image": "tek emoji"}\nKurallar:\n- Türkçe yaz\n- body içinde en az 3 paragraf olsun\n- Sadece JSON döndür, başka bir şey yazma`;
+                const prompt = `Aşağıdaki metin bir haber sayfasından alınmıştır:\n---\n${pageContent.substring(0, 12000)}\n---\nBu içeriği "AsiaConsole" teknoloji portalı için profesyonel bir makaleye dönüştür.\nAşağıdaki JSON formatında döndür:\n{"title": "Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Kısa özet (max 2 cümle)", "body": "HTML formatlı tam makale içeriği (<h2>, <p>, <ul> vb. kullan)", "image": "tek emoji"}\nKurallar:\n- Türkçe yaz\n- body içinde en az 3 paragraf olsun\n- Sadece JSON döndür, başka bir şey yazma\n- ÖNEMLİ: JSON içinde çift tırnak ve satır sonu (\\n) karakterlerini doğru şekilde kaçır (escape).`;
 
                 const aiResult = await fetchAIAnalysis(prompt, settings);
 
@@ -1250,14 +1250,25 @@
                 }
 
                 let jsonStr = resultText.substring(startIdx, endIdx + 1);
-                // Sanitize: remove control characters inside JSON strings (Groq/Llama can inject raw newlines)
+
+                // Robust Sanitization
+                // 1. Convert actual control chars to escaped versions
                 jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, (ch) => {
                     if (ch === '\n') return '\\n';
                     if (ch === '\r') return '';
                     if (ch === '\t') return '\\t';
                     return '';
                 });
-                const articleData = JSON.parse(jsonStr);
+
+                let articleData;
+                try {
+                    articleData = JSON.parse(jsonStr);
+                } catch (e) {
+                    console.warn('[FetchNews] JSON Parse failed, attempting fallback cleanup...', e);
+                    // Fallback: Remove literal newlines that AI might have injected raw inside strings
+                    const fallbackStr = jsonStr.replace(/\n/g, ' ');
+                    articleData = JSON.parse(fallbackStr);
+                }
                 setStepState(3, 'done', 'Makale hazır! (✓)');
 
                 await _delay(500);
@@ -1328,7 +1339,7 @@
                 const prompt = `Generate 3 trending technology news articles for a tech portal called AsiaConsole. 
                 Return them strictly as a JSON array of objects with these properties:
                 "title" (string), "category" (either "teknoloji", "oyun", or "uygulama"), "desc" (string, short summary), "body" (string, HTML formatted full article content), "image" (one emoji).
-                The language must be Turkish. Return ONLY the JSON array.`;
+                The language must be Turkish. Return ONLY the JSON array. Escape quotes and newlines (\\n) properly.`;
 
                 let resultText = null;
 
@@ -1394,11 +1405,20 @@
                             return '';
                         });
                         try {
+                            // First try: Standard parsing
                             const parsed = JSON.parse(jsonStr);
                             newArticles = Array.isArray(parsed) ? parsed : [parsed];
                         } catch (e) {
-                            console.error('[Admin AI] JSON Parse Error:', e);
-                            newArticles = getLocalNewsFallback();
+                            console.warn('[Admin AI] Normal parse failed, trying fallback...', e);
+                            try {
+                                // Fallback: remove literal newlines
+                                const fallback = jsonStr.replace(/\n/g, ' ');
+                                const parsed = JSON.parse(fallback);
+                                newArticles = Array.isArray(parsed) ? parsed : [parsed];
+                            } catch (e2) {
+                                console.error('[Admin AI] All parse attempts failed:', e2);
+                                newArticles = getLocalNewsFallback();
+                            }
                         }
                     }
                 }

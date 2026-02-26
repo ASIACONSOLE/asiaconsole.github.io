@@ -206,7 +206,7 @@
 
             <div class="form-group">
                 <label>Makale İçeriği (HTML Kullanılabilir)</label>
-                <div class="editor-toolbar">
+                <div class="editor-toolbar" style="position:relative;">
                     <div class="toolbar-group">
                         <button class="tool-btn" onclick="insertTag('b')" title="Kalın"><strong>B</strong></button>
                         <button class="tool-btn" onclick="insertTag('i')" title="İtalik text"><em>I</em></button>
@@ -217,6 +217,7 @@
                         <button class="tool-btn" onclick="document.getElementById('localImgInput').click()"
                             title="Bilgisayardan Yükle">📁 Yükle</button>
                         <button class="tool-btn" onclick="insertTag('a')" title="Bağlantı Ekle">🔗 Link</button>
+                        <button class="tool-btn" onclick="toggleEmojiPicker()" title="Emoji Ekle">😀 Emoji</button>
                         <input type="file" id="localImgInput" style="display:none;" accept="image/*"
                             onchange="uploadLocalImage(this)">
                     </div>
@@ -387,17 +388,22 @@
         }
 
         .emoji-list {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
+            position: absolute;
+            top: 45px;
+            right: 10px;
+            z-index: 1000;
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
             gap: 0.3rem;
-            max-height: 120px;
+            max-height: 250px;
+            width: 280px;
             overflow-y: auto;
             border: 1px solid var(--border);
-            padding: 0.5rem;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            margin-top: 0.5rem;
-            width: 100%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            background: #1a1a1a;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         .emoji-btn {
@@ -472,6 +478,17 @@
             textarea.value = text.substring(0, start) + emoji + text.substring(end);
             textarea.focus();
             textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+
+            // Close picker after selection
+            const picker = document.getElementById('emojiContainer');
+            if (picker) picker.style.display = 'none';
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiContainer');
+            if (!picker) return;
+            const isVisible = picker.style.display === 'grid';
+            picker.style.display = isVisible ? 'none' : 'grid';
         }
 
         function uploadLocalImage(input) {

@@ -643,6 +643,9 @@
                 });
 
                 if (!resp.ok) {
+                    if (resp.status === 429) {
+                        throw new Error('Ücretsiz API kotanız doldu! Gemini API ücretsiz planda dakika başına limitleri vardır. Lütfen 1 dakika bekleyip tekrar deneyin.');
+                    }
                     const errorData = await resp.json().catch(() => ({}));
                     const errorMsg = errorData.error?.message || `API Hatası: ${resp.status}`;
                     throw new Error(errorMsg);

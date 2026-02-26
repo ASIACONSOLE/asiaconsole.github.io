@@ -318,9 +318,6 @@ const AIAssistant = (() => {
 
     const fetchGeminiResponse = async (userText) => {
         const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
-        const API_KEY = s.geminiApiKey;
-        // Reverting to gemini-2.0-flash because it's the only one that doesn't 404
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
         const siteContext = `
             You are AsiaBot, the official AI assistant of AsiaConsole (formerly TechCom).
@@ -328,29 +325,57 @@ const AIAssistant = (() => {
             Your creator is the AsiaConsole Team. Always respond in Turkish. Be helpful and tech-savvy.
         `.trim();
 
+        const fullPrompt = `SYSTEM: ${siteContext}\n\nUSER: ${userText}`;
+
         try {
-            if (!API_KEY) throw new Error('NO_KEY');
+            // Try Gemini first
+            if (s.geminiApiKey) {
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
+                });
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: `SYSTEM: ${siteContext}\n\nUSER: ${userText}` }] }]
-                })
-            });
-
-            if (!response.ok) {
-                if (response.status === 429) throw new Error('QUOTA_EXCEEDED');
-                throw new Error('API_FAILED');
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.candidates && data.candidates[0]) {
+                        return data.candidates[0].content.parts[0].text;
+                    }
+                } else if (resp.status !== 429) {
+                    throw new Error('API_FAILED');
+                }
+                // If 429, fall through to Groq
+                console.warn('[AsiaBot] Gemini 429, trying Groq...');
             }
 
-            const data = await response.json();
-            if (!data.candidates || !data.candidates[0]) throw new Error('NO_CONTENT');
-            return data.candidates[0].content.parts[0].text;
+            // Try Groq as fallback
+            if (s.groqApiKey) {
+                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: siteContext },
+                            { role: 'user', content: userText }
+                        ],
+                        temperature: 0.7, max_tokens: 1024
+                    })
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.choices && data.choices[0]) {
+                        return data.choices[0].message.content;
+                    }
+                }
+            }
+
+            // All failed
+            throw new Error('ALL_AI_FAILED');
 
         } catch (err) {
             console.warn('[AsiaBot] Fallback active due to:', err.message);
-            // Hızır Mode: Return local response if API fails
             return getLocalResponse(userText);
         }
     };

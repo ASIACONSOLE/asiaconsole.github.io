@@ -318,8 +318,8 @@ const AIAssistant = (() => {
     const fetchGeminiResponse = async (userText) => {
         const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
         const API_KEY = s.geminiApiKey;
-        // gemini-1.5-flash-8b is often more available on free tier than 2.0
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=${API_KEY}`;
+        // Reverting to gemini-2.0-flash because it's the only one that doesn't 404
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
         const siteContext = `
             You are AsiaBot, the official AI assistant of AsiaConsole (formerly TechCom).

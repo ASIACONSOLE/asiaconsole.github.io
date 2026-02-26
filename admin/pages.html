@@ -640,7 +640,7 @@
                 "title" (string), "category" (either "teknoloji", "oyun", or "uygulama"), "desc" (string, max 200 chars), "image" (one emoji).
                 The language must be Turkish. Return ONLY the JSON array.`;
 
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=${API_KEY}`, {
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

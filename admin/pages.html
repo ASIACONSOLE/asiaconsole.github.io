@@ -206,6 +206,24 @@
 
             <div class="form-group">
                 <label>Makale İçeriği (HTML Kullanılabilir)</label>
+                <div class="editor-toolbar">
+                    <button class="tool-btn" onclick="insertTag('b')" title="Kalın"><strong>B</strong></button>
+                    <button class="tool-btn" onclick="insertTag('i')" title="İtalik text"><em>I</em></button>
+                    <button class="tool-btn" onclick="insertTag('h2')" title="Başlık">H2</button>
+                    <button class="tool-btn" onclick="insertTag('p')" title="Paragraf">P</button>
+                    <button class="tool-btn" onclick="insertTag('ul')" title="Liste">• Liste</button>
+                    <button class="tool-btn" onclick="insertTag('img')" title="Resim Ekle">🖼️ Resim</button>
+                    <button class="tool-btn" onclick="insertTag('a')" title="Bağlantı Ekle">🔗 Link</button>
+                    <div class="emoji-list">
+                        <button class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
+                        <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+                        <button class="emoji-btn" onclick="insertEmoji('💻')">💻</button>
+                        <button class="emoji-btn" onclick="insertEmoji('📱')">📱</button>
+                        <button class="emoji-btn" onclick="insertEmoji('🎮')">🎮</button>
+                        <button class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+                        <button class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+                    </div>
+                </div>
                 <textarea id="artBody" rows="12" style="font-family:monospace; font-size:0.9rem;"
                     placeholder="Tam makale içeriği buraya gelecek..."></textarea>
             </div>
@@ -334,6 +352,64 @@
                 opacity: 0.5;
             }
         }
+
+        /* Rich Text Toolbar Styles */
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            margin-top: 0.5rem;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .tool-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .emoji-list {
+            display: flex;
+            gap: 0.3rem;
+            margin-left: auto;
+            border-left: 1px solid var(--border);
+            padding-left: 0.5rem;
+        }
+
+        .emoji-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+            padding: 0;
+        }
+
+        .emoji-btn:hover {
+            transform: scale(1.3);
+        }
+
+        #artBody {
+            border-radius: 0 0 8px 8px;
+        }
     </style>
 
     <script src="../js/firebase.js"></script>
@@ -342,6 +418,44 @@
     <script>
         let articles = [];
         let currentFilter = '';
+
+        // Rich Text Helper
+        function insertTag(tag) {
+            const textarea = document.getElementById('artBody');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selectedText = text.substring(start, end);
+            let replacement = "";
+
+            if (tag === 'img') {
+                const url = prompt("Resim URL'si girin:", "https://");
+                if (url) replacement = `<img src="${url}" style="max-width:100%; border-radius:12px; margin:1rem 0;" alt="Resim">`;
+            } else if (tag === 'a') {
+                const url = prompt("Bağlantı URL'si girin:", "https://");
+                if (url) replacement = `<a href="${url}" target="_blank">${selectedText || 'Link'}</a>`;
+            } else if (tag === 'ul') {
+                replacement = `<ul>\n  <li>${selectedText || 'Liste öğesi'}</li>\n  <li>İkinci öğe</li>\n</ul>`;
+            } else {
+                replacement = `<${tag}>${selectedText || (tag === 'h2' ? 'Başlık' : 'Metin')}</${tag}>`;
+            }
+
+            if (replacement) {
+                textarea.value = text.substring(0, start) + replacement + text.substring(end);
+                textarea.focus();
+                textarea.setSelectionRange(start + replacement.length, start + replacement.length);
+            }
+        }
+
+        function insertEmoji(emoji) {
+            const textarea = document.getElementById('artBody');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + emoji + text.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+        }
 
         const catBadge = {
             teknoloji: '<span class="badge badge-blue">💻 Teknoloji</span>',

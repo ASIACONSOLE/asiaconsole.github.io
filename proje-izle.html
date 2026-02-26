@@ -192,7 +192,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            currentProjectId = parseInt(urlParams.get('id'));
+            currentProjectId = Number(urlParams.get('id'));
 
             if (!currentProjectId) {
                 alert('Proje ID bulunamadı.');

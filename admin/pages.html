@@ -694,9 +694,9 @@
                 let currentArticles = DB.get('articles') || [];
                 const date = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
 
-                newArticles.forEach(a => {
+                newArticles.forEach((a, index) => {
                     currentArticles.unshift({
-                        id: Date.now() + Math.random(),
+                        id: Date.now() + index + Math.floor(Math.random() * 100), // Integer ID
                         title: a.title,
                         category: a.category || 'teknoloji',
                         desc: a.desc,
@@ -717,7 +717,10 @@
                 // Last resort fallback
                 const fallback = getLocalNewsFallback();
                 let currentArticles = DB.get('articles') || [];
-                fallback.forEach(f => currentArticles.unshift({ ...f, id: Date.now() + Math.random(), author: 'AsiaBot', date: new Date().toLocaleDateString('tr-TR'), views: 100 }));
+                fallback.forEach((f, idx) => {
+                    const id = Date.now() + idx + Math.floor(Math.random() * 100);
+                    currentArticles.unshift({ ...f, id: id, author: 'AsiaBot', date: new Date().toLocaleDateString('tr-TR'), views: 100 });
+                });
                 DB.set('articles', currentArticles);
                 document.getElementById('aiNewsStatus').style.display = 'none';
                 document.getElementById('aiNewsResult').style.display = 'block';

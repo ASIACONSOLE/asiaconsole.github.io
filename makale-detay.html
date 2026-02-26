@@ -350,7 +350,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const id = parseInt(params.get('id'));
+            const id = Number(params.get('id'));
             if (!id) { document.getElementById('notFoundSection').style.display = 'block'; return; }
 
             const articles = DB.get('articles') || [];

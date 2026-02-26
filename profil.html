@@ -158,8 +158,9 @@
                 return;
             }
 
-            // Find target user (be resilient to spaces vs underscores)
-            const normalize = s => s.toLowerCase().replace(/[\s_]/g, '');
+            // Find target user (be resilient to spaces, underscores, dots)
+            const allUsers = DB.get('users') || [];
+            const normalize = s => (s || '').toLowerCase().replace(/[\s_.]/g, '');
             const user = allUsers.find(u => normalize(u.username) === normalize(targetUsername));
 
             if (!user) {

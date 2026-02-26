@@ -292,14 +292,7 @@ const DB = {
         }
         // Default forum posts
         if (!this.get('forum_posts')) {
-            this.set('forum_posts', [
-                { id: 1, title: 'En iyi programlama dili hangisi? 2025 perspektifi', category: 'teknoloji', author: 'CodeMaster', authorInit: 'C', date: '24 Şub 2025', replies: 47, views: 892, pinned: true },
-                { id: 2, title: 'GPU fiyatları ne zaman düşecek?', category: 'donanim', author: 'TechFan', authorInit: 'T', date: '23 Şub 2025', replies: 23, views: 445, pinned: false },
-                { id: 3, title: 'Valorant rank sistemi değişiyor mu?', category: 'oyun', author: 'GamerPro', authorInit: 'G', date: '23 Şub 2025', replies: 31, views: 678, pinned: false },
-                { id: 4, title: 'iOS 18 gizlilik ayarları rehberi', category: 'uygulama', author: 'AppDev', authorInit: 'A', date: '22 Şub 2025', replies: 12, views: 234, pinned: false },
-                { id: 5, title: 'Yapay zeka kodlama için ne kadar faydalı?', category: 'teknoloji', author: 'DevGuru', authorInit: 'D', date: '21 Şub 2025', replies: 56, views: 1120, pinned: false },
-                { id: 6, title: 'Steam Deck oyunlarım neden çalışmıyor?', category: 'oyun', author: 'SteamUser', authorInit: 'S', date: '20 Şub 2025', replies: 8, views: 167, pinned: false },
-            ], false);
+            this.set('forum_posts', [], false);
         }
         // Default users
         if (!this.get('users')) {

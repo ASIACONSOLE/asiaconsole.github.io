@@ -577,7 +577,7 @@
             document.getElementById('articleContent').style.display = 'block';
 
             // --- Comment System ---
-            const currentUser = DB.get('currentUser');
+            const currentUser = Auth.currentUser();
             let currentId = id;
 
             function renderComments() {

@@ -728,6 +728,10 @@
                     setTimeout(() => location.reload(), 800);
                 });
             }
+            // Handle deep linking to edit profile
+            if (window.location.hash === '#edit-profile') {
+                switchDashTab('editProfile');
+            }
         });
 
         function showDashboard(user) {

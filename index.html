@@ -311,8 +311,7 @@
 
                         return `
       <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
-        <div style="${coverStyle} height:160px; display:flex; align-items:center; justify-content:center; position:relative;">
-          ${!item.cover ? `<span style="font-size:3.5rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${isProj ? '🚀' : (item.image || '📄')}</span>` : ''}
+        <div style="${coverStyle} height:160px; position:relative;">
           <div class="card-badge ${badgeClass}" style="position:absolute; top:0.75rem; left:0.75rem;">${labelText}</div>
         </div>
         <div style="padding:1.25rem;">

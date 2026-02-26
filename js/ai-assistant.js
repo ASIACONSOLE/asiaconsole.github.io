@@ -302,30 +302,39 @@ const AIAssistant = (() => {
         return "Bu çok ilginç bir konu! 💡 Detay vermemi ister misin yoksa forumdaki uzman arkadaşlarımıza mı sorsak? Ayrıca sitenin 'Admin' ayarlarından beni daha da kişiselleştirebileceğini unutma!";
     };
 
+    const getLocalResponse = (text) => {
+        const q = text.toLowerCase();
+        if (q.includes('merhaba') || q.includes('selam')) return "Selam! Ben AsiaBot. Sana nasıl yardımcı olabilirim? 🤖";
+        if (q.includes('kim') || q.includes('hazırladı') || q.includes('yapan')) return "Ben AsiaConsole ekibi tarafından geliştirilmiş bir yapay zekayım. 💻";
+        if (q.includes('forum')) return "Forum sayfamızda teknoloji, oyun ve yazılım hakkında yardımlaşabilirsin. Mutlaka göz at! 💬";
+        if (q.includes('oyun')) return "Oyun sayfamızda en son çıkan oyun haberlerini ve incelemelerini bulabilirsin. 🎮";
+        if (q.includes('admin') || q.includes('panel')) return "Admin paneline yetkin varsa soldaki menüden ulaşabilir, siteyi yönetebilirsin. ⚙️";
+        if (q.includes('kayıt') || q.includes('üye')) return "Üye olmak için sağ üstteki giriş butonuna basıp Google ile hızlıca bağlanabilirsin. 👤";
+        if (q.includes('teşekkür')) return "Rica ederim! Her zaman buradayım. Başka bir sorun var mı? 😊";
+
+        return "Şu an canlı yapay zeka servisine (Gemini) bağlanamıyorum ama AsiaConsole hakkında her şeyi bana sorabilirsin! Forum, Oyun ve Teknoloji sayfalarımızı gezdin mi? 🚀";
+    };
+
     const fetchGeminiResponse = async (userText) => {
-        // Re-read settings just in case it was updated in main.js
         const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
         const API_KEY = s.geminiApiKey;
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        // gemini-1.5-flash-8b is often more available on free tier than 2.0
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=${API_KEY}`;
 
-        // Construct a simple context for the bot
         const siteContext = `
             You are AsiaBot, the official AI assistant of AsiaConsole (formerly TechCom).
             AsiaConsole is a premium tech community portal for technology news, gaming, and mobile apps.
-            Your creator is the AsiaConsole Team.
-            You have deep knowledge about the site features: Forum, Projects, Tech News, and Admin Settings.
-            User is currently browsing the site. Be helpful, enthusiastic about tech, and professional.
-            Always respond in Turkish. If someone asks who created you, say "AsiaConsole ekibi tarafından geliştirildim."
+            Your creator is the AsiaConsole Team. Always respond in Turkish. Be helpful and tech-savvy.
         `.trim();
 
         try {
+            if (!API_KEY) throw new Error('NO_KEY');
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [
-                        { role: "user", parts: [{ text: `SYSTEM: ${siteContext}\n\nUSER: ${userText}` }] }
-                    ]
+                    contents: [{ role: "user", parts: [{ text: `SYSTEM: ${siteContext}\n\nUSER: ${userText}` }] }]
                 })
             });
 
@@ -335,13 +344,13 @@ const AIAssistant = (() => {
             }
 
             const data = await response.json();
+            if (!data.candidates || !data.candidates[0]) throw new Error('NO_CONTENT');
             return data.candidates[0].content.parts[0].text;
+
         } catch (err) {
-            console.error('Gemini API Error:', err);
-            if (err.message === 'QUOTA_EXCEEDED') {
-                return "Şu an çok yoğunum (Ücretsiz kullanım kotası doldu). Lütfen 1-2 dakika sonra tekrar sormayı deneyin! 😊";
-            }
-            return "Şu an canlı yapay zeka servisine bağlanamıyorum. Lütfen daha sonra tekrar deneyin veya yönetici ayarlarından API anahtarını kontrol edin.";
+            console.warn('[AsiaBot] Fallback active due to:', err.message);
+            // Hızır Mode: Return local response if API fails
+            return getLocalResponse(userText);
         }
     };
 

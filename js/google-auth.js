@@ -80,8 +80,14 @@ const GoogleAuth = (function () {
 
     function _handleCredential(response) {
         try {
-            // Decode JWT payload
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            // Decode JWT payload safely
+            const base64Url = response.credential.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const payload = JSON.parse(jsonPayload);
+
             const googleUser = {
                 id: 'google_' + payload.sub,
                 username: payload.name.replace(/\s+/g, '_'),
@@ -94,12 +100,19 @@ const GoogleAuth = (function () {
                 accountType: 'standart'
             };
 
+            console.log('[GoogleAuth] Credential parsed:', googleUser.email);
+
             // Register or find user
             let users = JSON.parse(localStorage.getItem('tc_users') || '[]');
             let existing = users.find(u => u.email === googleUser.email);
             if (!existing) {
+                console.log('[GoogleAuth] Creating new user...');
                 users.push(googleUser);
-                localStorage.setItem('tc_users', JSON.stringify(users));
+                if (typeof DB !== 'undefined') {
+                    DB.set('users', users);
+                } else {
+                    localStorage.setItem('tc_users', JSON.stringify(users));
+                }
                 existing = googleUser;
             }
 
@@ -122,7 +135,9 @@ const GoogleAuth = (function () {
     }
 
     function signIn() {
+        console.log('[GoogleAuth] signIn() triggered. Initialized:', _initialized);
         if (!_initialized) {
+            console.warn('[GoogleAuth] Not initialized yet, attempting to load GSI...');
             // If we have a valid client ID but GSI hasn't initialized yet, retry
             if (_clientId && _clientId.length > 20 && !_clientId.includes('YOUR_GOOGLE')) {
                 _loadGSI();
@@ -144,7 +159,26 @@ const GoogleAuth = (function () {
             }
             return;
         }
-        google.accounts.id.prompt();
+
+        try {
+            google.accounts.id.prompt((notification) => {
+                console.log('[GoogleAuth] Prompt notification:', notification.getMomentType(), notification.getNotDisplayedReason());
+                if (notification.isNotDisplayed()) {
+                    const reason = notification.getNotDisplayedReason();
+                    if (reason === 'opt_out_or_no_session') {
+                        alert('Google oturumunuz bulunamadı veya kapalı. Lütfen Google hesabınızda açık olduğundan emin olun.');
+                    } else if (reason === 'suppressed_by_user') {
+                        alert('Giriş penceresi çok sık kapatıldığı için engellendi. Lütfen tarayıcıyı kapatıp açın veya çerezleri temizleyin.');
+                    } else {
+                        console.warn('[GoogleAuth] Prompt not displayed. Reason:', reason);
+                        // Fallback: One Tap might be suppressed, but we don't have a direct "popup" call in this SDK
+                        // without using renderButton. For now, just notifying.
+                    }
+                }
+            });
+        } catch (e) {
+            console.error('[GoogleAuth] Prompt error:', e);
+        }
     }
 
     function signOut() {
@@ -152,6 +186,8 @@ const GoogleAuth = (function () {
             google.accounts.id.disableAutoSelect();
         }
         localStorage.removeItem('tc_user_session');
+        if (typeof showToast === 'function') showToast('Oturum kapatıldı.', 'info');
+        setTimeout(() => window.location.reload(), 500);
     }
 
     function isConfigured() {

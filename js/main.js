@@ -588,7 +588,12 @@ const Auth = {
         DB.set('user_session', { id: newUser.id, username, email });
         return { ok: true };
     },
-    logout() { localStorage.removeItem('tc_user_session'); }
+    logout() {
+        localStorage.removeItem('tc_user_session');
+        if (typeof GoogleAuth !== 'undefined' && GoogleAuth.signOut) {
+            GoogleAuth.signOut();
+        }
+    }
 };
 
 // ---- TOAST ----

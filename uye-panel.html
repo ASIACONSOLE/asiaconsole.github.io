@@ -289,161 +289,131 @@
                                             uygulama ekle</div>
                                     </div>
                                 </div>
-                                <div class="card" onclick="switchDashTab('tier')"
-                                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--text-primary); cursor:pointer;">
-                                    <span style="font-size:1.5rem;">💎</span>
-                                    <div>
-                                        <div style="font-weight:600; font-size:0.9rem;">Hesap Türü</div>
-                                        <div style="font-size:0.8rem; color:var(--text-secondary);">Üyeliğini yükselt ve
-                                            ayrıcalıklardan faydalan</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">🔐 Hesap Ayarları</h3>
-                            <div class="contact-form" style="margin:0;">
-                                <div class="form-group">
-                                    <label>Görünen Ad</label>
-                                    <input type="text" id="settingUsername" placeholder="Kullanıcı adınız">
-                                </div>
-                                <div class="form-group">
-                                    <label>E-posta</label>
-                                    <input type="email" id="settingEmail" placeholder="E-posta adresiniz">
-                                </div>
-                                <div class="form-group">
-                                    <label>Yeni Şifre (opsiyonel)</label>
-                                    <input type="password" id="settingPassword" placeholder="Boş bırakırsanız değişmez">
-                                </div>
-                                <button class="btn-primary" id="saveSettingsBtn"
-                                    style="width:100%; justify-content:center;">💾 Kaydet</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ACCOUNT TIER SECTION -->
-                    <div id="tierSection" style="display:none; margin-top:2rem;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                            <h3 style="font-size:1.1rem; font-weight:700;">💎 Üyelik Seviyeniz</h3>
-                            <button class="btn-secondary" onclick="switchDashTab('home')"
-                                style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
-                        </div>
-
-                        <div id="tiersListContainer"
-                            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
-                            <!-- Tiers will be rendered here dynamically -->
-                        </div>
-
-                        <div
-                            style="margin-top:2rem; padding:1.5rem; background:rgba(79,142,247,0.05); border:1px solid rgba(79,142,247,0.1); border-radius:12px; font-size:0.875rem; color:var(--text-secondary);">
-                            <p>💡 <strong>Bilgilendirme:</strong> Hesap türünüzü yükseltmek veya üyelik avantajları
-                                hakkında bilgi almak için lütfen site yöneticisi ile iletişime geçin. Üyelik seviyeleri
-                                sadece yöneticiler tarafından güncellenebilir.</p>
-                        </div>
-                    </div>
-
-                    <!-- PROFILE EDIT SECTION -->
-                    <div id="editProfileSection" style="display:none; margin-top:2rem;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                            <h3 style="font-size:1.1rem; font-weight:700;">✏️ Profili Düzenle</h3>
-                            <button class="btn-secondary" onclick="switchDashTab('home')"
-                                style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
-                        </div>
-                        <div class="card" style="margin-bottom:1.5rem;">
+                    <div>
+                        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">🔐 Hesap Ayarları</h3>
+                        <div class="contact-form" style="margin:0;">
                             <div class="form-group">
-                                <label>📝 Bio (Hakkımda)</label>
-                                <textarea id="editBio" rows="4" placeholder="Kendinizi tanıtın..."
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:inherit; font-size:0.9rem; resize:vertical;"></textarea>
+                                <label>Görünen Ad</label>
+                                <input type="text" id="settingUsername" placeholder="Kullanıcı adınız">
                             </div>
                             <div class="form-group">
-                                <label>🐦 Twitter / X URL</label>
-                                <input type="url" id="editTwitter" placeholder="https://twitter.com/kullaniciadi">
+                                <label>E-posta</label>
+                                <input type="email" id="settingEmail" placeholder="E-posta adresiniz">
                             </div>
                             <div class="form-group">
-                                <label>🐙 GitHub URL</label>
-                                <input type="url" id="editGithub" placeholder="https://github.com/kullaniciadi">
+                                <label>Yeni Şifre (opsiyonel)</label>
+                                <input type="password" id="settingPassword" placeholder="Boş bırakırsanız değişmez">
                             </div>
-                            <div class="form-group">
-                                <label>▶️ YouTube URL</label>
-                                <input type="url" id="editYoutube" placeholder="https://youtube.com/@kanal">
-                            </div>
-                            <div class="form-group">
-                                <label>🖼️ Kapak Fotoğrafı</label>
-                                <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                                    <div id="coverPreview"
-                                        style="width:120px; height:60px; border-radius:8px; background:var(--gradient-hero); background-size:cover; border:1px solid var(--border);">
-                                    </div>
-                                    <button class="btn-secondary"
-                                        onclick="document.getElementById('editCoverInput').click()"
-                                        style="padding:0.4rem 0.8rem; font-size:0.8rem;">📷 Fotoğraf Seç</button>
-                                    <input type="file" id="editCoverInput" accept="image/*" style="display:none;">
-                                </div>
-                            </div>
-                            <button class="btn-primary" id="saveProfileBtn"
-                                style="width:100%; justify-content:center;">💾 Profili Kaydet</button>
-                        </div>
-                        <div style="text-align:center;">
-                            <a id="goToProfileLink" href="profil.html" class="btn-secondary">👁️ Profilimi Görüntüle</a>
-                        </div>
-                    </div>
-
-                    <!-- PROJECT SUBMISSION SECTION (Hidden by default) -->
-                    <div id="projectSection" style="display:none; margin-top:2rem;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                            <h3 style="font-size:1.1rem; font-weight:700;">🚀 Proje Gönderimi (HTML)</h3>
-                            <button class="btn-secondary" onclick="switchDashTab('home')"
-                                style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
-                        </div>
-
-                        <div class="card" style="margin-bottom:1.5rem;">
-                            <div class="form-group">
-                                <label>Proje Başlığı</label>
-                                <input type="text" id="projTitle" placeholder="Örn: Pong Oyunu">
-                            </div>
-                            <div class="form-group">
-                                <label>Kategori</label>
-                                <select id="projCategory"
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
-                                    <option value="oyun">🎮 Oyun</option>
-                                    <option value="uygulama">📱 Uygulama</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Kısa Açıklama</label>
-                                <input type="text" id="projDesc" placeholder="Projeniz ne işe yarar?">
-                            </div>
-                            <div class="form-group">
-                                <label>HTML Kodları (HTML+CSS+JS bir arada)</label>
-                                <textarea id="projCode"
-                                    style="width:100%; height:300px; padding:1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:monospace;"
-                                    placeholder="<html>...</html>"></textarea>
-                            </div>
-                            <button class="btn-primary" id="submitProjBtn"
-                                style="width:100%; justify-content:center;">📤 Onaya Gönder</button>
-                        </div>
-
-                        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">📂 Projelerim</h3>
-                        <div id="myProjectsList" style="display:grid; gap:1rem;">
-                            <!-- Dynamic projects will load here -->
+                            <button class="btn-primary" id="saveSettingsBtn"
+                                style="width:100%; justify-content:center;">💾 Kaydet</button>
                         </div>
                     </div>
                 </div>
-            </section>
+
+
+
+                <!-- PROFILE EDIT SECTION -->
+                <div id="editProfileSection" style="display:none; margin-top:2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                        <h3 style="font-size:1.1rem; font-weight:700;">✏️ Profili Düzenle</h3>
+                        <button class="btn-secondary" onclick="switchDashTab('home')"
+                            style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
+                    </div>
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <div class="form-group">
+                            <label>📝 Bio (Hakkımda)</label>
+                            <textarea id="editBio" rows="4" placeholder="Kendinizi tanıtın..."
+                                style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:inherit; font-size:0.9rem; resize:vertical;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>🐦 Twitter / X URL</label>
+                            <input type="url" id="editTwitter" placeholder="https://twitter.com/kullaniciadi">
+                        </div>
+                        <div class="form-group">
+                            <label>🐙 GitHub URL</label>
+                            <input type="url" id="editGithub" placeholder="https://github.com/kullaniciadi">
+                        </div>
+                        <div class="form-group">
+                            <label>▶️ YouTube URL</label>
+                            <input type="url" id="editYoutube" placeholder="https://youtube.com/@kanal">
+                        </div>
+                        <div class="form-group">
+                            <label>🖼️ Kapak Fotoğrafı</label>
+                            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                                <div id="coverPreview"
+                                    style="width:120px; height:60px; border-radius:8px; background:var(--gradient-hero); background-size:cover; border:1px solid var(--border);">
+                                </div>
+                                <button class="btn-secondary"
+                                    onclick="document.getElementById('editCoverInput').click()"
+                                    style="padding:0.4rem 0.8rem; font-size:0.8rem;">📷 Fotoğraf Seç</button>
+                                <input type="file" id="editCoverInput" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="saveProfileBtn" style="width:100%; justify-content:center;">💾
+                            Profili Kaydet</button>
+                    </div>
+                    <div style="text-align:center;">
+                        <a id="goToProfileLink" href="profil.html" class="btn-secondary">👁️ Profilimi Görüntüle</a>
+                    </div>
+                </div>
+
+                <!-- PROJECT SUBMISSION SECTION (Hidden by default) -->
+                <div id="projectSection" style="display:none; margin-top:2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="font-size:1.1rem; font-weight:700;">🚀 Proje Gönderimi (HTML)</h3>
+                        <button class="btn-secondary" onclick="switchDashTab('home')"
+                            style="padding:0.4rem 0.8rem; font-size:0.8rem;">← Geri Dön</button>
+                    </div>
+
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <div class="form-group">
+                            <label>Proje Başlığı</label>
+                            <input type="text" id="projTitle" placeholder="Örn: Pong Oyunu">
+                        </div>
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select id="projCategory"
+                                style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
+                                <option value="oyun">🎮 Oyun</option>
+                                <option value="uygulama">📱 Uygulama</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Kısa Açıklama</label>
+                            <input type="text" id="projDesc" placeholder="Projeniz ne işe yarar?">
+                        </div>
+                        <div class="form-group">
+                            <label>HTML Kodları (HTML+CSS+JS bir arada)</label>
+                            <textarea id="projCode"
+                                style="width:100%; height:300px; padding:1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:monospace;"
+                                placeholder="<html>...</html>"></textarea>
+                        </div>
+                        <button class="btn-primary" id="submitProjBtn" style="width:100%; justify-content:center;">📤
+                            Onaya Gönder</button>
+                    </div>
+
+                    <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">📂 Projelerim</h3>
+                    <div id="myProjectsList" style="display:grid; gap:1rem;">
+                        <!-- Dynamic projects will load here -->
+                    </div>
+                </div>
         </div>
+        </section>
+    </div>
 
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-bottom">
-                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
-                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
-                        Ana Sayfaya Dön</a>
-                </div>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                    Ana Sayfaya Dön</a>
             </div>
-        </footer>
+        </div>
+    </footer>
     </div>
 
     <style>

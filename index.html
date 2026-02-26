@@ -297,18 +297,34 @@
                         const badgeClass = catMap[item.category] || 'badge-tech';
                         const labelText = isProj ? `🚀 Proje: ${item.title}` : (catLabel[item.category] || item.category);
 
+                        const gradients = {
+                            teknoloji: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            oyun: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                            uygulama: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                        };
+                        const coverBg = item.cover
+                            ? `url(${item.cover})`
+                            : (gradients[item.category] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
+                        const coverStyle = item.cover
+                            ? `background:${coverBg}; background-size:cover; background-position:center;`
+                            : `background:${coverBg};`;
+
                         return `
-      <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
-        <div class="card-badge ${badgeClass}">${labelText}</div>
-        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${isProj ? '🚀' : (item.image || '📄')}</div>
-        <div class="card-title">${item.title}</div>
-        <div class="card-desc">${item.desc || (isProj ? 'Bu bir kullanıcı projesidir. İncelemek için tıklayın.' : '')}</div>
-        <div class="card-meta">
-          <span>👤 ${item.author}</span>
-          <span>📅 ${item.date}</span>
-          <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
+      <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
+        <div style="${coverStyle} height:160px; display:flex; align-items:center; justify-content:center; position:relative;">
+          <span style="font-size:3.5rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${isProj ? '🚀' : (item.image || '📄')}</span>
+          <div class="card-badge ${badgeClass}" style="position:absolute; top:0.75rem; left:0.75rem;">${labelText}</div>
         </div>
-        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">${isProj ? '🎮 Hemen İzle/Oyna →' : '📚 Devamını oku →'}</div>
+        <div style="padding:1.25rem;">
+          <div class="card-title">${item.title}</div>
+          <div class="card-desc">${item.desc || (isProj ? 'Bu bir kullanıcı projesidir. İncelemek için tıklayın.' : '')}</div>
+          <div class="card-meta">
+            <span>👤 ${item.author}</span>
+            <span>📅 ${item.date}</span>
+            <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
+          </div>
+          <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">${isProj ? '🎮 Hemen İzle/Oyna →' : '📚 Devamını oku →'}</div>
+        </div>
       </a>
     `;
                     }).join('');

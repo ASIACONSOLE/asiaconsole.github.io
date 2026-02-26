@@ -203,6 +203,14 @@
             </div>
 
             <div class="form-group">
+                <label>📸 Kapak Resmi URL <span
+                        style="font-size:0.75rem; color:var(--text-muted);">(Opsiyonel)</span></label>
+                <input type="text" id="artCover" placeholder="https://... veya boş bırakın (otomatik gradient)">
+                <small style="color:var(--text-muted); font-size:0.72rem;">Unsplash, Pexels vb. sitelerden resim URL'si
+                    yapıştırın. Boş bırakırsanız kategoriye göre gradient uygulanır.</small>
+            </div>
+
+            <div class="form-group">
                 <label>Kısa Açıklama (Özet)</label>
                 <textarea id="artDesc" rows="2" placeholder="Makale hakkında kısa bir özet..."></textarea>
             </div>
@@ -730,6 +738,7 @@
             document.getElementById('artBody').value = a.body || ''; // Add body
             document.getElementById('artAuthor').value = a.author;
             document.getElementById('artImage').value = a.image || '';
+            document.getElementById('artCover').value = a.cover || '';
             document.getElementById('artViews').value = a.views;
             document.getElementById('artDate').value = a.date;
             openModal('articleModal');
@@ -924,7 +933,7 @@
                 newArtBtn.addEventListener('click', () => {
                     document.getElementById('modalTitle').textContent = '📝 Yeni Makale Ekle';
                     document.getElementById('editId').value = '';
-                    ['artTitle', 'artDesc', 'artBody', 'artAuthor', 'artImage', 'artDate'].forEach(id => document.getElementById(id).value = '');
+                    ['artTitle', 'artDesc', 'artBody', 'artAuthor', 'artImage', 'artCover', 'artDate'].forEach(id => document.getElementById(id).value = '');
                     document.getElementById('artViews').value = '0';
                     document.getElementById('artCategory').value = 'teknoloji';
                     openModal('articleModal');
@@ -983,6 +992,7 @@
                                 body, // Update body
                                 author,
                                 image: document.getElementById('artImage').value || '📄',
+                                cover: document.getElementById('artCover').value.trim() || '',
                                 views: parseInt(document.getElementById('artViews').value) || 0,
                                 date: document.getElementById('artDate').value || now
                             };
@@ -997,6 +1007,7 @@
                             body, // Add body
                             author,
                             image: document.getElementById('artImage').value || '📄',
+                            cover: document.getElementById('artCover').value.trim() || '',
                             views: parseInt(document.getElementById('artViews').value) || 0,
                             date: document.getElementById('artDate').value || now,
                             featured: false,

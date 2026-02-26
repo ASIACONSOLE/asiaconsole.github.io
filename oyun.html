@@ -122,20 +122,28 @@
     `).join('');
 
                 // Render Articles
-                html += list.map(a => `
-      <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer;">
-        <div class="card-badge badge-game">🎮 Oyun Haberi</div>
-        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '🎮'}</div>
-        <div class="card-title">${a.title}</div>
-        <div class="card-desc">${a.desc}</div>
-        <div class="card-meta">
-          <span>👤 ${a.author}</span>
-          <span>📅 ${a.date}</span>
-          <span>👁️ ${(a.views || 0).toLocaleString('tr-TR')}</span>
+                html += list.map(a => {
+                    const coverBg = a.cover ? `url(${a.cover})` : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+                    const coverStyle = a.cover ? `background:${coverBg}; background-size:cover; background-position:center;` : `background:${coverBg};`;
+                    return `
+      <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden;">
+        <div style="${coverStyle} height:160px; display:flex; align-items:center; justify-content:center; position:relative;">
+          <span style="font-size:3.5rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${a.image || '🎮'}</span>
+          <div class="card-badge badge-game" style="position:absolute; top:0.75rem; left:0.75rem;">🎮 Oyun Haberi</div>
         </div>
-        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
+        <div style="padding:1.25rem;">
+          <div class="card-title">${a.title}</div>
+          <div class="card-desc">${a.desc}</div>
+          <div class="card-meta">
+            <span>👤 ${a.author}</span>
+            <span>📅 ${a.date}</span>
+            <span>👁️ ${(a.views || 0).toLocaleString('tr-TR')}</span>
+          </div>
+          <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
+        </div>
       </a>
-    `).join('');
+    `;
+                }).join('');
 
                 grid.innerHTML = html;
             }

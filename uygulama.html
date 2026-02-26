@@ -94,32 +94,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const articles = (DB.get('articles') || []).filter(a => a.category === 'uygulama');
-            const projects = (DB.get('user_projects') || []).filter(p => p.category === 'uygulama' && p.status === 'approved');
+
             const grid = document.getElementById('articleGrid');
 
-            function render(list, projList = []) {
-                if (list.length === 0 && projList.length === 0) {
+            function render(list) {
+                if (list.length === 0) {
                     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📱</div><h3>İçerik bulunamadı</h3><p>Arama kriterinizi değiştirmeyi deneyin.</p></div>';
                     return;
                 }
 
                 let html = '';
-
-                // Render User Projects first
-                html += projList.map(p => `
-      <a href="proje-izle.html?id=${p.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer; border: 2px solid var(--accent-cyan);">
-        <div class="card-badge badge-app" style="background:var(--accent-cyan);">🚀 Kullanıcı Uygulaması</div>
-        <div style="font-size:2.5rem; margin-bottom:0.75rem;">📱</div>
-        <div class="card-title">${p.title}</div>
-        <div class="card-desc">${p.desc}</div>
-        <div class="card-meta">
-          <span>👤 ${p.author}</span>
-          <span>📅 ${p.date}</span>
-          <span>👁️ ${(p.views || 0).toLocaleString('tr-TR')}</span>
-        </div>
-        <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">▶️ Uygulamayı Aç →</div>
-      </a>
-    `).join('');
 
                 // Render Articles
                 html += list.map(a => {
@@ -147,7 +131,7 @@
                 grid.innerHTML = html;
             }
 
-            render(articles, projects);
+            render(articles);
 
             // REAL-TIME SYNC: Listen for database updates
             document.addEventListener('dbUpdated', (e) => {

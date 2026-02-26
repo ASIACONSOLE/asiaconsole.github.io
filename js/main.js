@@ -711,9 +711,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initScrollAnimations, 100);
 });
 
-/* ================================================
+// ================================================
    MESSAGING SYSTEM
-   ================================================ */
+    ================================================ */
 const Messaging = {
     getConversations(username) {
         const messages = DB.get('messages') || [];
@@ -761,7 +761,7 @@ const Messaging = {
     }
 };
 
-/* ================================================
+// ================================================
 const ProfileData = {
     get(userId) {
         const profiles = DB.get('profiles') || [];
@@ -775,10 +775,8 @@ const ProfileData = {
         DB.set('profiles', profiles);
     }
 };
-
-/* ================================================
    ARTICLE COMMENTS SYSTEM
-   ================================================ */
+    ================================================ */
 const Comments = {
     getAll() {
         let data = DB.get('article_comments') || [];

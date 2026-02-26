@@ -72,7 +72,7 @@ h5,
 h6 {
   font-family: var(--font-heading);
   transform: scale(var(--heading-scale));
-  transform-origin: left center;
+  transform-origin: center;
 }
 
 h1 {
@@ -892,13 +892,13 @@ h6 {
 /* Cards grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
 }
 
 .cards-grid-3 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
@@ -2209,4 +2209,16 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  margin: 0 auto;
+  color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }

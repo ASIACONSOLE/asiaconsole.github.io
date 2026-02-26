@@ -69,8 +69,9 @@ const GoogleAuth = (function () {
                 client_id: _clientId,
                 callback: _handleCredential,
                 auto_select: false,
-                cancel_on_tap_outside: true
+                use_fedcm_for_prompt: true
             });
+            _renderOfficialButtons();
             _showGoogleButtons();
             _initialized = true;
         } catch (e) {
@@ -211,5 +212,19 @@ const GoogleAuth = (function () {
         });
     }
 
-    return { init, signIn, signOut, isConfigured };
+    function _renderOfficialButtons() {
+        // Render the official Google button in specific containers for better reliability
+        document.querySelectorAll('.google-login-container').forEach(el => {
+            google.accounts.id.renderButton(el, {
+                theme: 'outline',
+                size: 'large',
+                width: el.offsetWidth || 300,
+                text: 'signin_with',
+                shape: 'rectangular',
+                logo_alignment: 'left'
+            });
+        });
+    }
+
+    return { init, signIn, signOut, isConfigured, renderOfficial: _renderOfficialButtons };
 })();

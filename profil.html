@@ -10,6 +10,19 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
         rel="stylesheet">
+    <style>
+        #matrixCanvas {
+            position: fixed !important;
+            z-index: -1 !important;
+            pointer-events: none !important;
+            opacity: 0.1 !important;
+        }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
 
 <body>
@@ -134,17 +147,23 @@
 
     <script src="js/matrix.js"></script>
     <script src="js/firebase.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/ai-assistant.js?v=3.0"></script>
+    <script src="js/main.js?v=4.1"></script>
+    <script src="js/ai-assistant.js?v=4.1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            renderProfile();
 
-            applySettings();
-            renderDynamicNav();
-            setNavActive();
-            initHamburger();
-            updateNavAuth();
+            // Listen for data sync from Firebase and re-render if it targets our user or projects
+            document.addEventListener('dbUpdated', (e) => {
+                const { key } = e.detail;
+                if (['users', 'profiles', 'user_projects', 'forum_posts'].includes(key)) {
+                    console.log('[Profile] Sync detected for:', key);
+                    renderProfile();
+                }
+            });
+        });
 
+        function renderProfile() {
             const params = new URLSearchParams(location.search);
             const targetUsername = params.get('user');
             const me = Auth.currentUser();
@@ -158,12 +177,18 @@
                 return;
             }
 
-            // Find target user (be resilient to spaces, underscores, dots)
+            // Find target user
             const allUsers = DB.get('users') || [];
             const normalize = s => (s || '').toLowerCase().replace(/[\s_.]/g, '');
             const user = allUsers.find(u => normalize(u.username) === normalize(targetUsername));
 
             if (!user) {
+                // If we are logged in as this user, or if wait is long, show not found
+                // But try to wait a bit if we're at 0 users (likely syncing)
+                if (allUsers.length < 5) {
+                    console.log('[Profile] Waiting for users to sync...');
+                    return;
+                }
                 document.querySelector('.profile-main').innerHTML =
                     '<div class="empty-state" style="margin:4rem auto;"><div class="empty-icon">😕</div><h3>Kullanıcı Bulunamadı</h3><p>' + targetUsername + ' adlı bir üye bulunamadı.</p><a href="index.html" class="btn-primary" style="margin-top:1rem; display:inline-flex;">← Ana Sayfaya Dön</a></div>';
                 document.getElementById('profileCover').style.display = 'none';
@@ -186,7 +211,12 @@
             if (isOwnProfile) {
                 const coverBtn = document.getElementById('coverEditBtn');
                 if (coverBtn) coverBtn.style.display = 'block';
-                document.getElementById('coverFileInput').addEventListener('change', function () {
+                // Remove old listener if exists (to avoid duplicates)
+                const oldInput = document.getElementById('coverFileInput');
+                const newInput = oldInput.cloneNode(true);
+                oldInput.parentNode.replaceChild(newInput, oldInput);
+
+                newInput.addEventListener('change', function () {
                     const file = this.files[0];
                     if (!file) return;
                     if (file.size > 3 * 1024 * 1024) { showToast('Fotoğraf 3MB\'dan büyük olamaz!', 'error'); return; }
@@ -213,6 +243,7 @@
                 avatarEl.textContent = '';
             } else {
                 avatarEl.textContent = user.username[0].toUpperCase();
+                avatarEl.style.backgroundImage = 'none';
             }
 
             // USERNAME & TIER
@@ -223,21 +254,26 @@
             const tierId = user.accountType || 'standart';
             const tierInfo = UserTiers.get(tierId);
             const tierBadge = document.getElementById('profileTierBadge');
-            tierBadge.textContent = tierInfo.icon + ' ' + tierInfo.name;
-            tierBadge.style.background = tierInfo.color + '22';
-            tierBadge.style.borderColor = tierInfo.color + '44';
-            tierBadge.style.color = tierInfo.color;
+            if (tierBadge) {
+                tierBadge.textContent = tierInfo.icon + ' ' + tierInfo.name;
+                tierBadge.style.background = tierInfo.color + '22';
+                tierBadge.style.borderColor = tierInfo.color + '44';
+                tierBadge.style.color = tierInfo.color;
+            }
 
             // BIO
             if (extra.bio) {
                 document.getElementById('profileBio').textContent = extra.bio;
                 document.getElementById('profileBio').style.fontStyle = 'normal';
+            } else {
+                document.getElementById('profileBio').textContent = 'Henüz bir tanıtım yazılmadı.';
+                document.getElementById('profileBio').style.fontStyle = 'italic';
             }
 
             // SOCIAL LINKS
             const socialLinks = document.getElementById('profileSocialLinks');
+            socialLinks.innerHTML = '';
             if (extra.socialTwitter || extra.socialGithub || extra.socialYoutube) {
-                socialLinks.innerHTML = '';
                 if (extra.socialTwitter) socialLinks.innerHTML += `<a href="${extra.socialTwitter}" target="_blank" class="profile-social-link">🐦 Twitter / X</a>`;
                 if (extra.socialGithub) socialLinks.innerHTML += `<a href="${extra.socialGithub}" target="_blank" class="profile-social-link">🐙 GitHub</a>`;
                 if (extra.socialYoutube) socialLinks.innerHTML += `<a href="${extra.socialYoutube}" target="_blank" class="profile-social-link">▶️ YouTube</a>`;
@@ -264,9 +300,12 @@
                     <button class="btn-primary" id="sendMsgBtn">💬 Mesaj Gönder</button>
                     <a href="profil.html?user=${encodeURIComponent(me.username)}" class="btn-secondary">Profilim</a>
                 `;
-                document.getElementById('sendMsgBtn').addEventListener('click', () => {
-                    location.href = 'mesajlar.html?to=' + encodeURIComponent(user.username);
-                });
+                const sendBtn = document.getElementById('sendMsgBtn');
+                if (sendBtn) {
+                    sendBtn.onclick = () => {
+                        location.href = 'mesajlar.html?to=' + encodeURIComponent(user.username);
+                    };
+                }
             } else {
                 actionsEl.innerHTML = `<a href="uye-panel.html" class="btn-primary">🔑 Giriş Yap</a>`;
             }
@@ -297,7 +336,6 @@
                     </a>
                 `).join('');
             }
-        });
     </script>
 </body>
 

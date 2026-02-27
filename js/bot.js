@@ -19,6 +19,7 @@ window.BotEngine = (function () {
         if (config.baseUrl) document.getElementById('botBaseUrl').value = config.baseUrl;
         if (config.category) document.getElementById('botCategory').value = config.category;
         if (config.interval) document.getElementById('botInterval').value = config.interval;
+        return config;
     }
 
     function saveConfig() {

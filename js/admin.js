@@ -7,7 +7,11 @@ const ADMIN_SESSION_KEY = 'tc_admin_session';
 
 const Admin = {
     login(user, pass) {
-        if (user === 'admin' && pass === 'admin123') {
+        const savedPass = localStorage.getItem('tc_admin_password');
+        // If no password set yet, first login uses admin123 but forces change
+        const targetPass = savedPass || 'admin123';
+
+        if (user === 'admin' && pass === targetPass) {
             localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user: 'admin', time: Date.now() }));
             return true;
         }

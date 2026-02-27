@@ -1051,9 +1051,17 @@ const ProfileData = {
     },
     save(userId, data) {
         const profiles = DB.get('profiles') || [];
+
+        // SECURITY: Escape all string fields in profile data
+        const safeData = { ...data };
+        if (safeData.bio) safeData.bio = Comments.escapeHTML(safeData.bio);
+        if (safeData.socialTwitter) safeData.socialTwitter = Comments.escapeHTML(safeData.socialTwitter);
+        if (safeData.socialGithub) safeData.socialGithub = Comments.escapeHTML(safeData.socialGithub);
+        if (safeData.socialYoutube) safeData.socialYoutube = Comments.escapeHTML(safeData.socialYoutube);
+
         const idx = profiles.findIndex(p => p.userId === userId);
-        if (idx !== -1) profiles[idx] = { ...profiles[idx], ...data, userId };
-        else profiles.push({ userId, ...data });
+        if (idx !== -1) profiles[idx] = { ...profiles[idx], ...safeData, userId };
+        else profiles.push({ userId, ...safeData });
         DB.set('profiles', profiles);
     }
 };
@@ -1062,6 +1070,13 @@ const ProfileData = {
    ARTICLE COMMENTS SYSTEM
    ================================================ */
 const Comments = {
+    // SECURITY: Helper to escape HTML characters
+    escapeHTML(str) {
+        if (!str) return "";
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    },
     getAll() {
         let data = DB.get('article_comments') || [];
         // Triple-Guard unwrap
@@ -1074,13 +1089,14 @@ const Comments = {
         return this.getAll().filter(c => c.articleId === articleId).sort((a, b) => b.ts - a.ts);
     },
     add(articleId, username, text) {
-        if (!text.trim()) return false;
+        if (!text || !text.trim()) return false;
         const all = this.getAll();
+        const safeText = this.escapeHTML(text.trim()); // XSS PROTECTION
         const newComm = {
             id: Date.now() + Math.random(),
             articleId,
-            username,
-            text: text.trim(),
+            username: this.escapeHTML(username), // Also escape username just in case
+            text: safeText,
             ts: Date.now(),
             date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
         };

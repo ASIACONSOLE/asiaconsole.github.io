@@ -68,8 +68,24 @@
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value;
             const errEl = document.getElementById('loginError');
-            if (user === 'admin' && pass === (localStorage.getItem('tc_admin_password') || 'admin123')) {
+
+            const savedPass = localStorage.getItem('tc_admin_password');
+            const isInitial = !savedPass;
+            const targetPass = savedPass || 'admin123';
+
+            if (user === 'admin' && pass === targetPass) {
                 localStorage.setItem('tc_admin_session', JSON.stringify({ user: 'admin', time: Date.now() }));
+
+                if (isInitial) {
+                    const newPass = prompt('⚠️ GÜVENLİK UYARISI: Henüz bir admin şifresi belirlemediniz. Lütfen yeni bir şifre giriniz:');
+                    if (newPass && newPass.length >= 6) {
+                        localStorage.setItem('tc_admin_password', newPass);
+                        alert('✅ Şifreniz kaydedildi. Artık bu şifre ile giriş yapacaksınız.');
+                    } else {
+                        alert('❌ Şifre çok kısa veya iptal edildi. Varsayılan şifre aktif kalmaya devam edecek.');
+                    }
+                }
+
                 window.location.href = 'dashboard.html';
             } else {
                 errEl.style.display = 'block';

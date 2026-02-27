@@ -103,10 +103,12 @@
                             </div>
                             <div class="msg-chat-area" id="chatArea"></div>
                             <div class="msg-input-area"
-                                style="background:var(--bg-secondary); box-shadow:0 -10px 20px rgba(0,0,0,0.2);">
+                                style="background:var(--bg-secondary); box-shadow:0 -10px 20px rgba(0,0,0,0.2); position:relative; z-index:20;">
                                 <textarea id="msgInput" placeholder="Mesajınızı yazın…" rows="1"
-                                    onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMsg();}"></textarea>
-                                <button class="msg-send-btn" onclick="sendMsg()" title="Gönder">➤</button>
+                                    onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMsg();}"
+                                    style="position:relative; z-index:22;"></textarea>
+                                <button class="msg-send-btn" onclick="sendMsg()" title="Gönder"
+                                    style="position:relative; z-index:25;">➤</button>
                             </div>
                         </div>
                     </div>

@@ -196,10 +196,10 @@
                         ${getStatusBadge(p.status)}
                     </td>
                     <td>
-                        <div style="display:flex; gap:0.4rem;">
-                            <button class="btn-action btn-edit" onclick="viewCode(${p.id})" title="İncele">🔍</button>
-                            <button class="btn-action btn-edit" onclick="openEditModal(${p.id})" title="Düzenle">✏️</button>
-                            <button class="btn-action btn-delete" onclick="deleteProject(${p.id})" title="Sil">🗑️</button>
+                        <div style="display:flex; gap:0.4rem; position:relative; z-index:10;">
+                            <button class="btn-action btn-edit" onclick="viewCode('${p.id}')" title="İncele">🔍</button>
+                            <button class="btn-action btn-edit" onclick="openEditModal('${p.id}')" title="Düzenle">✏️</button>
+                            <button class="btn-action btn-delete" onclick="deleteProject('${p.id}')" title="Sil">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -218,7 +218,10 @@
             const projects = DB.get('user_projects') || [];
             // Robust ID finding
             const proj = projects.find(p => String(p.id) === String(id));
-            if (!proj) return;
+            if (!proj) {
+                console.error("Project not found for ID:", id);
+                return;
+            }
 
             currentProjId = id;
             document.getElementById('modalTitle').textContent = proj.title + " - Proje Kodu";
@@ -232,7 +235,7 @@
 
         function openEditModal(id) {
             const projects = DB.get('user_projects') || [];
-            const proj = projects.find(p => p.id === id);
+            const proj = projects.find(p => String(p.id) === String(id));
             if (!proj) return;
 
             currentProjId = id;
@@ -248,7 +251,7 @@
             }
 
             const projects = DB.get('user_projects') || [];
-            const idx = projects.findIndex(p => p.id === currentProjId);
+            const idx = projects.findIndex(p => String(p.id) === String(currentProjId));
             if (idx !== -1) {
                 projects[idx].title = newTitle;
                 DB.set('user_projects', projects);
@@ -261,7 +264,7 @@
         function deleteProject(id) {
             confirmDelete('Bu projeyi tamamen silmek istediğinize emin misiniz?', () => {
                 let projects = DB.get('user_projects') || [];
-                projects = projects.filter(p => p.id !== id);
+                projects = projects.filter(p => String(p.id) !== String(id));
                 DB.set('user_projects', projects);
                 showAdminToast('Proje silindi! 🗑️', 'error');
                 renderProjects();
@@ -290,8 +293,14 @@
             }
         }
 
-        // Global closeModal replacement if needed (by admin.js)
+        // Global exports for accessibility
+        window.viewCode = viewCode;
+        window.openEditModal = openEditModal;
+        window.saveProjectEdit = saveProjectEdit;
+        window.deleteProject = deleteProject;
         window.closeModal = closeModal;
+        window.setFilter = setFilter;
+        window.updateStatus = updateStatus;
 
         document.getElementById('approveBtn').onclick = () => updateStatus('approved');
         document.getElementById('rejectBtn').onclick = () => updateStatus('rejected');

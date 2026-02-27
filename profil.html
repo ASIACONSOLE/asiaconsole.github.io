@@ -292,8 +292,9 @@
             const actionsEl = document.getElementById('profileActions');
             if (isOwnProfile) {
                 actionsEl.innerHTML = `
+                    <a href="uye-panel.html" class="btn-primary">👤 Üye Paneli</a>
                     <a href="uye-panel.html#edit-profile" class="btn-secondary">⚙️ Profili Düzenle</a>
-                    <a href="mesajlar.html" class="btn-primary">💬 Mesajlarım</a>
+                    <a href="mesajlar.html" class="btn-secondary">💬 Mesajlarım</a>
                 `;
             } else if (me) {
                 actionsEl.innerHTML = `

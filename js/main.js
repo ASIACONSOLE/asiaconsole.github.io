@@ -458,15 +458,36 @@ function applySettings() {
         }
     }
 
-    // Hero height
-    if (s.heroHeight) {
-        const hero = document.querySelector('.hero');
-        if (hero) hero.style.minHeight = s.heroHeight + 'vh';
+    // Hero height & Background
+    if (hero) {
+        if (s.heroHeight) hero.style.minHeight = s.heroHeight + 'vh';
+        if (s.heroBg) {
+            hero.style.backgroundImage = `url('${s.heroBg}')`;
+            hero.classList.add('has-bg');
+        } else {
+            hero.style.backgroundImage = 'none';
+            hero.classList.remove('has-bg');
+        }
     }
     // Home Hero title size (Only for index.html hero)
     if (s.heroTitleSize) {
         const homeH1 = document.querySelector('.hero h1');
         if (homeH1) homeH1.style.fontSize = s.heroTitleSize + 'rem';
+    }
+
+    // Navbar Animation Style
+    const navEl = document.querySelector('.navbar');
+    const mobileNavEl = document.getElementById('mobileNav');
+    if (navEl) {
+        // Remove all nav-style-* classes first
+        navEl.className = navEl.className.split(' ').filter(c => !c.startsWith('nav-style-')).join(' ');
+        const animStyle = s.navbarAnimStyle || 'neon'; // Default to neon
+        navEl.classList.add('nav-style-' + animStyle);
+
+        if (mobileNavEl) {
+            mobileNavEl.className = mobileNavEl.className.split(' ').filter(c => !c.startsWith('nav-style-')).join(' ');
+            mobileNavEl.classList.add('nav-style-' + animStyle);
+        }
     }
 
     // --- Dynamic Category Hero Processing ---
@@ -525,6 +546,34 @@ function renderDynamicNav() {
             mobileNav.appendChild(a);
         }
     });
+}
+
+// ---- HERO PROJECTS SHOOCASE ----
+function renderHeroProjects() {
+    const grid = document.getElementById('heroProjectGrid');
+    if (!grid) return;
+
+    const allProjects = DB.get('user_projects') || [];
+    const approved = allProjects.filter(p => p.status === 'approved' || !p.status); // Fallback for old data
+    const latest = approved.sort((a, b) => b.id - a.id).slice(0, 4);
+
+    if (latest.length === 0) {
+        grid.innerHTML = `
+            <div class="hero-card-mini"><div class="mini-icon">💻</div><div class="mini-title">Haberler</div></div>
+            <div class="hero-card-mini"><div class="mini-icon">🎮</div><div class="mini-title">Oyunlar</div></div>
+            <div class="hero-card-mini"><div class="mini-icon">📱</div><div class="mini-title">Uygulama</div></div>
+            <div class="hero-card-mini"><div class="mini-icon">💬</div><div class="mini-title">Forum</div></div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = latest.map(p => `
+        <a href="projeler.html?id=${p.id}" class="hero-card-mini">
+            <div class="mini-icon">${p.icon || '🚀'}</div>
+            <div class="mini-title">${p.title}</div>
+            <div class="mini-tag">${p.category || 'PROJE'}</div>
+        </a>
+    `).join('');
 }
 
 // ---- NAVBAR ACTIVE STATE ----
@@ -710,6 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setNavActive();
     initHamburger();
     updateNavAuth();
+    renderHeroProjects();
     setTimeout(initScrollAnimations, 100);
 });
 

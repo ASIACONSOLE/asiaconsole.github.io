@@ -460,7 +460,7 @@ const AIAssistant = (() => {
     };
 
     const rewriteArticle = async (articleData, onProgress) => {
-        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
+        const s = DB.get('settings') || {};
 
         const systemPrompt = `Sen profesyonel bir teknoloji ve oyun editörüsün. AsiaConsole adlı blog sitesi için içerik üretiyorsun.
 Sana verilen haberi BAŞTAN AŞAĞI tamamen ÖZGÜN olarak yeniden yazmalısın. 

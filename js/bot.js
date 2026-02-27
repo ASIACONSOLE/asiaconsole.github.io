@@ -237,7 +237,8 @@ window.BotEngine = (function () {
             return;
         }
 
-        if (!TC_SETTINGS.geminiApiKey && !TC_SETTINGS.groqApiKey) {
+        const settings = DB.get('settings') || {};
+        if (!settings.geminiApiKey && !settings.groqApiKey) {
             showAdminToast("API Anahtarı eksik! Bot çalışamaz. Site Ayarlarından API Anahtarı girin.", "error");
             return;
         }

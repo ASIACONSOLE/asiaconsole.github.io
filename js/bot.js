@@ -44,18 +44,40 @@ window.BotEngine = (function () {
     }
 
     // Proxy service to bypass CORS
-    // allorigins returns JSON: { contents: "HTML_STRING" }
     async function fetchViaProxy(url) {
-        try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error("Ağ hatası");
-            const data = await response.json();
-            return data.contents;
-        } catch (err) {
-            logTerminal(`Proxy Hatası (${url}): ` + err.message, 'error');
-            return null;
+        // Try multiple proxies if one fails
+        const proxies = [
+            (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+            (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
+        ];
+
+        for (const proxyFn of proxies) {
+            const proxyUrl = proxyFn(url);
+            try {
+                logTerminal(`Bağlanılıyor: ${new URL(proxyUrl).hostname}...`, 'info');
+
+                // Add a timeout to fetch (15 seconds)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const response = await fetch(proxyUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+
+                const html = await response.text();
+                if (html && html.length > 100) return html;
+
+                throw new Error("Boş veya yetersiz içerik döndü.");
+            } catch (err) {
+                const proxyName = new URL(proxyUrl).hostname;
+                logTerminal(`${proxyName} hatası: ${err.message}`, 'warning');
+                // Continue to next proxy
+            }
         }
+
+        logTerminal(`Tüm bağlantı yöntemleri başarısız oldu (${url}).`, 'error');
+        return null;
     }
 
     // Scrapes the main page to find article links

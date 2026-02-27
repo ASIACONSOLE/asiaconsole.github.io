@@ -89,29 +89,10 @@
         <section class="hero" id="mainHero">
             <div class="hero-glow-effect"></div>
             <div class="container">
-                <div class="snippet-hero-wrapper">
-                    <div class="snippet-card is-square" id="dailySnippetContainer">
-                        <div class="snippet-header">
-                            <div class="snippet-tag" id="snippetTag">🚀 Günün İpucu</div>
-                            <div class="snippet-date" id="snippetDate">-- -- ----</div>
-                        </div>
-                        <h3 class="snippet-title" id="snippetTitle">Yükleniyor...</h3>
-                        <p class="snippet-desc" id="snippetDesc">Teknik ipucu hazırlanıyor...</p>
-                        <div class="snippet-code-wrapper">
-                            <pre class="snippet-code"><code id="snippetCode">// Code snippet here</code></pre>
-                            <button class="snippet-copy" id="copySnippetBtn" title="Kopyala">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="snippet-footer">
-                            <span id="snippetCategory">📂 Genel</span>
-                            <span id="snippetDifficulty">⚡ Kolay</span>
-                        </div>
-                    </div>
+                <div class="tip-trigger-wrapper">
+                    <button class="btn-tip-trigger" onclick="openTipModal()">
+                        <span>💡</span> Günün İpucu
+                    </button>
                 </div>
 
                 <div class="hero-content">
@@ -408,6 +389,33 @@
         <script src="js/firebase.js"></script>
         <script src="js/main.js?v=4.9.8"></script>
         <script src="js/ai-assistant.js?v=4.1"></script>
+        <!-- TIP MODAL -->
+        <div class="tip-modal-overlay" id="dailyTipModal">
+            <div class="tip-modal-card">
+                <button class="tip-modal-close" onclick="closeTipModal()">&times;</button>
+                <div class="snippet-header">
+                    <div class="snippet-tag" id="snippetTag">🚀 Günün İpucu</div>
+                    <div class="snippet-date" id="snippetDate">-- -- ----</div>
+                </div>
+                <h3 class="snippet-title" id="snippetTitle">Yükleniyor...</h3>
+                <p class="snippet-desc" id="snippetDesc">Teknik ipucu hazırlanıyor...</p>
+                <div class="snippet-code-wrapper">
+                    <pre class="snippet-code"><code id="snippetCode">// Code snippet here</code></pre>
+                    <button class="snippet-copy" id="copySnippetBtn" title="Kopyala">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="snippet-footer">
+                    <span id="snippetCategory">📂 Genel</span>
+                    <span id="snippetDifficulty">⚡ Kolay</span>
+                </div>
+            </div>
+        </div>
+
 </body>
 
 </html>

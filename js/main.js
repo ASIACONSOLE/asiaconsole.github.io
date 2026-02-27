@@ -203,8 +203,8 @@ const SNIPPETS = [
 ];
 
 function renderDailySnippet() {
-    const container = document.getElementById('dailySnippetContainer');
-    if (!container) return;
+    // Check if modal or elements exist
+    if (!document.getElementById('snippetTitle')) return;
 
     // Calculate daily index based on date
     const now = new Date();
@@ -216,23 +216,51 @@ function renderDailySnippet() {
     const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 
     // Inject to UI
-    document.getElementById('snippetDate').innerText = dateStr;
-    document.getElementById('snippetTitle').innerText = snippet.title;
-    document.getElementById('snippetDesc').innerText = snippet.desc;
-    document.getElementById('snippetCode').innerText = snippet.code;
-    document.getElementById('snippetCategory').innerText = snippet.category;
-    document.getElementById('snippetDifficulty').innerText = snippet.difficulty;
+    const elDate = document.getElementById('snippetDate');
+    const elTitle = document.getElementById('snippetTitle');
+    const elDesc = document.getElementById('snippetDesc');
+    const elCode = document.getElementById('snippetCode');
+    const elCat = document.getElementById('snippetCategory');
+    const elDiff = document.getElementById('snippetDifficulty');
+
+    if (elDate) elDate.innerText = dateStr;
+    if (elTitle) elTitle.innerText = snippet.title;
+    if (elDesc) elDesc.innerText = snippet.desc;
+    if (elCode) elCode.innerText = snippet.code;
+    if (elCat) elCat.innerText = snippet.category;
+    if (elDiff) elDiff.innerText = snippet.difficulty;
 
     // Copy event listener
     const copyBtn = document.getElementById('copySnippetBtn');
     if (copyBtn) {
-        copyBtn.onclick = () => {
+        copyBtn.onclick = (e) => {
+            e.stopPropagation();
             navigator.clipboard.writeText(snippet.code).then(() => {
                 const originalSvg = copyBtn.innerHTML;
-                copyBtn.innerHTML = '✅';
+                copyBtn.innerHTML = '<span style="font-size:0.8rem">Kopyalandı! ✅</span>';
                 setTimeout(() => { copyBtn.innerHTML = originalSvg; }, 2000);
             });
         };
+    }
+}
+
+function openTipModal() {
+    const modal = document.getElementById('dailyTipModal');
+    if (modal) {
+        modal.classList.add('is-active');
+        renderDailySnippet();
+
+        // Close on click outside card
+        modal.onclick = (e) => {
+            if (e.target === modal) closeTipModal();
+        }
+    }
+}
+
+function closeTipModal() {
+    const modal = document.getElementById('dailyTipModal');
+    if (modal) {
+        modal.classList.remove('is-active');
     }
 }
 

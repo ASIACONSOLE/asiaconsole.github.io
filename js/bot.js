@@ -201,7 +201,7 @@ window.BotEngine = (function () {
             desc: shortDesc,
             body: aiHtmlCode,
             views: 0,
-            date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
+            date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' - ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
         };
 
         articles.unshift(newArticle); // Add to top

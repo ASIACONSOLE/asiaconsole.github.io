@@ -280,7 +280,9 @@
                 DB.set('user_projects', projects);
                 showAdminToast(`Proje ${status === 'approved' ? 'onaylandı' : 'reddedildi'}!`, 'success');
                 closeModal('codeModal');
-                renderProjects();
+
+                // Explicitly reload to ensure UI update if event listener fails
+                setTimeout(renderProjects, 100);
             }
         }
 

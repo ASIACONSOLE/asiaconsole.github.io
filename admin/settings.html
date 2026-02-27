@@ -754,13 +754,20 @@
             document.getElementById('socialDiscord').value = s.socialDiscord || '';
 
             // Load logo if exists
-            const savedLogo = DB.get('site_logo');
-            if (savedLogo) {
-                document.getElementById('logoPreviewImg').src = savedLogo;
-                document.getElementById('logoPreviewImg').style.display = 'block';
-                document.getElementById('logoPlaceholder').style.display = 'none';
-                document.getElementById('logoRemoveRow').style.display = 'block';
-            }
+            MediaDB.get('site_logo').then(savedLogo => {
+                if (savedLogo) {
+                    document.getElementById('logoPreviewImg').src = savedLogo;
+                    document.getElementById('logoPreviewImg').style.display = 'block';
+                    document.getElementById('logoPlaceholder').style.display = 'none';
+                    document.getElementById('logoRemoveRow').style.display = 'block';
+                } else if (DB.get('site_logo')) { // Legacy support
+                    const legacyLogo = DB.get('site_logo');
+                    document.getElementById('logoPreviewImg').src = legacyLogo;
+                    document.getElementById('logoPreviewImg').style.display = 'block';
+                    document.getElementById('logoPlaceholder').style.display = 'none';
+                    document.getElementById('logoRemoveRow').style.display = 'block';
+                }
+            });
 
             // Logo file input handler
             document.getElementById('logoFileInput').addEventListener('change', function () {
@@ -771,9 +778,12 @@
                     return;
                 }
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = async function (e) {
                     const base64 = e.target.result;
-                    DB.set('site_logo', base64);
+                    await MediaDB.set('site_logo', base64);
+                    // Also set legacy for main.js until fully migrated if needed
+                    // localStorage.setItem('tc_site_logo', JSON.stringify(base64)); 
+
                     document.getElementById('logoPreviewImg').src = base64;
                     document.getElementById('logoPreviewImg').style.display = 'block';
                     document.getElementById('logoPlaceholder').style.display = 'none';
@@ -784,7 +794,8 @@
             });
 
             // Logo remove
-            document.getElementById('logoRemoveBtn').addEventListener('click', () => {
+            document.getElementById('logoRemoveBtn').addEventListener('click', async () => {
+                await MediaDB.set('site_logo', null);
                 DB.set('site_logo', null);
                 document.getElementById('logoPreviewImg').style.display = 'none';
                 document.getElementById('logoPlaceholder').style.display = 'block';
@@ -836,12 +847,14 @@
             document.getElementById('navbarAnimStyle').value = s.navbarAnimStyle || 'neon';
 
             // Load Hero BG if exists
-            if (s.heroBg) {
-                document.getElementById('heroBgImg').src = s.heroBg;
-                document.getElementById('heroBgImg').style.display = 'block';
-                document.getElementById('heroBgPlaceholder').style.display = 'none';
-                document.getElementById('removeHeroBg').style.display = 'inline-block';
-            }
+            MediaDB.get('heroBg').then(savedBg => {
+                if (savedBg) {
+                    document.getElementById('heroBgImg').src = savedBg;
+                    document.getElementById('heroBgImg').style.display = 'block';
+                    document.getElementById('heroBgPlaceholder').style.display = 'none';
+                    document.getElementById('removeHeroBg').style.display = 'inline-block';
+                }
+            });
 
             // Hero BG upload
             document.getElementById('heroBgInput').addEventListener('change', function () {
@@ -855,22 +868,26 @@
                 }
 
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = async function (e) {
                     const base64 = e.target.result;
+                    await MediaDB.set('heroBg', base64);
                     document.getElementById('heroBgImg').src = base64;
                     document.getElementById('heroBgImg').style.display = 'block';
                     document.getElementById('heroBgPlaceholder').style.display = 'none';
                     document.getElementById('removeHeroBg').style.display = 'inline-block';
+                    showAdminToast('✅ Arka plan kaydedildi!', 'success');
                 };
                 reader.readAsDataURL(file);
             });
 
-            document.getElementById('removeHeroBg').addEventListener('click', () => {
+            document.getElementById('removeHeroBg').addEventListener('click', async () => {
+                await MediaDB.set('heroBg', null);
                 document.getElementById('heroBgImg').src = '';
                 document.getElementById('heroBgImg').style.display = 'none';
                 document.getElementById('heroBgPlaceholder').style.display = 'block';
                 document.getElementById('removeHeroBg').style.display = 'none';
                 document.getElementById('heroBgInput').value = '';
+                showAdminToast('Arka plan kaldırıldı.', 'error');
             });
             document.getElementById('forumModMode').value = s.forumModMode || 'manual';
             document.getElementById('googleClientId').value = s.googleClientId || '367594063152-0kagipiibbmh7t8ti3c8chjufe335l0j.apps.googleusercontent.com';
@@ -956,7 +973,6 @@
                     iconTeknoloji: document.getElementById('iconTeknoloji').value.trim() || '💻',
                     iconOyun: document.getElementById('iconOyun').value.trim() || '🎮',
                     iconUygulama: document.getElementById('iconUygulama').value.trim() || '📱',
-                    heroBg: document.getElementById('heroBgImg').src.startsWith('data:') ? document.getElementById('heroBgImg').src : s.heroBg,
                     navbarAnimStyle: document.getElementById('navbarAnimStyle').value
                 };
                 DB.set('settings', newSettings);

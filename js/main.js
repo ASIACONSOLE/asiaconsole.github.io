@@ -163,6 +163,50 @@ const THEME_PRESETS = {
     }
 };
 
+// ---- MEDIA STORAGE (IndexedDB for Large Assets) ----
+const MediaDB = {
+    dbName: 'AsiaConsoleMedia',
+    storeName: 'media',
+    _db: null,
+    async init() {
+        if (this._db) return this._db;
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, 1);
+            request.onerror = () => reject('IDB Error');
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(this.storeName)) {
+                    db.createObjectStore(this.storeName);
+                }
+            };
+            request.onsuccess = (e) => {
+                this._db = e.target.result;
+                resolve(this._db);
+            };
+        });
+    },
+    async set(key, value) {
+        const db = await this.init();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this.storeName, 'readwrite');
+            const store = tx.objectStore(this.storeName);
+            const request = store.put(value, key);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(false);
+        });
+    },
+    async get(key) {
+        const db = await this.init();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this.storeName, 'readonly');
+            const store = tx.objectStore(this.storeName);
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(null);
+        });
+    }
+};
+
 // ---- DATA MANAGEMENT ----
 const DB = {
     get(key) {
@@ -460,14 +504,28 @@ function applySettings() {
 
     // Hero height & Background
     if (hero) {
-        if (s.heroHeight) hero.style.minHeight = s.heroHeight + 'vh';
-        if (s.heroBg) {
-            hero.style.backgroundImage = `url('${s.heroBg}')`;
-            hero.classList.add('has-bg');
-        } else {
-            hero.style.backgroundImage = 'none';
-            hero.classList.remove('has-bg');
+        if (s.heroHeight) {
+            hero.style.minHeight = s.heroHeight + 'vh';
+            // Hide visual grid if hero is too small
+            const visual = document.querySelector('.hero-visual');
+            if (visual) {
+                visual.style.display = (parseInt(s.heroHeight) < 40) ? 'none' : 'grid';
+            }
         }
+
+        // Fetch background from MediaDB (Async)
+        MediaDB.get('heroBg').then(bg => {
+            if (bg) {
+                hero.style.backgroundImage = `url('${bg}')`;
+                hero.classList.add('has-bg');
+            } else if (s.heroBg) { // Fallback to settings if IDB is empty
+                hero.style.backgroundImage = `url('${s.heroBg}')`;
+                hero.classList.add('has-bg');
+            } else {
+                hero.style.backgroundImage = 'none';
+                hero.classList.remove('has-bg');
+            }
+        });
     }
     // Home Hero title size (Only for index.html hero)
     if (s.heroTitleSize) {

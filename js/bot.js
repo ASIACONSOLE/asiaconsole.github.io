@@ -45,22 +45,34 @@ window.BotEngine = (function () {
 
     // Proxy service to bypass CORS
     async function fetchViaProxy(url) {
-        // Try multiple proxies if one fails
+        // Expanded list of proxies
         const proxies = [
+            (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
             (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-            (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
+            (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
+            (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
         ];
 
+        if (url.includes('shiftdelete.net')) {
+            logTerminal("Bilgi: ShiftDelete botları engellemek için 403 Forbidden hatası döndürebilir.", 'info');
+            logTerminal("İpucu: 'https://shiftdelete.net/feed' adresini denemek daha kararlı olabilir.", 'success');
+        }
+
         for (const proxyFn of proxies) {
-            const proxyUrl = proxyFn(url);
+            let proxyUrl = "";
             try {
-                logTerminal(`Bağlanılıyor: ${new URL(proxyUrl).hostname}...`, 'info');
+                proxyUrl = proxyFn(url);
+                const proxyHost = new URL(proxyUrl).hostname;
+                logTerminal(`${proxyHost} üzerinden bağlanılıyor...`, 'info');
 
-                // Add a timeout to fetch (15 seconds)
+                // Add a timeout to fetch (12 seconds)
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-                const response = await fetch(proxyUrl, { signal: controller.signal });
+                const response = await fetch(proxyUrl, {
+                    signal: controller.signal,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
                 clearTimeout(timeoutId);
 
                 if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
@@ -68,15 +80,14 @@ window.BotEngine = (function () {
                 const html = await response.text();
                 if (html && html.length > 100) return html;
 
-                throw new Error("Boş veya yetersiz içerik döndü.");
+                throw new Error("Eksik veya boş içerik.");
             } catch (err) {
-                const proxyName = new URL(proxyUrl).hostname;
-                logTerminal(`${proxyName} hatası: ${err.message}`, 'warning');
-                // Continue to next proxy
+                const proxyName = proxyUrl ? new URL(proxyUrl).hostname : "Proxy";
+                logTerminal(`${proxyName} başarısız: ${err.message}`, 'warning');
             }
         }
 
-        logTerminal(`Tüm bağlantı yöntemleri başarısız oldu (${url}).`, 'error');
+        logTerminal(`Tüm yöntemler başarısız oldu. Lütfen farklı bir haber kaynağı veya RSS feed deneyin.`, 'error');
         return null;
     }
 

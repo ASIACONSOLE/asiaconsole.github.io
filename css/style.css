@@ -998,6 +998,66 @@ h6 {
   opacity: 0.95;
 }
 
+/* ===== TIP TRIGGER BUTTON (Floating Bottom Left) ===== */
+.tip-trigger-wrapper {
+  position: fixed;
+  /* Changed from absolute to fixed for floating behavior */
+  bottom: 2rem;
+  left: 3rem;
+  z-index: 100;
+  /* Ensure it stays on top */
+  pointer-events: all;
+  /* Ensure clickability */
+}
+
+.btn-tip-trigger {
+  background: rgba(79, 142, 247, 0.15);
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 15px rgba(79, 142, 247, 0.2);
+  animation: tipPulse 3s infinite;
+}
+
+.btn-tip-trigger span {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 5px var(--accent-blue));
+}
+
+.btn-tip-trigger:hover {
+  background: var(--accent-blue);
+  color: white;
+  box-shadow: 0 0 30px rgba(79, 142, 247, 0.6);
+  transform: translateY(-5px) scale(1.05);
+}
+
+@keyframes tipPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 142, 247, 0.4);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow: 0 0 20px 10px rgba(79, 142, 247, 0.1);
+    transform: scale(1.02);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 142, 247, 0);
+    transform: scale(1);
+  }
+}
+
+/* ===== TIP MODAL ===== */
 .btn-secondary {
   display: inline-flex;
   align-items: center;

@@ -163,6 +163,79 @@ const THEME_PRESETS = {
     }
 };
 
+// ---- DAILY SNIPPETS DATA ----
+const SNIPPETS = [
+    {
+        title: "C# Pattern Matching",
+        desc: "C# 9.0 ve sonrasında gelen pattern matching ile kodunuzu daha okunabilir kılın.",
+        code: "if (input is string { Length: > 5 } s)\n{\n    Console.WriteLine($\"Uzun metin: {s}\");\n}",
+        category: "📂 C# / .NET",
+        difficulty: "⚡ Orta"
+    },
+    {
+        title: "JS Optional Chaining",
+        desc: "Undefined veya null referans hatalarından kurtulmak için ?. operatörünü kullanın.",
+        code: "const city = user?.address?.city || 'Bilinmiyor';\nconsole.log(city);",
+        category: "📂 JavaScript",
+        difficulty: "⚡ Kolay"
+    },
+    {
+        title: "CSS Glassmorphism",
+        desc: "Modern ve şık bir cam efekti için backdrop-filter kullanın.",
+        code: ".glass {\n    background: rgba(255, 255, 255, 0.1);\n    backdrop-filter: blur(10px);\n    border: 1px solid rgba(255, 255, 255, 0.1);\n}",
+        category: "📂 CSS / Tasarım",
+        difficulty: "⚡ Kolay"
+    },
+    {
+        title: "C# Records",
+        desc: "Veri taşıyan sınıflar için immutable 'record' tipini kullanarak boiler-plate kodu azaltın.",
+        code: "public record User(string Name, int Age);\n\nvar user1 = new User(\"Asia\", 5);\nvar user2 = user1 with { Name = \"Console\" };",
+        category: "📂 C# / .NET",
+        difficulty: "⚡ Orta"
+    },
+    {
+        title: "JS Destructuring",
+        desc: "Objelerden veri çekmeyi daha kısa ve temiz hale getirin.",
+        code: "const person = { name: 'Ali', job: 'Dev' };\nconst { name, job } = person;\n\nconsole.log(`${name} is a ${job}`);",
+        category: "📂 JavaScript",
+        difficulty: "⚡ Kolay"
+    }
+];
+
+function renderDailySnippet() {
+    const container = document.getElementById('dailySnippetContainer');
+    if (!container) return;
+
+    // Calculate daily index based on date
+    const now = new Date();
+    const dayTimestamp = Math.floor(now.getTime() / (1000 * 60 * 60 * 24));
+    const index = dayTimestamp % SNIPPETS.length;
+    const snippet = SNIPPETS[index];
+
+    // Format Date
+    const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Inject to UI
+    document.getElementById('snippetDate').innerText = dateStr;
+    document.getElementById('snippetTitle').innerText = snippet.title;
+    document.getElementById('snippetDesc').innerText = snippet.desc;
+    document.getElementById('snippetCode').innerText = snippet.code;
+    document.getElementById('snippetCategory').innerText = snippet.category;
+    document.getElementById('snippetDifficulty').innerText = snippet.difficulty;
+
+    // Copy event listener
+    const copyBtn = document.getElementById('copySnippetBtn');
+    if (copyBtn) {
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(snippet.code).then(() => {
+                const originalSvg = copyBtn.innerHTML;
+                copyBtn.innerHTML = '✅';
+                setTimeout(() => { copyBtn.innerHTML = originalSvg; }, 2000);
+            });
+        };
+    }
+}
+
 // ---- MEDIA STORAGE (IndexedDB for Large Assets) ----
 const MediaDB = {
     dbName: 'AsiaConsoleMedia',

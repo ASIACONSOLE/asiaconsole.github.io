@@ -454,14 +454,14 @@ function applySettings() {
             if (btn2 && s.bannerBtn2) btn2.textContent = s.bannerBtn2;
         }
     }
-    // Site logo
-    const savedLogo = DB.get('site_logo');
+    // Site logo (Priority: URL > Local MediaDB > Legacy)
+    const logoSrc = s.logoUrl || DB.get('site_logo');
     document.querySelectorAll('.brand-icon').forEach(el => {
         const sz = s.logoSize ? s.logoSize + 'px' : '36px';
         el.style.width = sz;
         el.style.height = sz;
-        if (savedLogo) {
-            el.innerHTML = `<img src="${savedLogo}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
+        if (logoSrc) {
+            el.innerHTML = `<img src="${logoSrc}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
         }
     });
     // Site name font size + Font Family + Animation
@@ -524,19 +524,25 @@ function applySettings() {
             }
         }
 
-        // Fetch background from MediaDB (Async)
-        MediaDB.get('heroBg').then(bg => {
-            if (bg) {
-                hero.style.backgroundImage = `url('${bg}')`;
-                hero.classList.add('has-bg');
-            } else if (s.heroBg) { // Fallback to settings if IDB is empty
-                hero.style.backgroundImage = `url('${s.heroBg}')`;
+        // Fetch background (Priority: URL > Local MediaDB > Legacy)
+        const applyBg = (src) => {
+            if (src) {
+                hero.style.backgroundImage = `url('${src}')`;
                 hero.classList.add('has-bg');
             } else {
                 hero.style.backgroundImage = 'none';
                 hero.classList.remove('has-bg');
             }
-        });
+        };
+
+        if (s.heroBgUrl) {
+            applyBg(s.heroBgUrl);
+        } else {
+            MediaDB.get('heroBg').then(bg => {
+                if (bg) applyBg(bg);
+                else applyBg(s.heroBg);
+            });
+        }
     }
     // Home Hero title size (Only for index.html hero)
     if (s.heroTitleSize) {

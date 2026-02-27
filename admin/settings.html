@@ -108,6 +108,14 @@
                                         style="cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);border-radius:8px;font-size:0.85rem;color:#4f8ef7;font-weight:600;">📁
                                         Logo Seç</label>
                                     <input type="file" id="logoFileInput" accept="image/*" style="display:none;">
+
+                                    <div style="margin-top:0.75rem;">
+                                        <label
+                                            style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem;">Veya
+                                            Logo URL (Bulut Senkronizasyonu)</label>
+                                        <input type="text" id="logoUrl" placeholder="https://..."
+                                            style="width:100%; padding:0.4rem 0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; font-size:0.8rem; color:white;">
+                                    </div>
                                 </div>
                             </div>
                             <div id="logoRemoveRow" style="display:none;">
@@ -214,6 +222,14 @@
                                         <input type="file" id="heroBgInput" accept="image/*" style="display:none;">
                                         <button id="removeHeroBg"
                                             style="margin-left:0.5rem; background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; display:none;">Kaldır</button>
+
+                                        <div style="margin-top:0.75rem;">
+                                            <label
+                                                style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem;">Veya
+                                                Arka Plan URL (Tüm PC'lerde Görünür)</label>
+                                            <input type="text" id="heroBgUrl" placeholder="https://..."
+                                                style="width:100%; padding:0.4rem 0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; font-size:0.80rem; color:white;">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -752,6 +768,8 @@
             document.getElementById('socialGithub').value = s.socialGithub || '';
             document.getElementById('socialYoutube').value = s.socialYoutube || '';
             document.getElementById('socialDiscord').value = s.socialDiscord || '';
+            document.getElementById('logoUrl').value = s.logoUrl || '';
+            document.getElementById('heroBgUrl').value = s.heroBgUrl || '';
 
             // Load logo if exists
             MediaDB.get('site_logo').then(savedLogo => {
@@ -973,7 +991,9 @@
                     iconTeknoloji: document.getElementById('iconTeknoloji').value.trim() || '💻',
                     iconOyun: document.getElementById('iconOyun').value.trim() || '🎮',
                     iconUygulama: document.getElementById('iconUygulama').value.trim() || '📱',
-                    navbarAnimStyle: document.getElementById('navbarAnimStyle').value
+                    navbarAnimStyle: document.getElementById('navbarAnimStyle').value,
+                    logoUrl: document.getElementById('logoUrl').value.trim(),
+                    heroBgUrl: document.getElementById('heroBgUrl').value.trim()
                 };
                 DB.set('settings', newSettings);
                 showAdminToast('✅ Tüm ayarlar kaydedildi ve senkronize edildi!', 'success');

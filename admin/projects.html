@@ -21,17 +21,18 @@
             border: 1px solid #333;
         }
 
-        .modal {
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
@@ -125,8 +126,8 @@
     </div>
 
     <!-- CODE VIEW MODAL -->
-    <div id="codeModal" class="modal">
-        <div class="modal-content">
+    <div id="codeModal" class="modal-overlay">
+        <div class="modal">
             <h3 id="modalTitle">Proje Kodu</h3>
             <div class="code-preview" id="codeContent"></div>
             <div style="display:flex; gap:1rem; margin-top:1.5rem;">
@@ -140,13 +141,12 @@
     </div>
 
     <!-- EDIT MODAL -->
-    <div id="editModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
+    <div id="editModal" class="modal-overlay">
+        <div class="modal" style="max-width: 500px;">
             <h3>📝 Proje Düzenle</h3>
             <div class="form-group" style="margin-top:1.5rem;">
                 <label>Proje Başlığı</label>
-                <input type="text" id="editProjTitle"
-                    style="width:100%; padding:0.75rem; background:var(--bg-glass); border:1px solid var(--border); color:white; border-radius:8px;">
+                <input type="text" id="editProjTitle">
             </div>
             <div style="display:flex; gap:1rem; margin-top:1.5rem;">
                 <button class="topbar-btn" onclick="saveProjectEdit()">💾 Kaydet</button>

@@ -22,6 +22,83 @@
             position: relative;
             z-index: 1;
         }
+
+        /* TABS */
+        .profile-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .profile-tab {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .profile-tab.active {
+            background: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 255, 242, 0.2);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .dash-stat {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .dash-stat-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+            margin-bottom: 0.25rem;
+        }
+
+        .dash-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -73,62 +150,220 @@
         </div>
 
         <div class="profile-main">
-            <!-- TOP: Avatar + Name + Actions -->
-            <div class="profile-top">
-                <div class="profile-avatar-lg" id="profileAvatar">?</div>
-                <div class="profile-name-block">
-                    <div class="profile-tier-badge" id="profileTierBadge">⭐ Standart</div>
-                    <h1 id="profileUsername">Kullanıcı</h1>
-                    <div style="font-size:0.82rem; color:var(--text-muted);">📅 Üye: <span id="profileJoined">—</span>
+            <!-- OWNER TABS (Only shown if isOwnProfile) -->
+            <div id="ownerTabs" class="profile-tabs" style="display:none; margin-bottom:1.5rem;">
+                <button class="profile-tab active" onclick="switchProfileTab('view')">👁️ Görüntüle</button>
+                <button class="profile-tab" onclick="switchProfileTab('panel')">📊 Panel</button>
+                <button class="profile-tab" onclick="switchProfileTab('edit')">✏️ Düzenle</button>
+                <button class="profile-tab" onclick="switchProfileTab('projects')">🚀 Proje Gönder</button>
+            </div>
+
+            <!-- TAB: VIEW (Public Profile) -->
+            <div id="tabView" class="profile-tab-content active">
+                <!-- TOP: Avatar + Name + Actions -->
+                <div class="profile-top">
+                    <div class="profile-avatar-lg" id="profileAvatar">?</div>
+                    <div class="profile-name-block">
+                        <div class="profile-tier-badge" id="profileTierBadge">⭐ Standart</div>
+                        <h1 id="profileUsername">Kullanıcı</h1>
+                        <div style="font-size:0.82rem; color:var(--text-muted);">📅 Üye: <span
+                                id="profileJoined">—</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions" id="profileActions">
+                        <!-- Buttons injected by JS -->
                     </div>
                 </div>
-                <div class="profile-actions" id="profileActions">
-                    <!-- Buttons injected by JS -->
+
+                <!-- STATS BAR -->
+                <div class="profile-stats-bar">
+                    <div class="profile-stat">
+                        <div class="profile-stat-num" id="statPosts">0</div>
+                        <div class="profile-stat-label">Forum Konusu</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-num" id="statProjects">0</div>
+                        <div class="profile-stat-label">Proje</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-num" id="statViews">0</div>
+                        <div class="profile-stat-label">Toplam Görüntülenme</div>
+                    </div>
+                </div>
+
+                <!-- BODY -->
+                <div class="profile-body">
+                    <!-- SIDEBAR -->
+                    <div class="profile-sidebar">
+                        <div class="card">
+                            <h3 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">👤 Hakkında</h3>
+                            <div class="profile-bio" id="profileBio"
+                                style="color:var(--text-muted); font-style:italic;">
+                                Henüz bir tanıtım yazılmadı.</div>
+                            <div class="profile-social-links" id="profileSocialLinks"></div>
+                            <div class="profile-joined" id="profileJoinedFull"></div>
+                        </div>
+                    </div>
+
+                    <!-- MAIN CONTENT -->
+                    <div>
+                        <!-- Projects -->
+                        <div id="projectsSection" style="margin-bottom:2rem;">
+                            <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">🚀 Projeler</h3>
+                            <div id="profileProjects" class="cards-grid"
+                                style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));"></div>
+                        </div>
+
+                        <!-- Forum Posts -->
+                        <div id="forumSection">
+                            <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">💬 Forum Konuları</h3>
+                            <div id="profilePosts" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- STATS BAR -->
-            <div class="profile-stats-bar">
-                <div class="profile-stat">
-                    <div class="profile-stat-num" id="statPosts">0</div>
-                    <div class="profile-stat-label">Forum Konusu</div>
+            <!-- TAB: PANEL (Dashboard) -->
+            <div id="tabPanel" class="profile-tab-content" style="display:none; animation:fadeIn 0.3s ease;">
+                <div class="card"
+                    style="margin-bottom:1.5rem; background:rgba(0,255,242,0.03); border-color:rgba(0,255,242,0.1);">
+                    <h3 style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">📊 Hesap Özeti</h3>
+                    <div class="dashboard-stats" style="grid-template-columns: repeat(3, 1fr); gap:1rem;">
+                        <div class="dash-stat">
+                            <div class="dash-stat-num" id="dashPostCount">0</div>
+                            <div class="dash-stat-label">Forum Konusu</div>
+                        </div>
+                        <div class="dash-stat">
+                            <div class="dash-stat-num" id="dashAccountType">Standart</div>
+                            <div class="dash-stat-label">Hesap Türü</div>
+                        </div>
+                        <div class="dash-stat">
+                            <div class="dash-stat-num" id="dashJoined">-</div>
+                            <div class="dash-stat-label">Kayıt Tarihi</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="profile-stat">
-                    <div class="profile-stat-num" id="statProjects">0</div>
-                    <div class="profile-stat-label">Proje</div>
-                </div>
-                <div class="profile-stat">
-                    <div class="profile-stat-num" id="statViews">0</div>
-                    <div class="profile-stat-label">Toplam Görüntülenme</div>
-                </div>
-            </div>
 
-            <!-- BODY -->
-            <div class="profile-body">
-                <!-- SIDEBAR -->
-                <div class="profile-sidebar">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
                     <div class="card">
-                        <h3 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">👤 Hakkında</h3>
-                        <div class="profile-bio" id="profileBio" style="color:var(--text-muted); font-style:italic;">
-                            Henüz bir tanıtım yazılmadı.</div>
-                        <div class="profile-social-links" id="profileSocialLinks"></div>
-                        <div class="profile-joined" id="profileJoinedFull"></div>
+                        <h4 style="margin-bottom:1rem;">⚡ Hızlı İşlemler</h4>
+                        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <button class="btn-secondary" onclick="switchProfileTab('edit')"
+                                style="justify-content:flex-start; gap:0.75rem; padding:1rem;">
+                                <span>✏️</span>
+                                <div><strong>Profili Düzenle</strong>
+                                    <div style="font-size:0.75rem; opacity:0.7;">Bio ve sosyal medya</div>
+                                </div>
+                            </button>
+                            <button class="btn-secondary" onclick="switchProfileTab('projects')"
+                                style="justify-content:flex-start; gap:0.75rem; padding:1rem;">
+                                <span>🚀</span>
+                                <div><strong>Proje Gönder</strong>
+                                    <div style="font-size:0.75rem; opacity:0.7;">HTML oyun veya uygulama</div>
+                                </div>
+                            </button>
+                            <a href="mesajlar.html" class="btn-secondary"
+                                style="justify-content:flex-start; gap:0.75rem; padding:1rem; text-decoration:none;">
+                                <span>💬</span>
+                                <div><strong>Mesajlarım</strong>
+                                    <div style="font-size:0.75rem; opacity:0.7;">Diğer üyelerle sohbet et</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h4 style="margin-bottom:1rem;">🔐 Hesap Ayarları</h4>
+                        <div class="form-group">
+                            <label style="font-size:0.8rem; color:var(--text-muted);">Görünen Ad</label>
+                            <input type="text" id="settingUsername" readonly style="opacity:0.6;">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size:0.8rem; color:var(--text-muted);">Yeni Şifre (opsiyonel)</label>
+                            <input type="password" id="settingPassword"
+                                placeholder="Değiştirmek istemiyorsanız boş bırakın">
+                        </div>
+                        <button class="btn-primary" id="saveSettingsBtn" style="width:100%; justify-content:center;">💾
+                            Güncelle</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- MAIN CONTENT -->
-                <div>
-                    <!-- Projects -->
-                    <div id="projectsSection" style="margin-bottom:2rem;">
-                        <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">🚀 Projeler</h3>
-                        <div id="profileProjects" class="cards-grid"
-                            style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));"></div>
+            <!-- TAB: EDIT (Customize) -->
+            <div id="tabEdit" class="profile-tab-content" style="display:none; animation:fadeIn 0.3s ease;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                    <div class="card">
+                        <h4 style="margin-bottom:1.25rem;">🖼️ Görünüm</h4>
+                        <div class="form-group">
+                            <label style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.5rem;">Profil
+                                Fotoğrafı</label>
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <div id="editAvatarPreview" class="profile-avatar-lg"
+                                    style="width:70px; height:70px; font-size:1.5rem;">?</div>
+                                <button class="btn-secondary"
+                                    onclick="document.getElementById('avatarFileInput').click()">📷 Seç</button>
+                                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.5rem;">Hakkımda
+                                (Bio)</label>
+                            <textarea id="editBio" rows="5" placeholder="Kendinizi tanıtın..."></textarea>
+                        </div>
                     </div>
+                    <div class="card">
+                        <h4 style="margin-bottom:1.25rem;">🔗 Sosyal Medya</h4>
+                        <div class="form-group"><label>Twitter URL</label><input type="url" id="editTwitter"
+                                placeholder="https://x.com/kullanici"></div>
+                        <div class="form-group"><label>GitHub URL</label><input type="url" id="editGithub"
+                                placeholder="https://github.com/kullanici"></div>
+                        <div class="form-group"><label>YouTube URL</label><input type="url" id="editYoutube"
+                                placeholder="https://youtube.com/@kanal"></div>
+                        <button class="btn-primary" id="saveProfileBtn"
+                            style="width:100%; justify-content:center; margin-top:0.5rem;">💾 Profili Kaydet</button>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Forum Posts -->
-                    <div id="forumSection">
-                        <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem;">💬 Forum Konuları</h3>
-                        <div id="profilePosts" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+            <!-- TAB: PROJECTS (Submit) -->
+            <div id="tabProjects" class="profile-tab-content" style="display:none; animation:fadeIn 0.3s ease;">
+                <div style="display:grid; grid-template-columns: 1fr 300px; gap:1.5rem;">
+                    <div class="card">
+                        <h4 style="margin-bottom:1.25rem;">🚀 Yeni Proje</h4>
+                        <div class="form-group"><label>Başlık</label><input type="text" id="projTitle"
+                                placeholder="Oyun veya Uygulama Adı"></div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select id="projCategory"
+                                    style="padding:0.75rem; border-radius:10px; background:var(--bg-glass); color:#fff; border:1px solid var(--border); width:100%;">
+                                    <option value="oyun">🎮 Oyun</option>
+                                    <option value="uygulama">📱 Uygulama</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Kısa Açıklama</label><input type="text" id="projDesc"
+                                    placeholder="Kısaca nedir?"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>HTML Kodları</label>
+                            <textarea id="projCode"
+                                style="height:250px; font-family:monospace; font-size:0.8rem; background:#000; border:1px solid var(--border); border-radius:10px; padding:1rem; color:#0f0;"
+                                placeholder="<html>...</html>"></textarea>
+                        </div>
+                        <button class="btn-primary" id="submitProjBtn" style="width:100%; justify-content:center;">📤
+                            Onaya Gönder</button>
+                    </div>
+                    <div>
+                        <div class="card"
+                            style="margin-bottom:1.5rem; background:rgba(168,85,247,0.05); border-color:rgba(168,85,247,0.2);">
+                            <h4 style="font-size:0.9rem; color:var(--accent-purple); margin-bottom:0.75rem;">📂
+                                Projelerim</h4>
+                            <div id="myProjectsList"
+                                style="display:flex; flex-direction:column; gap:0.75rem; max-height:400px; overflow-y:auto;">
+                                <p style="font-size:0.8rem; color:var(--text-muted); text-align:center;">Proje
+                                    bulunamadı.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -163,6 +398,28 @@
             });
         });
 
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProfile();
+            document.addEventListener('dbUpdated', (e) => {
+                const { key } = e.detail;
+                if (['users', 'profiles', 'user_projects', 'forum_posts'].includes(key)) {
+                    renderProfile();
+                }
+            });
+        });
+
+        function switchProfileTab(tab) {
+            document.querySelectorAll('.profile-tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
+
+            const target = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+            if (target) {
+                target.style.display = 'block';
+                const btn = Array.from(document.querySelectorAll('.profile-tab')).find(b => b.textContent.toLowerCase().includes(tab.toLowerCase()));
+                if (btn) btn.classList.add('active');
+            }
+        }
+
         function renderProfile() {
             const params = new URLSearchParams(location.search);
             const targetUsername = params.get('user');
@@ -177,18 +434,12 @@
                 return;
             }
 
-            // Find target user
             const allUsers = DB.get('users') || [];
             const normalize = s => (s || '').toLowerCase().replace(/[\s_.]/g, '');
             const user = allUsers.find(u => normalize(u.username) === normalize(targetUsername));
 
             if (!user) {
-                // If we are logged in as this user, or if wait is long, show not found
-                // But try to wait a bit if we're at 0 users (likely syncing)
-                if (allUsers.length < 5) {
-                    console.log('[Profile] Waiting for users to sync...');
-                    return;
-                }
+                if (allUsers.length < 5) return;
                 document.querySelector('.profile-main').innerHTML =
                     '<div class="empty-state" style="margin:4rem auto;"><div class="empty-icon">😕</div><h3>Kullanıcı Bulunamadı</h3><p>' + targetUsername + ' adlı bir üye bulunamadı.</p><a href="index.html" class="btn-primary" style="margin-top:1rem; display:inline-flex;">← Ana Sayfaya Dön</a></div>';
                 document.getElementById('profileCover').style.display = 'none';
@@ -196,9 +447,27 @@
             }
 
             const isOwnProfile = me && me.id === user.id;
-
-            // Load profile extra data
             const extra = ProfileData.get(user.id);
+
+            // TABS VISIBILITY & HASH ROUTING
+            const ownerTabs = document.getElementById('ownerTabs');
+            if (isOwnProfile) {
+                ownerTabs.style.display = 'flex';
+                renderDashboard(user);
+                renderEditForm(user, extra);
+                renderProjectsTab(user);
+
+                // Route by hash
+                const hash = location.hash.replace('#', '');
+                if (['panel', 'edit', 'projects'].includes(hash)) {
+                    switchProfileTab(hash);
+                } else {
+                    switchProfileTab('panel'); // Dashboard by default for owner
+                }
+            } else {
+                ownerTabs.style.display = 'none';
+                switchProfileTab('view');
+            }
 
             // COVER PHOTO
             const coverKey = 'tc_cover_' + user.id;
@@ -207,11 +476,9 @@
                 document.getElementById('profileCover').style.backgroundImage = 'url(' + savedCover + ')';
             }
 
-            // Show cover edit button for own profile
             if (isOwnProfile) {
                 const coverBtn = document.getElementById('coverEditBtn');
                 if (coverBtn) coverBtn.style.display = 'block';
-                // Remove old listener if exists (to avoid duplicates)
                 const oldInput = document.getElementById('coverFileInput');
                 const newInput = oldInput.cloneNode(true);
                 oldInput.parentNode.replaceChild(newInput, oldInput);
@@ -262,12 +529,13 @@
             }
 
             // BIO
+            const bioEl = document.getElementById('profileBio');
             if (extra.bio) {
-                document.getElementById('profileBio').textContent = extra.bio;
-                document.getElementById('profileBio').style.fontStyle = 'normal';
+                bioEl.textContent = extra.bio;
+                bioEl.style.fontStyle = 'normal';
             } else {
-                document.getElementById('profileBio').textContent = 'Henüz bir tanıtım yazılmadı.';
-                document.getElementById('profileBio').style.fontStyle = 'italic';
+                bioEl.textContent = 'Henüz bir tanıtım yazılmadı.';
+                bioEl.style.fontStyle = 'italic';
             }
 
             // SOCIAL LINKS
@@ -279,7 +547,7 @@
                 if (extra.socialYoutube) socialLinks.innerHTML += `<a href="${extra.socialYoutube}" target="_blank" class="profile-social-link">▶️ YouTube</a>`;
             }
 
-            // STATS
+            // VIEW STATS
             const forumPosts = (DB.get('forum_posts') || []).filter(p => p.author === user.username);
             const userProjects = (DB.get('user_projects') || []).filter(p => p.author === user.username && p.status === 'approved');
             const totalViews = userProjects.reduce((s, p) => s + (p.views || 0), 0);
@@ -288,35 +556,13 @@
             document.getElementById('statProjects').textContent = userProjects.length;
             document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
 
-            // ACTION BUTTONS
-            const actionsEl = document.getElementById('profileActions');
-            if (isOwnProfile) {
-                actionsEl.innerHTML = `
-                    <a href="uye-panel.html" class="btn-primary">👤 Üye Paneli</a>
-                    <a href="uye-panel.html#edit-profile" class="btn-secondary">⚙️ Profili Düzenle</a>
-                    <a href="mesajlar.html" class="btn-secondary">💬 Mesajlarım</a>
-                `;
-            } else if (me) {
-                actionsEl.innerHTML = `
-                    <button class="btn-primary" id="sendMsgBtn">💬 Mesaj Gönder</button>
-                    <a href="profil.html?user=${encodeURIComponent(me.username)}" class="btn-secondary">Profilim</a>
-                `;
-                const sendBtn = document.getElementById('sendMsgBtn');
-                if (sendBtn) {
-                    sendBtn.onclick = () => {
-                        location.href = 'mesajlar.html?to=' + encodeURIComponent(user.username);
-                    };
-                }
-            } else {
-                actionsEl.innerHTML = `<a href="uye-panel.html" class="btn-primary">🔑 Giriş Yap</a>`;
-            }
-
-            // PROJECTS
+            // PROJECTS GRID
             const projGrid = document.getElementById('profileProjects');
+            let projHtml = '';
             if (userProjects.length === 0) {
-                projGrid.innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Henüz onaylanmış proje yok.</p>';
+                projHtml = '<p style="color:var(--text-muted); font-size:0.88rem;">Henüz onaylanmış proje yok.</p>';
             } else {
-                projGrid.innerHTML = userProjects.map(p => `
+                projHtml = userProjects.map(p => `
                     <a href="proje-izle.html?id=${p.id}" class="card article-card" style="text-decoration:none; display:block;">
                         <div class="card-title" style="font-size:0.95rem;">${p.title}</div>
                         <div class="card-desc">${p.desc}</div>
@@ -325,7 +571,17 @@
                 `).join('');
             }
 
-            // FORUM POSTS
+            if (isOwnProfile) {
+                projHtml += `
+                    <div class="card" onclick="switchProfileTab('projects')" style="border:1px dashed var(--accent-blue); background:rgba(0,255,242,0.03); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; cursor:pointer; gap:0.5rem; transition:0.3s;">
+                        <span style="font-size:1.5rem;">➕</span>
+                        <span style="font-size:0.85rem; font-weight:600; color:var(--accent-blue);">Yeni Proje Ekle</span>
+                    </div>
+                `;
+            }
+            projGrid.innerHTML = projHtml;
+
+            // FORUM POSTS LIST
             const postsEl = document.getElementById('profilePosts');
             if (forumPosts.length === 0) {
                 postsEl.innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Henüz forum konusu açılmadı.</p>';
@@ -337,6 +593,139 @@
                     </a>
                 `).join('');
             }
+
+            // ACTION BUTTONS (for visitors)
+            const actionsEl = document.getElementById('profileActions');
+            if (isOwnProfile) {
+                actionsEl.innerHTML = '<span style="color:var(--text-muted); font-size:0.8rem;">İçeriklerini yukarıdaki sekmelerden yönetebilirsin.</span>';
+            } else if (me) {
+                actionsEl.innerHTML = `
+                    <button class="btn-primary" id="sendMsgBtn">💬 Mesaj Gönder</button>
+                    <a href="profil.html?user=${encodeURIComponent(me.username)}" class="btn-secondary">Profilim</a>
+                `;
+                const sendBtn = document.getElementById('sendMsgBtn');
+                if (sendBtn) sendBtn.onclick = () => location.href = 'mesajlar.html?to=' + encodeURIComponent(user.username);
+            } else {
+                actionsEl.innerHTML = `<a href="uye-panel.html" class="btn-primary">🔑 Giriş Yap</a>`;
+            }
+        }
+
+        function renderDashboard(user) {
+            const forumPosts = (DB.get('forum_posts') || []).filter(p => p.author === user.username);
+            document.getElementById('dashPostCount').textContent = forumPosts.length;
+            document.getElementById('dashAccountType').textContent = (user.accountType || 'Standart').charAt(0).toUpperCase() + (user.accountType || 'Standart').slice(1);
+            document.getElementById('dashJoined').textContent = user.joined || '-';
+            document.getElementById('settingUsername').value = user.username;
+
+            document.getElementById('saveSettingsBtn').onclick = () => {
+                const pass = document.getElementById('settingPassword').value;
+                if (!pass) { showToast('Lütfen yeni bir şifre girin!', 'warning'); return; }
+                if (pass.length < 6) { showToast('Şifre en az 6 karakter olmalı!', 'error'); return; }
+                const users = DB.get('users') || [];
+                const idx = users.findIndex(u => u.id === user.id);
+                if (idx !== -1) {
+                    users[idx].password = pass;
+                    DB.set('users', users);
+                    showToast('✅ Şifre güncellendi!', 'success');
+                    document.getElementById('settingPassword').value = '';
+                }
+            };
+        }
+
+        function renderEditForm(user, extra) {
+            const avatarPreview = document.getElementById('editAvatarPreview');
+            const avatarKey = 'tc_avatar_' + user.id;
+            const savedAvatar = localStorage.getItem(avatarKey) || extra.avatar;
+            if (savedAvatar) {
+                avatarPreview.style.backgroundImage = 'url(' + savedAvatar + ')';
+                avatarPreview.style.backgroundSize = 'cover';
+                avatarPreview.textContent = '';
+            } else {
+                avatarPreview.textContent = user.username[0].toUpperCase();
+            }
+
+            document.getElementById('editBio').value = extra.bio || '';
+            document.getElementById('editTwitter').value = extra.socialTwitter || '';
+            document.getElementById('editGithub').value = extra.socialGithub || '';
+            document.getElementById('editYoutube').value = extra.socialYoutube || '';
+
+            // Avatar Change
+            const avatarInp = document.getElementById('avatarFileInput');
+            avatarInp.onchange = function () {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) { showToast('Fotoğraf 2MB\'dan büyük olamaz!', 'error'); return; }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const b64 = e.target.result;
+                    localStorage.setItem(avatarKey, b64);
+                    avatarPreview.style.backgroundImage = 'url(' + b64 + ')';
+                    avatarPreview.textContent = '';
+                    ProfileData.save(user.id, { avatar: b64 });
+                    showToast('✅ Profil fotoğrafı yüklendi!', 'success');
+                };
+                reader.readAsDataURL(file);
+            };
+
+            document.getElementById('saveProfileBtn').onclick = () => {
+                const data = {
+                    bio: document.getElementById('editBio').value.trim(),
+                    socialTwitter: document.getElementById('editTwitter').value.trim(),
+                    socialGithub: document.getElementById('editGithub').value.trim(),
+                    socialYoutube: document.getElementById('editYoutube').value.trim()
+                };
+                ProfileData.save(user.id, data);
+                showToast('✅ Profil güncellendi!', 'success');
+                renderProfile();
+            };
+        }
+
+        function renderProjectsTab(user) {
+            const myList = document.getElementById('myProjectsList');
+            const allProjects = DB.get('user_projects') || [];
+            const myProjects = allProjects.filter(p => p.author === user.username);
+
+            if (myProjects.length === 0) {
+                myList.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:1rem; border:1px dashed var(--border); border-radius:10px;">Henüz proje yok.</p>';
+            } else {
+                myList.innerHTML = myProjects.map(p => `
+                    <div style="padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:0.85rem; font-weight:600;">${p.title}</div>
+                            <div style="font-size:0.7rem; color:${p.status === 'approved' ? '#10b981' : (p.status === 'rejected' ? '#ef4444' : '#f59e0b')}">${p.status === 'approved' ? '✅ Onaylandı' : (p.status === 'rejected' ? '❌ Reddedildi' : '⏳ Bekliyor')}</div>
+                        </div>
+                        ${p.status === 'approved' ? `<a href="proje-izle.html?id=${p.id}" style="font-size:0.7rem; color:var(--accent-blue);">Görüntüle</a>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('submitProjBtn').onclick = () => {
+                const title = document.getElementById('projTitle').value.trim();
+                const category = document.getElementById('projCategory').value;
+                const desc = document.getElementById('projDesc').value.trim();
+                const code = document.getElementById('projCode').value.trim();
+
+                if (!title || !desc || !code) { showToast('Lütfen tüm alanları doldurun!', 'warning'); return; }
+
+                const newProj = {
+                    id: 'p' + Date.now(),
+                    author: user.username,
+                    title, category, desc, code,
+                    status: 'pending',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    views: 0
+                };
+
+                allProjects.push(newProj);
+                DB.set('user_projects', allProjects);
+                showToast('🚀 Projeniz onaya gönderildi!', 'success');
+
+                document.getElementById('projTitle').value = '';
+                document.getElementById('projDesc').value = '';
+                document.getElementById('projCode').value = '';
+                renderProjectsTab(user);
+            };
+        }
     </script>
 </body>
 

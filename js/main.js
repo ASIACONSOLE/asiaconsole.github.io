@@ -653,7 +653,7 @@ function updateNavAuth() {
         if (!panelBtn && userMenuEl) {
             panelBtn = document.createElement('a');
             panelBtn.id = 'navPanelBtnGlobal';
-            panelBtn.href = 'uye-panel.html';
+            panelBtn.href = `profil.html?user=${encodeURIComponent(user.username)}#panel`;
             panelBtn.className = 'btn-nav-panel';
             panelBtn.innerHTML = '👤 Üye Paneli';
             panelBtn.style.cssText = 'font-size:0.75rem; padding:0.25rem 0.6rem; background:rgba(0,255,242,0.1); color:var(--accent-blue); border:1px solid rgba(0,255,242,0.2); border-radius:6px; cursor:pointer; margin-left:0.5rem; text-decoration:none; transition:all 0.2s;';

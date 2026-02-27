@@ -793,32 +793,37 @@ h6 {
 
 /* ===== HERO LAYOUT UPDATES ===== */
 .hero .container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  /* Kutu genişliği kadar kenar boşlukları */
   align-items: center;
-  gap: 8rem;
-  /* Daha sola yaslamak için gap artırıldı */
+  gap: 2rem;
   position: relative;
   z-index: 5;
 }
 
+.hero .container::after {
+  content: "";
+  /* Sağ tarafta dengeleyici boşluk */
+  width: 320px;
+}
+
+.snippet-hero-wrapper {
+  grid-column: 1;
+  width: 320px;
+  flex-shrink: 0;
+  animation: fadeInUp 0.8s ease both;
+}
+
 .hero-content {
-  flex: 1;
+  grid-column: 2;
   position: relative;
   z-index: 1;
   text-align: center;
-  /* Yazıları ortala */
 }
 
-.hero-content .hero-badge {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-content h1 {
-  margin-left: auto;
-  margin-right: auto;
-}
-
+.hero-content .hero-badge,
+.hero-content h1,
 .hero-content p {
   margin-left: auto;
   margin-right: auto;
@@ -826,7 +831,6 @@ h6 {
 
 .hero-buttons {
   justify-content: center;
-  /* Butonları ortala */
 }
 
 /* ===== SNIPPET CARD (Compact Square) ===== */

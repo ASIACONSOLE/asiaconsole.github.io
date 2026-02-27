@@ -674,7 +674,7 @@ h6 {
   inset: 0;
   background: inherit;
   /* Picks up background-image from element style */
-  opacity: 0.3;
+  opacity: var(--hero-bg-opacity, 0.3);
   z-index: -1;
   filter: blur(4px);
 }
@@ -849,8 +849,25 @@ h6 {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
   text-decoration: none;
-  animation: float 4s ease-in-out infinite;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.animate-stagger {
+  opacity: 0;
+  transform: translateX(30px);
+  animation: staggerIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes staggerIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+text-decoration: none;
+animation: float 4s ease-in-out infinite;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .hero-card-mini:hover {

@@ -320,6 +320,7 @@ const DB = {
             logoSize: 36,
             siteNameSize: 1.4,
             heroHeight: 100,
+            heroBgOpacity: 0.3,
             heroTitleSize: 5.5,
             googleClientId: '367594063152-0kagipiibbmh7t8ti3c8chjufe335l0j.apps.googleusercontent.com'
         };
@@ -453,6 +454,12 @@ function applySettings() {
             const btn2 = hero.querySelector('.btn-secondary');
             if (btn2 && s.bannerBtn2) btn2.textContent = s.bannerBtn2;
         }
+    }
+
+    // Hero Background Opacity
+    if (hero) {
+        const opacity = s.heroBgOpacity !== undefined ? s.heroBgOpacity : 0.3;
+        document.documentElement.style.setProperty('--hero-bg-opacity', opacity);
     }
     // Site logo (Priority: URL > Local MediaDB > Legacy)
     const logoSrc = s.logoUrl || DB.get('site_logo');
@@ -646,14 +653,21 @@ function renderHeroProjects() {
         return;
     }
 
-    grid.innerHTML = latest.map(p => `
-        <a href="proje-izle.html?id=${p.id}" class="hero-card-mini">
+    grid.innerHTML = latest.map((p, idx) => `
+        <a href="proje-izle.html?id=${p.id}" class="hero-card-mini animate-stagger" style="--delay: ${idx * 0.1}s">
             <div class="mini-icon">${p.icon || '🚀'}</div>
             <div class="mini-title">${p.title}</div>
             <div class="mini-tag">${p.category || 'PROJE'}</div>
         </a>
     `).join('');
 }
+
+// Auto-refresh hero projects every 30 seconds for banner effect
+setInterval(() => {
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+        renderHeroProjects();
+    }
+}, 30000);
 
 // ---- NAVBAR ACTIVE STATE ----
 function setNavActive() {

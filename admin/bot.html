@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otonom İçerik Botu - AsiaConsole Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/bot.css">
+    <style>
+        .bot-terminal {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #d4d4d4;
+            height: 350px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .bot-terminal .log-success {
+            color: #10b981;
+        }
+
+        .bot-terminal .log-warning {
+            color: #f59e0b;
+        }
+
+        .bot-terminal .log-error {
+            color: #ef4444;
+        }
+
+        .bot-terminal .log-info {
+            color: #3b82f6;
+        }
+
+        .bot-terminal .log-time {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        .bot-status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .status-idle {
+            color: #6b7280;
+            background: #6b7280;
+        }
+
+        .status-running {
+            color: #10b981;
+            background: #10b981;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+                box-shadow: 0 0 15px currentColor;
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu</a>
+                <a href="bot.html" class="sidebar-link active"><span class="icon">🤖</span> Otonom Bot</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi
+                    Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="topbar-title">🤖 Otonom Haber & İçerik Botu</div>
+                </div>
+                <div class="topbar-actions">
+                    <span id="cloudSyncStatus" style="margin-right:0.5rem;">◌ Bağlanıyor...</span>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:1.5rem; align-items: start;">
+                    <!-- Bot Settings Configuration -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">⚙️ Bot Yapılandırması</div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <p
+                                style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">
+                                Bu bot, hedef sitenin ana sayfasını tarayarak yeni çıkan haberleri bulur, kapak
+                                resimlerini çeker ve içeriği <span
+                                    style="color:var(--accent-blue); font-weight:600;">Gemini/Groq</span> yapay zekasına
+                                yeniden yazdırarak sitenize özgün makaleler halinde ekler.
+                            </p>
+
+                            <div class="form-group">
+                                <label>Hedef Site URL (Haber Kaynağı)</label>
+                                <input type="text" id="botBaseUrl" placeholder="Örn: https://shiftdelete.net"
+                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
+                            </div>
+
+                            <div class="form-group" style="margin-top:1rem;">
+                                <label>Yayınlanacağı Kategori</label>
+                                <select id="botCategory"
+                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
+                                    <option value="teknoloji">💻 Teknoloji</option>
+                                    <option value="oyun">🎮 Oyun</option>
+                                    <option value="uygulama">📱 Uygulama</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-top:1rem;">
+                                <label>Çalışma Sıklığı (Zamanlayıcı)</label>
+                                <select id="botInterval"
+                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
+                                    <option value="5">Her 5 Dakikada Bir</option>
+                                    <option value="15" selected>Her 15 Dakikada Bir</option>
+                                    <option value="30">Her 30 Dakikada Bir</option>
+                                    <option value="60">Her Saat Başı</option>
+                                </select>
+                                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Not: Otonom
+                                    modun çalışması için bu sayfanın tarayıcıda açık kalması gerekir.</div>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+                                <button id="btnStartBot" class="topbar-btn"
+                                    style="background:#10b981; width:100%; justify-content:center; font-size:1rem; padding:0.8rem;">▶️
+                                    Otonom Botu Başlat</button>
+                                <button id="btnStopBot" class="topbar-btn secondary"
+                                    style="background:#ef4444; color:white; border:none; display:none; width:100%; justify-content:center; font-size:1rem; padding:0.8rem;">⏹️
+                                    Durdur</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bot Terminal / Logs -->
+                    <div class="admin-card">
+                        <div class="admin-card-header" style="justify-content: space-between;">
+                            <div style="display:flex; align-items:center;">
+                                <div id="statusDot" class="bot-status-indicator status-idle"></div>
+                                <div class="admin-card-title">Terminal & Canlı İzleme</div>
+                            </div>
+                            <button class="topbar-btn secondary" onclick="clearLogs()"
+                                style="padding:0.3rem 0.6rem; font-size:0.75rem;">Temizle</button>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div class="bot-terminal" id="botTerminal">
+                                <div><span class="log-info">Sistem:</span> Otonom bot yapılandırması yüklendi.
+                                    Başlatılmaya hazır.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals and Scripts -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/ai-assistant.js"></script>
+    <script src="../js/admin.js"></script>
+    <script src="../js/bot.js"></script>
+</body>
+
+</html>

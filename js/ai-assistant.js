@@ -459,7 +459,80 @@ const AIAssistant = (() => {
         return code.trim();
     };
 
-    return { init, generateGame };
+    const rewriteArticle = async (articleData, onProgress) => {
+        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
+
+        const systemPrompt = `Sen profesyonel bir teknoloji ve oyun editörüsün. AsiaConsole adlı blog sitesi için içerik üretiyorsun.
+Sana verilen haberi BAŞTAN AŞAĞI tamamen ÖZGÜN olarak yeniden yazmalısın. 
+Kopya içerik cezası yememek için cümle yapılarını değiştir, daha akıcı ve ilgi çekici hale getir.
+
+KURALLAR:
+1. Çıktıda ASLA genel konuşma veya selamlama olmamalıdır ("İşte haber:" gibi). SADECE YAZININ KENDİSİNİ VER.
+2. ÇIKTI SADECE HTML FORMATINDA OLMALIDIR. Markdown ( \`\`\`html vs.) KULLANMA.
+3. Sadece yazının gövde HTML kodlarını ver (<html>, <body>, <head> KULLANMA).
+4. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul> ve <li> etiketlerini kullan. Makaleye uygun alt başlıklar eklemekten çekinme.
+5. Yazı içine asla <img ...> gibi resim etiketleri EKLEME (sadece metin).
+6. Haberin ana teması, verdiği teknolojik/donanımsal bilgiler tamamen doğru kalmalı, asıl gerçeği saptırma.
+7. Orijinal haber çok kısaysa, kendi sektörel ve teknolojik bilgini kullanarak detaylandır ve makaleyi okuyucu için doyurucu hale getir.`;
+
+        const userPrompt = `ORJİNAL BAŞLIK: ${articleData.title}\n\nORJİNAL METİN:\n${articleData.content}`;
+        const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
+
+        if (onProgress) onProgress('Yapay zekaya haber aktarılıyor...');
+
+        try {
+            // Try Gemini first
+            if (s.geminiApiKey && s.geminiApiKey.length > 20) {
+                if (onProgress) onProgress('Gemini ile makale özgünleştiriliyor...');
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.candidates && data.candidates[0]) {
+                        return data.candidates[0].content.parts[0].text;
+                    }
+                } else if (resp.status !== 429) {
+                    throw new Error('GEMINI_FAILED');
+                }
+                console.warn('[AsiaBot] Gemini 429, Groq motoruna geçiliyor...');
+            }
+
+            // Try Groq as fallback
+            if (s.groqApiKey) {
+                if (onProgress) onProgress('Groq ile makale özgünleştiriliyor...');
+                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userPrompt }
+                        ],
+                        temperature: 0.7, max_tokens: 3000
+                    })
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.choices && data.choices[0]) {
+                        return data.choices[0].message.content;
+                    }
+                }
+            }
+
+            throw new Error('Tum API denemeleri basarisiz oldu.');
+        } catch (err) {
+            console.error('[AsiaBot Rewrite Error]', err);
+            throw new Error('Yapay zeka servisine baglanılamadı.');
+        }
+    };
+
+    return { init, generateGame, rewriteArticle };
 })();
 
 // Auto-init on load if scripts are ready

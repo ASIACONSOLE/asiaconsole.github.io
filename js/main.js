@@ -462,15 +462,25 @@ function applySettings() {
         document.documentElement.style.setProperty('--hero-bg-opacity', opacity);
     }
     // Site logo (Priority: URL > Local MediaDB > Legacy)
-    const logoSrc = s.logoUrl || DB.get('site_logo');
-    document.querySelectorAll('.brand-icon').forEach(el => {
-        const sz = s.logoSize ? s.logoSize + 'px' : '36px';
-        el.style.width = sz;
-        el.style.height = sz;
-        if (logoSrc) {
-            el.innerHTML = `<img src="${logoSrc}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
-        }
-    });
+    const applyLogo = (src) => {
+        document.querySelectorAll('.brand-icon').forEach(el => {
+            const sz = s.logoSize ? s.logoSize + 'px' : '36px';
+            el.style.width = sz;
+            el.style.height = sz;
+            if (src) {
+                el.innerHTML = `<img src="${src}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
+            }
+        });
+    };
+
+    if (s.logoUrl) {
+        applyLogo(s.logoUrl);
+    } else {
+        MediaDB.get('site_logo').then(src => {
+            if (src) applyLogo(src);
+            else applyLogo(DB.get('site_logo'));
+        });
+    }
     // Site name font size + Font Family + Animation
     document.querySelectorAll('.navbar-brand').forEach(el => {
         if (s.siteNameSize) el.style.fontSize = parseFloat(s.siteNameSize) + 'rem';

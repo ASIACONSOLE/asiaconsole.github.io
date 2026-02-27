@@ -865,9 +865,10 @@ h6 {
   }
 }
 
-text-decoration: none;
-animation: float 4s ease-in-out infinite;
-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+.hero-card-mini {
+  text-decoration: none;
+  animation: float 4s ease-in-out infinite;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .hero-card-mini:hover {
@@ -1683,10 +1684,15 @@ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 600px) {
+  .container {
+    padding: 0 1rem;
+  }
 
   .cards-grid,
-  .cards-grid-3 {
+  .cards-grid-3,
+  .footer-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .hero h1 {
@@ -1695,6 +1701,12 @@ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
   .hero-buttons {
     flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .hero-buttons .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .forum-stats {
@@ -1862,6 +1874,7 @@ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   .hero-buttons {
     flex-direction: column;
     width: 100%;
+    gap: 1rem;
   }
 
   .hero-buttons .btn-primary,
@@ -2124,6 +2137,20 @@ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   .profile-actions {
     margin-left: 0;
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .messages-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: auto;
+  }
+
+  .msg-sidebar {
+    height: 300px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
 }
 

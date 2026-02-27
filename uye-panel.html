@@ -751,7 +751,11 @@
             const statusColors = { pending: '#f97316', approved: '#10b981', rejected: '#ef4444' };
             const statusLabels = { pending: '⏳ Beklemede', approved: '✅ Onaylandı', rejected: '❌ Reddedildi' };
 
-            listEl.innerHTML = myProjs.sort((a, b) => b.id - a.id).map(p => `
+            listEl.innerHTML = myProjs.sort((a, b) => {
+                const idA = String(a.id);
+                const idB = String(b.id);
+                return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
+            }).map(p => `
                 <div class="card" style="display:flex; justify-content:space-between; align-items:center; ${p.status === 'approved' ? 'cursor:pointer;' : 'cursor:default;'}" 
                      ${p.status === 'approved' ? `onclick="window.location.href='proje-izle.html?id=${p.id}'"` : ''}>
                     <div>

@@ -192,7 +192,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            currentProjectId = Number(urlParams.get('id'));
+            currentProjectId = urlParams.get('id');
 
             if (!currentProjectId) {
                 alert('Proje ID bulunamadı.');
@@ -209,7 +209,7 @@
             }
 
             const projects = DB.get('user_projects') || [];
-            const proj = projects.find(p => p.id === currentProjectId);
+            const proj = projects.find(p => String(p.id) === String(currentProjectId));
 
             if (!proj || proj.status !== 'approved') {
                 alert('Proje bulunamadı veya henüz onaylanmamış.');
@@ -225,7 +225,7 @@
 
             // Increment views
             const allProjects = DB.get('user_projects') || [];
-            const idx = allProjects.findIndex(p => p.id === currentProjectId);
+            const idx = allProjects.findIndex(p => String(p.id) === String(currentProjectId));
             if (idx !== -1) {
                 allProjects[idx].views = (allProjects[idx].views || 0) + 1;
                 DB.set('user_projects', allProjects);

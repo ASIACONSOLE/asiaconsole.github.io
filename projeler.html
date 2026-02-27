@@ -117,7 +117,11 @@
                     filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
                 }
 
-                filtered.sort((a, b) => b.id - a.id);
+                filtered.sort((a, b) => {
+                    const idA = String(a.id);
+                    const idB = String(b.id);
+                    return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
+                });
 
                 if (filtered.length === 0) {
                     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🚀</div><h3>Proje bulunamadı</h3><p>Henüz bu kategoride onaylanmış proje yok veya arama sonuçsuz kaldı.</p></div>';

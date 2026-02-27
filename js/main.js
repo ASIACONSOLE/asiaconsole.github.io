@@ -630,7 +630,11 @@ function renderHeroProjects() {
 
     const allProjects = DB.get('user_projects') || [];
     const approved = allProjects.filter(p => p.status === 'approved' || !p.status); // Fallback for old data
-    const latest = approved.sort((a, b) => b.id - a.id).slice(0, 4);
+    const latest = approved.sort((a, b) => {
+        const idA = String(a.id);
+        const idB = String(b.id);
+        return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
+    }).slice(0, 4);
 
     if (latest.length === 0) {
         grid.innerHTML = `
@@ -643,7 +647,7 @@ function renderHeroProjects() {
     }
 
     grid.innerHTML = latest.map(p => `
-        <a href="projeler.html?id=${p.id}" class="hero-card-mini">
+        <a href="proje-izle.html?id=${p.id}" class="hero-card-mini">
             <div class="mini-icon">${p.icon || '🚀'}</div>
             <div class="mini-title">${p.title}</div>
             <div class="mini-tag">${p.category || 'PROJE'}</div>

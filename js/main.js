@@ -411,8 +411,8 @@ const DB = {
             socialYoutube: '#',
             socialDiscord: '#',
             aiEnabled: true,
-            aiName: 'AsiaBot',
-            aiGreeting: 'Merhaba! Ben AsiaBot, size nasıl yardımcı olabilirim?',
+            aiName: 'Editör',
+            aiGreeting: 'Merhaba! Ben Editör, size nasıl yardımcı olabilirim?',
             geminiApiKey: '', // Yönetici panelinden ayarlanmalı
             siteFont: "'Inter', sans-serif",
             brandAnim: 'none',
@@ -437,14 +437,14 @@ const DB = {
         // Default articles...
         if (!this.get('articles')) {
             this.set('articles', [
-                { id: 1, title: 'Yapay Zeka 2025: Geleceğin Teknolojileri', category: 'teknoloji', desc: 'ChatGPT, Gemini ve yeni nesil AI araçlarının iş dünyasını nasıl değiştireceğini keşfediyoruz.', author: 'Admin', date: '24 Şub 2025', views: 1240, image: '🤖', featured: true },
-                { id: 2, title: 'GTA VI Çıkış Tarihi Açıklandı!', category: 'oyun', desc: 'Rockstar Games\'in uzun süredir beklenen GTA VI oyununun resmi çıkış tarihi ve yeni detayları paylaşıldı.', author: 'GameEditor', date: '23 Şub 2025', views: 5620, image: '🎮', featured: true },
-                { id: 3, title: 'Flutter 4.0 ile Mobil Uygulama Geliştirme', category: 'uygulama', desc: 'Flutter\'ın yeni sürümüyle tek kod tabanından iOS ve Android uygulamaları nasıl oluşturulur?', author: 'DevTeam', date: '22 Şub 2025', views: 890, image: '📱', featured: false },
-                { id: 4, title: 'Kuantum Bilgisayarlar Artık Gerçek', category: 'teknoloji', desc: 'IBM ve Google\'ın kuantum bilgisayar yarışı hız kazanıyor. Günlük hayatımızı nasıl etkileyecek?', author: 'TechWriter', date: '21 Şub 2025', views: 2100, image: '⚡', featured: false },
-                { id: 5, title: 'Baldur\'s Gate 3 GOTY Ödülü Aldı', category: 'oyun', desc: 'Larian Studios\'un masterpiece oyunu bu yılın en iyi oyunu ödülünü kazandı. İnceleme ve detaylar.', author: 'GameEditor', date: '20 Şub 2025', views: 3400, image: '🏆', featured: false },
-                { id: 6, title: 'React Native vs Flutter 2025 Karşılaştırması', category: 'uygulama', desc: 'Hangi framework daha iyi? Performans, ekosistem ve geliştirici deneyimi açısından kapsamlı karşılaştırma.', author: 'DevTeam', date: '19 Şub 2025', views: 1560, image: '⚖️', featured: false },
-                { id: 7, title: 'Cyberpunk 2077 Phantom Liberty Genişlemesi', category: 'oyun', desc: 'CD Projekt RED\'in beklenen genişleme paketi incelemesi. Yeni hikaye, karakterler ve Night City.', author: 'GameEditor', date: '18 Şub 2025', views: 2890, image: '🌆', featured: false },
-                { id: 8, title: 'Apple Vision Pro Kullanıcı Deneyimi', category: 'teknoloji', desc: 'Spatial computing çağını başlatan Vision Pro ile bir ay geçirdikten sonra gerçek düşüncelerimiz.', author: 'TechWriter', date: '17 Şub 2025', views: 4200, image: '👓', featured: false },
+                { id: 1, title: 'Yapay Zeka 2025: Geleceğin Teknolojileri', category: 'teknoloji', desc: 'ChatGPT, Gemini ve yeni nesil AI araçlarının iş dünyasını nasıl değiştireceğini keşfediyoruz.', author: 'Editör', date: '24 Şub 2025', views: 1240, image: '🤖', featured: true },
+                { id: 2, title: 'GTA VI Çıkış Tarihi Açıklandı!', category: 'oyun', desc: 'Rockstar Games\'in uzun süredir beklenen GTA VI oyununun resmi çıkış tarihi ve yeni detayları paylaşıldı.', author: 'Editör', date: '23 Şub 2025', views: 5620, image: '🎮', featured: true },
+                { id: 3, title: 'Flutter 4.0 ile Mobil Uygulama Geliştirme', category: 'uygulama', desc: 'Flutter\'ın yeni sürümüyle tek kod tabanından iOS ve Android uygulamaları nasıl oluşturulur?', author: 'Editör', date: '22 Şub 2025', views: 890, image: '📱', featured: false },
+                { id: 4, title: 'Kuantum Bilgisayarlar Artık Gerçek', category: 'teknoloji', desc: 'IBM ve Google\'ın kuantum bilgisayar yarışı hız kazanıyor. Günlük hayatımızı nasıl etkileyecek?', author: 'Editör', date: '21 Şub 2025', views: 2100, image: '⚡', featured: false },
+                { id: 5, title: 'Baldur\'s Gate 3 GOTY Ödülü Aldı', category: 'oyun', desc: 'Larian Studios\'un masterpiece oyunu bu yılın en iyi oyunu ödülünü kazandı. İnceleme ve detaylar.', author: 'Editör', date: '20 Şub 2025', views: 3400, image: '🏆', featured: false },
+                { id: 6, title: 'React Native vs Flutter 2025 Karşılaştırması', category: 'uygulama', desc: 'Hangi framework daha iyi? Performans, ekosistem ve geliştirici deneyimi açısından kapsamlı karşılaştırma.', author: 'Editör', date: '19 Şub 2025', views: 1560, image: '⚖️', featured: false },
+                { id: 7, title: 'Cyberpunk 2077 Phantom Liberty Genişlemesi', category: 'oyun', desc: 'CD Projekt RED\'in beklenen genişleme paketi incelemesi. Yeni hikaye, karakterler ve Night City.', author: 'Editör', date: '18 Şub 2025', views: 2890, image: '🌆', featured: false },
+                { id: 8, title: 'Apple Vision Pro Kullanıcı Deneyimi', category: 'teknoloji', desc: 'Spatial computing çağını başlatan Vision Pro ile bir ay geçirdikten sonra gerçek düşüncelerimiz.', author: 'Editör', date: '17 Şub 2025', views: 4200, image: '👓', featured: false },
             ], false);
         }
         // Default forum posts
@@ -481,6 +481,23 @@ const DB = {
                 pro: { name: 'Pro Member', color: 'var(--accent-blue)', bg: 'rgba(79,142,247,0.1)', icon: '🛡️', perks: ['Tüm Standart özellikler', 'Proje yükleme sınırı: 10', 'Özel rozet', 'Reklamsız deneyim'] },
                 vip: { name: 'VIP Elite', color: 'var(--accent-purple)', bg: 'rgba(168,85,247,0.1)', icon: '💎', perks: ['Tüm Pro özellikler', 'Sınırsız proje yükleme', 'Öncelikli onay', 'VIP forum bölümü', 'Doğrudan destek'] }
             }, false);
+        }
+
+        // --- DATA MIGRATION: Update old author names to "Editör" ---
+        let currentArticles = this.get('articles');
+        if (Array.isArray(currentArticles)) {
+            let changed = false;
+            currentArticles.forEach(a => {
+                const oldAuthors = ['Admin', 'asiadmin', 'asiabot', 'AsiaBot', 'GameEditor', 'DevTeam', 'TechWriter'];
+                if (oldAuthors.some(old => a.author && a.author.includes(old))) {
+                    a.author = 'Editör';
+                    changed = true;
+                }
+            });
+            if (changed) {
+                console.log('[Migration] Article authors updated to Editör ✓');
+                this.set('articles', currentArticles);
+            }
         }
     }
 };

@@ -223,7 +223,7 @@ window.BotEngine = (function () {
             id: Date.now(),
             title: finalTitle,
             category: category,
-            author: 'AsiaBot', // Shows it's automated
+            author: 'Editör', // Shows it's automated
             image: "🤖",
             cover: originalData.image || '',
             desc: shortDesc,

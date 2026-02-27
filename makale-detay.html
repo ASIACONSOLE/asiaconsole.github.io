@@ -572,15 +572,25 @@
             const related = articles.filter(a => a.category === article.category && a.id !== article.id).slice(0, 3);
             const relGrid = document.getElementById('relatedGrid');
             if (related.length) {
-                relGrid.innerHTML = related.map(a => `
-      <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block;">
-        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${a.image || '📄'}</div>
-        <div class="article-category"><span class="badge ${catMap[a.category]?.[0] || 'badge-blue'}">${catMap[a.category]?.[1] || a.category}</span></div>
-        <h3 style="font-size:1rem; font-weight:700; margin:0.75rem 0 0.5rem; line-height:1.4;">${a.title}</h3>
-        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.75rem;">${a.desc.slice(0, 80)}...</p>
-        <div style="font-size:0.8rem; color:var(--text-muted);">👁️ ${a.views.toLocaleString('tr-TR')} • @${a.author}</div>
+                relGrid.innerHTML = related.map(a => {
+                    const coverBg = a.cover ? `url(${a.cover})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    const coverStyle = a.cover ? `background:${coverBg}; background-size:cover; background-position:center;` : `background:${coverBg};`;
+                    return `
+      <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block; padding:0; overflow:hidden;">
+        <div style="${coverStyle} height:140px; position:relative;">
+           <div class="card-badge ${catMap[a.category]?.[0] || 'badge-blue'}" style="position:absolute; top:0.5rem; left:0.5rem; font-size:0.75rem;">${catMap[a.category]?.[1] || a.category}</div>
+        </div>
+        <div style="padding:1rem;">
+          <h3 style="font-size:0.95rem; font-weight:700; margin:0 0 0.5rem; line-height:1.4;">${a.title}</h3>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">${a.desc.slice(0, 70)}...</p>
+          <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+            <span>👁️ ${a.views.toLocaleString('tr-TR')}</span>
+            <span>@${a.author}</span>
+          </div>
+        </div>
       </a>
-    `).join('');
+    `;
+                }).join('');
             } else {
                 relGrid.innerHTML = '<p style="color:var(--text-muted);">Henüz ilgili makale yok.</p>';
             }

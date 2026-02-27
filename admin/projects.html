@@ -90,6 +90,57 @@
             </div>
 
             <div class="admin-content">
+                <!-- AI PROJECT GENERATOR CARD -->
+                <div class="admin-card" style="margin-bottom: 2rem;">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title" style="color:var(--accent-blue);">🤖 AI ile Proje Üret</div>
+                        <span style="font-size:0.8rem; color:var(--text-secondary);">Otomatik Kod Üretici</span>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.5;">
+                            AsiaBot (Gemini/Groq) altyapısını kullanarak tek bir cümleyle HTML5 oyunlar veya uygulamalar
+                            üretebilir ve anında onaylı olarak sisteme ekleyebilirsiniz.
+                        </p>
+
+                        <div class="form-group">
+                            <label>Ne üretmek istersiniz?</label>
+                            <textarea id="aiGamePrompt" rows="3"
+                                placeholder="Örn: Yılan (Snake) oyunu. Yön tuşlarıyla kontrol edilsin, kırmızı elmalar yenilsin, modern karanlık bir tasarımı olsun."
+                                style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit; resize:vertical;"></textarea>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:1rem;">
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select id="aiGameCategory"
+                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
+                                    <option value="oyun">🎮 Oyun</option>
+                                    <option value="uygulama">📱 Uygulama</option>
+                                    <option value="teknoloji">💻 Teknoloji Aracı</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display:flex; align-items:flex-end;">
+                                <button id="btnAiGenerate" class="topbar-btn"
+                                    style="width:100%; justify-content:center; background:linear-gradient(45deg, #4f8ef7, #8b5cf6); border:none; padding:0.75rem;">
+                                    ✨ Üret ve Sisteme Ekle
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Progress Indicator -->
+                        <div id="aiProgressArea"
+                            style="display:none; margin-top:1.5rem; background:rgba(79, 142, 247, 0.1); border:1px solid rgba(79, 142, 247, 0.3); padding:1rem; border-radius:8px; text-align:center;">
+                            <div
+                                style="display:inline-block; width:20px; height:20px; border:3px solid var(--accent-blue); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:0.5rem;">
+                            </div>
+                            <div id="aiProgressText"
+                                style="font-size:0.9rem; color:var(--text-primary); font-weight:500;">Yapay zeka
+                                motoruna bağlanılıyor...</div>
+                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Bu işlem
+                                10-30 saniye sürebilir, lütfen sayfayı kapatmayın.</div>
+                        </div>
+                    </div>
+                </div>
                 <div class="admin-card">
                     <div class="admin-card-header">
                         <div class="admin-card-title">🚀 Proje Yönetimi <span id="projectCountBadge"
@@ -311,8 +362,73 @@
             }
         });
 
+        // --- AI GENERATOR LOGIC ---
+        document.getElementById('btnAiGenerate').addEventListener('click', async () => {
+            const promptInput = document.getElementById('aiGamePrompt');
+            const categorySelect = document.getElementById('aiGameCategory');
+            const progressArea = document.getElementById('aiProgressArea');
+            const progressText = document.getElementById('aiProgressText');
+            const btn = document.getElementById('btnAiGenerate');
+
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                showAdminToast('Lütfen üretmek istediğiniz proje için bir açıklama girin!', 'error');
+                return;
+            }
+
+            // UI Loading State
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            progressArea.style.display = 'block';
+
+            try {
+                // Ensure AIAssistant is loaded
+                if (typeof AIAssistant === 'undefined' || !AIAssistant.generateGame) {
+                    throw new Error('AI Asistan kütüphanesi yüklenemedi. Lütfen sayfayı yenileyin.');
+                }
+
+                const code = await AIAssistant.generateGame(prompt, (msg) => {
+                    progressText.textContent = msg;
+                });
+
+                // Generate a short title from the prompt (first 3-4 words)
+                let title = prompt.split(' ').slice(0, 4).join(' ') + '...';
+                title = title.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ0-9 \.]/g, '');
+
+                const category = categorySelect.value;
+                const newProject = {
+                    id: Date.now() + Math.random(),
+                    title: `AI: ${title}`,
+                    desc: prompt,
+                    code: code,
+                    category: category,
+                    author: 'AsiaBot', // System AI user
+                    status: 'approved', // Auto approve from Admin
+                    date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
+                };
+
+                const projects = DB.get('user_projects') || [];
+                projects.push(newProject);
+                DB.set('user_projects', projects);
+
+                // Reset UI
+                promptInput.value = '';
+                showAdminToast('🎉 Yapay zeka projeyi üretti ve sisteme eklendi!', 'success');
+                renderProjects();
+
+            } catch (err) {
+                showAdminToast(err.message || 'Üretim sırasında bir hata oluştu.', 'error');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                progressArea.style.display = 'none';
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', renderProjects);
     </script>
+    <script src="../js/ai-assistant.js"></script>
 </body>
 
 </html>

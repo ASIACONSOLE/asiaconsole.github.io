@@ -380,7 +380,86 @@ const AIAssistant = (() => {
         }
     };
 
-    return { init };
+    const generateGame = async (userPrompt, onProgress) => {
+        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
+
+        const systemPrompt = `You are an expert game developer. 
+        The user wants an HTML5 game based on their description. 
+        You MUST return ONLY valid, complete HTML code containing embedded CSS and JS.
+        DO NOT include markdown code blocks like \`\`\`html.
+        DO NOT include any conversational text before or after the code.
+        The output must start with <!DOCTYPE html> and end with </html>.
+        Make the game visually appealing with modern CSS, colorful graphics, and smooth logic.
+        Ensure it scales correctly to the screen or is responsive.`;
+
+        const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
+
+        if (onProgress) onProgress('Yapay zeka motoruna bağlanılıyor...');
+
+        try {
+            // Try Gemini first
+            if (s.geminiApiKey && s.geminiApiKey.length > 20) {
+                if (onProgress) onProgress('Gemini üzerinden kod üretiliyor...');
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.candidates && data.candidates[0]) {
+                        let code = data.candidates[0].content.parts[0].text;
+                        return cleanCodeOutput(code);
+                    }
+                } else if (resp.status !== 429) {
+                    throw new Error('GEMINI_FAILED');
+                }
+                console.warn('[AsiaBot] Gemini 429, trying Groq...');
+            }
+
+            // Try Groq as fallback
+            if (s.groqApiKey) {
+                if (onProgress) onProgress('Groq üzerinden kod üretiliyor (Yedek motor)...');
+                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userPrompt }
+                        ],
+                        temperature: 0.7, max_tokens: 3000
+                    })
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.choices && data.choices[0]) {
+                        let code = data.choices[0].message.content;
+                        return cleanCodeOutput(code);
+                    }
+                }
+            }
+
+            throw new Error('ALL_AI_FAILED');
+        } catch (err) {
+            console.error('[AsiaBot Generate Game Error]', err);
+            throw new Error('Yapay zeka servisine bağlanılamadı. Lütfen API anahtarlarınızı kontrol edin veya daha sonra tekrar deneyin.');
+        }
+    };
+
+    const cleanCodeOutput = (text) => {
+        let code = text.trim();
+        // Remove markdown tags if the AI ignored instructions
+        if (code.startsWith('```html')) code = code.slice(7);
+        else if (code.startsWith('```')) code = code.slice(3);
+        if (code.endsWith('```')) code = code.slice(0, -3);
+        return code.trim();
+    };
+
+    return { init, generateGame };
 })();
 
 // Auto-init on load if scripts are ready

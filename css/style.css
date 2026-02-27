@@ -998,66 +998,100 @@ h6 {
   opacity: 0.95;
 }
 
-/* ===== TIP TRIGGER BUTTON (Floating Bottom Left) ===== */
+/* ===== GÜNÜN İPUCU (TIP) BUTTON & MODAL v4.13.0 ===== */
 .tip-trigger-wrapper {
-  position: fixed;
-  /* Changed from absolute to fixed for floating behavior */
-  bottom: 2rem;
-  left: 3rem;
-  z-index: 100;
-  /* Ensure it stays on top */
-  pointer-events: all;
-  /* Ensure clickability */
+  position: absolute;
+  bottom: 0.5rem;
+  left: 1.5rem;
+  z-index: 50;
+  pointer-events: auto;
 }
 
 .btn-tip-trigger {
-  background: rgba(79, 142, 247, 0.15);
-  border: 1px solid var(--accent-blue);
+  background: rgba(79, 142, 247, 0.1);
+  border: 2px solid var(--accent-blue);
   color: var(--accent-blue);
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 50px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 15px rgba(79, 142, 247, 0.2);
+  gap: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(79, 142, 247, 0.2);
   animation: tipPulse 3s infinite;
 }
 
 .btn-tip-trigger span {
-  font-size: 1.2rem;
-  filter: drop-shadow(0 0 5px var(--accent-blue));
+  font-size: 1.1rem;
 }
 
 .btn-tip-trigger:hover {
   background: var(--accent-blue);
   color: white;
-  box-shadow: 0 0 30px rgba(79, 142, 247, 0.6);
-  transform: translateY(-5px) scale(1.05);
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(79, 142, 247, 0.4);
 }
 
 @keyframes tipPulse {
   0% {
     box-shadow: 0 0 0 0 rgba(79, 142, 247, 0.4);
-    transform: scale(1);
   }
 
   50% {
-    box-shadow: 0 0 20px 10px rgba(79, 142, 247, 0.1);
-    transform: scale(1.02);
+    box-shadow: 0 0 15px 5px rgba(79, 142, 247, 0.1);
   }
 
   100% {
     box-shadow: 0 0 0 0 rgba(79, 142, 247, 0);
-    transform: scale(1);
   }
 }
 
-/* ===== TIP MODAL ===== */
+/* Modal Stilleri */
+.tip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1.5rem;
+  opacity: 1;
+}
+
+.tip-modal-overlay.is-active {
+  display: flex !important;
+}
+
+.tip-modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+}
+
+.tip-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* ===== END TIP MODAL ===== */
 .btn-secondary {
   display: inline-flex;
   align-items: center;

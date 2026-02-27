@@ -99,6 +99,18 @@
                 transform: translateY(0);
             }
         }
+
+        /* OVERLAP FIX */
+        .profile-main.has-tabs .profile-top {
+            margin-top: 0 !important;
+            padding-top: 2rem;
+        }
+
+        .profile-tabs {
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 20;
+        }
     </style>
 </head>
 
@@ -451,8 +463,11 @@
 
             // TABS VISIBILITY & HASH ROUTING
             const ownerTabs = document.getElementById('ownerTabs');
+            const profMain = document.querySelector('.profile-main');
+
             if (isOwnProfile) {
                 ownerTabs.style.display = 'flex';
+                if (profMain) profMain.classList.add('has-tabs');
                 renderDashboard(user);
                 renderEditForm(user, extra);
                 renderProjectsTab(user);
@@ -466,6 +481,7 @@
                 }
             } else {
                 ownerTabs.style.display = 'none';
+                if (profMain) profMain.classList.remove('has-tabs');
                 switchProfileTab('view');
             }
 

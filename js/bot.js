@@ -43,51 +43,58 @@ window.BotEngine = (function () {
         terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
     }
 
-    // Proxy service to bypass CORS
+    // Proxy service to bypass CORS - Final Robust Version
     async function fetchViaProxy(url) {
-        // Expanded list of proxies
-        const proxies = [
-            (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-            (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-            (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
-            (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
-        ];
-
-        if (url.includes('shiftdelete.net')) {
-            logTerminal("Bilgi: ShiftDelete botları engellemek için 403 Forbidden hatası döndürebilir.", 'info');
-            logTerminal("İpucu: 'https://shiftdelete.net/feed' adresini denemek daha kararlı olabilir.", 'success');
-        }
-
-        for (const proxyFn of proxies) {
-            let proxyUrl = "";
+        // 1. If it's a feed/RSS, use a specialized XML-to-JSON service (best for CORS)
+        if (url.includes('/feed') || url.includes('.xml') || url.includes('rss')) {
             try {
-                proxyUrl = proxyFn(url);
-                const proxyHost = new URL(proxyUrl).hostname;
-                logTerminal(`${proxyHost} üzerinden bağlanılıyor...`, 'info');
-
-                // Add a timeout to fetch (12 seconds)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-                const response = await fetch(proxyUrl, {
-                    signal: controller.signal,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-
-                const html = await response.text();
-                if (html && html.length > 100) return html;
-
-                throw new Error("Eksik veya boş içerik.");
-            } catch (err) {
-                const proxyName = proxyUrl ? new URL(proxyUrl).hostname : "Proxy";
-                logTerminal(`${proxyName} başarısız: ${err.message}`, 'warning');
+                logTerminal("RSS Beslemesi tespit edildi, XML servisleri kullanılıyor...", "info");
+                const rssProxy = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+                const response = await fetch(rssProxy);
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    // Convert RSS JSON items back to a pseudo-HTML links list for our link parser
+                    logTerminal("RSS verisi başarıyla JSON'a dönüştürüldü.", "success");
+                    return data.items.map(item => `<a href="${item.link}">${item.title}</a>`).join('');
+                }
+            } catch (e) {
+                logTerminal("RSS Servis hatası, standart proxy deneniyor...", "warning");
             }
         }
 
-        logTerminal(`Tüm yöntemler başarısız oldu. Lütfen farklı bir haber kaynağı veya RSS feed deneyin.`, 'error');
+        // 2. Use JSON Wrapping Proxy (The most reliable way to avoid browser CORS blocks)
+        // This doesn't trigger 'preflight' issues because the response is a standard JSON
+        const proxies = [
+            async (u) => {
+                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
+                const json = await res.json();
+                return json.contents;
+            },
+            async (u) => {
+                // Combined with corsproxy.io as fallback
+                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
+                return await res.text();
+            }
+        ];
+
+        for (const proxyFn of proxies) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const html = await proxyFn(url);
+                clearTimeout(timeoutId);
+
+                if (html && html.length > 200) {
+                    return html;
+                }
+                throw new Error("İçerik çok kısa veya boş.");
+            } catch (err) {
+                logTerminal(`Bağlantı denemesi başarısız (${err.message})`, 'warning');
+            }
+        }
+
+        logTerminal(`KRİTİK: '${url}' adresine erişilemedi. Hedef site veya proxy servisleri geçici olarak kapalı olabilir.`, 'error');
         return null;
     }
 

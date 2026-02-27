@@ -107,15 +107,27 @@
         }
 
         .profile-tabs {
-            margin: 1rem 0 2rem;
+            margin: 0.5rem 0 2rem;
             position: relative;
-            z-index: 5;
-            /* Lowered z-index to ensure it doesn't block children flow */
+            z-index: 50;
+            /* Higher z-index to be above content */
+            background: rgba(0, 255, 242, 0.05);
+            /* Slightly colored to see it */
+            border: 1px solid rgba(0, 255, 242, 0.15);
         }
 
         .profile-tab-content {
             position: relative;
             z-index: 10;
+        }
+
+        /* Ensure inputs are always clickable */
+        .profile-tab-content input,
+        .profile-tab-content textarea,
+        .profile-tab-content button,
+        .profile-tab-content select {
+            position: relative;
+            z-index: 20;
         }
     </style>
 </head>
@@ -154,7 +166,7 @@
         <a href="uygulama.html">📱 Uygulama</a>
         <a href="forum.html">💬 Forum</a>
         <a href="projeler.html">🚀 Projeler</a>
-        <a href="uye-panel.html">👤 Üye Paneli</a>
+        <!-- Redundant Üye Paneli removed -->
     </div>
 
     <div class="page-wrapper">
@@ -423,14 +435,22 @@
         });
 
         function switchProfileTab(tab) {
+            // Save state in a global var to prevent reset on re-render
+            window._currentTab = tab;
+
             document.querySelectorAll('.profile-tab-content').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
 
-            const target = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+            const targetId = 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1);
+            const target = document.getElementById(targetId);
+
             if (target) {
                 target.style.display = 'block';
-                const btn = Array.from(document.querySelectorAll('.profile-tab')).find(b => b.textContent.toLowerCase().includes(tab.toLowerCase()));
-                if (btn) btn.classList.add('active');
+                // Better button matching via data-tab or index
+                const tabs = ['view', 'panel', 'edit', 'projects'];
+                const idx = tabs.indexOf(tab);
+                const buttons = document.querySelectorAll('.profile-tab');
+                if (buttons[idx]) buttons[idx].classList.add('active');
             }
         }
 
@@ -474,13 +494,12 @@
                 renderEditForm(user, extra);
                 renderProjectsTab(user);
 
-                // Route by hash
+                // Use current tab if exists (e.g. after save), else hash, else default
                 const hash = location.hash.replace('#', '');
-                if (['panel', 'edit', 'projects'].includes(hash)) {
-                    switchProfileTab(hash);
-                } else {
-                    switchProfileTab('panel'); // Dashboard by default for owner
-                }
+                const validTabs = ['view', 'panel', 'edit', 'projects'];
+                const activeTab = window._currentTab || (validTabs.includes(hash) ? hash : 'panel');
+
+                switchProfileTab(activeTab);
             } else {
                 ownerTabs.style.display = 'none';
                 if (profMain) profMain.classList.remove('has-tabs');

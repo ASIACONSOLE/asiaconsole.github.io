@@ -70,7 +70,7 @@
                         Panele Dön</a>
                 </div>
 
-                <div class="messages-layout">
+                <div class="messages-layout" style="height:calc(100vh - 180px); min-height:500px; margin-bottom:2rem;">
                     <!-- CONVERSATION LIST -->
                     <div class="msg-sidebar">
                         <div class="msg-sidebar-header">
@@ -85,7 +85,7 @@
                     </div>
 
                     <!-- CHAT AREA -->
-                    <div class="msg-main" id="msgMain">
+                    <div class="msg-main" id="msgMain" style="position:relative;">
                         <div class="msg-empty-state" id="msgEmptyState">
                             <div class="empty-icon">✉️</div>
                             <div>Bir konuşma seçin</div>
@@ -102,7 +102,8 @@
                                 </div>
                             </div>
                             <div class="msg-chat-area" id="chatArea"></div>
-                            <div class="msg-input-area">
+                            <div class="msg-input-area"
+                                style="background:var(--bg-secondary); box-shadow:0 -10px 20px rgba(0,0,0,0.2);">
                                 <textarea id="msgInput" placeholder="Mesajınızı yazın…" rows="1"
                                     onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMsg();}"></textarea>
                                 <button class="msg-send-btn" onclick="sendMsg()" title="Gönder">➤</button>

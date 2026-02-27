@@ -103,13 +103,19 @@
         /* OVERLAP FIX */
         .profile-main.has-tabs .profile-top {
             margin-top: 0 !important;
-            padding-top: 2rem;
+            padding-top: 1rem;
         }
 
         .profile-tabs {
-            margin-bottom: 2rem;
+            margin: 1rem 0 2rem;
             position: relative;
-            z-index: 20;
+            z-index: 5;
+            /* Lowered z-index to ensure it doesn't block children flow */
+        }
+
+        .profile-tab-content {
+            position: relative;
+            z-index: 10;
         }
     </style>
 </head>
@@ -398,6 +404,12 @@
     <script src="js/ai-assistant.js?v=4.1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            DB.init();
+            applySettings();
+            renderDynamicNav();
+            setNavActive();
+            initHamburger();
+            updateNavAuth();
             renderProfile();
 
             // Listen for data sync from Firebase and re-render if it targets our user or projects
@@ -405,16 +417,6 @@
                 const { key } = e.detail;
                 if (['users', 'profiles', 'user_projects', 'forum_posts'].includes(key)) {
                     console.log('[Profile] Sync detected for:', key);
-                    renderProfile();
-                }
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProfile();
-            document.addEventListener('dbUpdated', (e) => {
-                const { key } = e.detail;
-                if (['users', 'profiles', 'user_projects', 'forum_posts'].includes(key)) {
                     renderProfile();
                 }
             });

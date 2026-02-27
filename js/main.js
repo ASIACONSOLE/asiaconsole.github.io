@@ -234,7 +234,18 @@ const DB = {
         if (oldVal === newVal) return;
 
         // Save to local for instant access
-        localStorage.setItem('tc_' + key, newVal);
+        try {
+            localStorage.setItem('tc_' + key, newVal);
+        } catch (e) {
+            console.error(`[DB] LocalStorage save failed for ${key}:`, e);
+            if (e.name === 'QuotaExceededError') {
+                if (typeof showToast === 'function') showToast(`⚠️ Hafıza dolu! ${key} kaydedilemedi.`, 'error');
+                if (typeof showAdminToast === 'function') showAdminToast(`⚠️ Depolama alanı doldu! ${key} kaydedilemedi.`, 'error');
+            }
+        }
+
+        // Dispatch local event for instant UI update
+        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: cleanVal } }));
 
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {

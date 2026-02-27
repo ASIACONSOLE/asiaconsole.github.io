@@ -216,7 +216,8 @@
 
         function viewCode(id) {
             const projects = DB.get('user_projects') || [];
-            const proj = projects.find(p => p.id === id);
+            // Robust ID finding
+            const proj = projects.find(p => String(p.id) === String(id));
             if (!proj) return;
 
             currentProjId = id;
@@ -274,15 +275,18 @@
         function updateStatus(status) {
             if (!currentProjId) return;
             const projects = DB.get('user_projects') || [];
-            const idx = projects.findIndex(p => p.id === currentProjId);
+
+            // Robust ID finding (handle number/string mismatch)
+            const idx = projects.findIndex(p => String(p.id) === String(currentProjId));
+
             if (idx !== -1) {
                 projects[idx].status = status;
                 DB.set('user_projects', projects);
                 showAdminToast(`Proje ${status === 'approved' ? 'onaylandı' : 'reddedildi'}!`, 'success');
                 closeModal('codeModal');
-
-                // Explicitly reload to ensure UI update if event listener fails
-                setTimeout(renderProjects, 100);
+                // renderProjects will be called by the 'dbUpdated' event listener
+            } else {
+                showAdminToast('Hata: Proje bulunamadı.', 'error');
             }
         }
 

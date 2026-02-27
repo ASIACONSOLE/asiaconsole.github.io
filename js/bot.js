@@ -170,13 +170,21 @@ window.BotEngine = (function () {
         }
 
         // Clean up title
-        if (title) title = title.split('|')[0].trim(); // Remove site name appends
+        if (title) {
+            // Remove common separators and site names
+            title = title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
+            title = title.replace(/ShiftDelete\.Net/gi, '').replace(/DonanımHaber/gi, '').replace(/Webtekno/gi, '').trim();
+        }
 
         return { title, image, content, url };
     }
 
     function publishArticle(aiHtmlCode, originalData, category) {
         const articles = DB.get('articles') || [];
+
+        // Final title cleaning (one last check)
+        let finalTitle = originalData.title;
+        finalTitle = finalTitle.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
 
         // Use a short text snippet for description
         const tempDiv = document.createElement('div');
@@ -185,7 +193,7 @@ window.BotEngine = (function () {
 
         const newArticle = {
             id: Date.now(),
-            title: originalData.title,
+            title: finalTitle,
             category: category,
             author: 'AsiaBot', // Shows it's automated
             image: "🤖",
@@ -199,7 +207,7 @@ window.BotEngine = (function () {
         articles.unshift(newArticle); // Add to top
         DB.set('articles', articles);
 
-        logTerminal(`[BAŞARILI] '${originalData.title}' yayına alındı!`, 'success');
+        logTerminal(`[BAŞARILI] '${finalTitle}' yayına alındı!`, 'success');
     }
 
     async function runScrapeCycle() {
@@ -233,6 +241,15 @@ window.BotEngine = (function () {
                 const articleData = await extractArticleData(articleHtml, link);
 
                 if (articleData.title && articleData.content && articleData.content.length > 200) {
+                    // CRITICAL: Check for "Blocked" or "Cloudflare" messages in the content
+                    const lowerContent = articleData.content.toLowerCase();
+                    if (lowerContent.includes("sorry, you have been blocked") || lowerContent.includes("cloudflare") || articleData.title.toLowerCase().includes("blocked")) {
+                        logTerminal(`⚠️ İçerik engellenmiş (Blocked/Cloudflare), atlanıyor: ${link}`, 'warning');
+                        scrapedUrls.push(link);
+                        DB.set('scraped_urls', scrapedUrls);
+                        continue;
+                    }
+
                     try {
                         // Pass to AI
                         logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);

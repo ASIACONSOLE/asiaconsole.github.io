@@ -473,7 +473,8 @@ KURALLAR:
 4. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul> ve <li> etiketlerini kullan. Makaleye uygun alt başlıklar eklemekten çekinme.
 5. Yazı içine asla <img ...> gibi resim etiketleri EKLEME (sadece metin).
 6. Haberin ana teması, verdiği teknolojik/donanımsal bilgiler tamamen doğru kalmalı, asıl gerçeği saptırma.
-7. Orijinal haber çok kısaysa, kendi sektörel ve teknolojik bilgini kullanarak detaylandır ve makaleyi okuyucu için doyurucu hale getir.`;
+7. Orijinal haber çok kısaysa, kendi sektörel ve teknolojik bilgini kullanarak detaylandır ve makaleyi okuyucu için doyurucu hale getir.
+8. ÖNEMLİ: Yazı içinde veya başlıkta ASLA kaynak sitenin ismini (örn: ShiftDelete, Webtekno, DonanımHaber vb.) GEÇİRME. Tamamen senin kendi içeriğinmiş gibi davran.`;
 
         const userPrompt = `ORJİNAL BAŞLIK: ${articleData.title}\n\nORJİNAL METİN:\n${articleData.content}`;
         const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;

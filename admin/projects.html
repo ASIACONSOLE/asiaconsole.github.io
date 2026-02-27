@@ -206,6 +206,38 @@
         </div>
     </div>
 
+    <!-- AI REVIEW MODAL -->
+    <div id="aiReviewModal" class="modal-overlay">
+        <div class="modal" style="width:95%; max-width:900px;">
+            <h3 style="color:var(--accent-blue);">🤖 AI Proje İnceleme ve Düzenleme</h3>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">Yapay zeka projesi başarıyla
+                üretildi. Canlıya almadan önce başlığını, yazar ismini veya kodunu düzenleyebilirsiniz.</p>
+
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1rem;">
+                <div class="form-group">
+                    <label>Proje Başlığı</label>
+                    <input type="text" id="aiReviewTitle" style="width:100%;">
+                </div>
+                <div class="form-group">
+                    <label>Gönderen / Yazar</label>
+                    <input type="text" id="aiReviewAuthor" placeholder="Örn: Admin" style="width:100%;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top:1rem;">
+                <label>Oyun / Uygulama Kodu (HTML)</label>
+                <textarea id="aiReviewCode" rows="15"
+                    style="width:100%; padding:1rem; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:8px; color:#d4d4d4; font-family:'Consolas', monospace; font-size:0.85rem; resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex; gap:1rem; margin-top:1.5rem; justify-content:flex-end;">
+                <button class="topbar-btn secondary" onclick="closeModal('aiReviewModal')">İptal Et</button>
+                <button class="topbar-btn" onclick="saveAIGame()" style="background:var(--accent-blue);">✅ Sisteme Ekle
+                    ve Onayla</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/firebase.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/admin.js"></script>
@@ -363,6 +395,8 @@
         });
 
         // --- AI GENERATOR LOGIC ---
+        let pendingAIGame = null; // Store temp data before saving
+
         document.getElementById('btnAiGenerate').addEventListener('click', async () => {
             const promptInput = document.getElementById('aiGamePrompt');
             const categorySelect = document.getElementById('aiGameCategory');
@@ -396,25 +430,24 @@
                 title = title.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ0-9 \.]/g, '');
 
                 const category = categorySelect.value;
-                const newProject = {
+
+                // Store temporarily
+                pendingAIGame = {
                     id: Date.now() + Math.random(),
-                    title: `AI: ${title}`,
                     desc: prompt,
-                    code: code,
                     category: category,
-                    author: 'AsiaBot', // System AI user
-                    status: 'approved', // Auto approve from Admin
                     date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
                 };
 
-                const projects = DB.get('user_projects') || [];
-                projects.push(newProject);
-                DB.set('user_projects', projects);
+                // Populate and show the modal
+                document.getElementById('aiReviewTitle').value = `AI: ${title}`;
+                document.getElementById('aiReviewAuthor').value = 'AsiaBot';
+                document.getElementById('aiReviewCode').value = code;
+
+                document.getElementById('aiReviewModal').style.display = 'flex';
 
                 // Reset UI
                 promptInput.value = '';
-                showAdminToast('🎉 Yapay zeka projeyi üretti ve sisteme eklendi!', 'success');
-                renderProjects();
 
             } catch (err) {
                 showAdminToast(err.message || 'Üretim sırasında bir hata oluştu.', 'error');
@@ -425,6 +458,36 @@
                 progressArea.style.display = 'none';
             }
         });
+
+        window.saveAIGame = function () {
+            if (!pendingAIGame) return;
+
+            const finalTitle = document.getElementById('aiReviewTitle').value.trim();
+            const finalAuthor = document.getElementById('aiReviewAuthor').value.trim();
+            const finalCode = document.getElementById('aiReviewCode').value.trim();
+
+            if (!finalTitle || !finalAuthor || !finalCode) {
+                showAdminToast('Lütfen tüm alanları doldurun!', 'error');
+                return;
+            }
+
+            const newProject = {
+                ...pendingAIGame,
+                title: finalTitle,
+                author: finalAuthor,
+                code: finalCode,
+                status: 'approved' // Auto approve from Admin Modal
+            };
+
+            const projects = DB.get('user_projects') || [];
+            projects.push(newProject);
+            DB.set('user_projects', projects);
+
+            showAdminToast('🎉 Proje başarıyla sisteme eklendi ve onaylandı!', 'success');
+            closeModal('aiReviewModal');
+            pendingAIGame = null;
+            renderProjects();
+        };
 
         document.addEventListener('DOMContentLoaded', renderProjects);
     </script>

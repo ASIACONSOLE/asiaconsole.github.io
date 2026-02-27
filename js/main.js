@@ -461,7 +461,7 @@ function applySettings() {
         const opacity = s.heroBgOpacity !== undefined ? s.heroBgOpacity : 0.3;
         document.documentElement.style.setProperty('--hero-bg-opacity', opacity);
     }
-    // Site logo (Priority: URL > Local MediaDB > Legacy)
+    // Site logo (Priority: URL > Firebase Base64 > Local MediaDB)
     const applyLogo = (src) => {
         document.querySelectorAll('.brand-icon').forEach(el => {
             const sz = s.logoSize ? s.logoSize + 'px' : '36px';
@@ -476,10 +476,19 @@ function applySettings() {
     if (s.logoUrl) {
         applyLogo(s.logoUrl);
     } else {
-        MediaDB.get('site_logo').then(src => {
-            if (src) applyLogo(src);
-            else applyLogo(DB.get('site_logo'));
-        });
+        // Try getting the globally synced Base64 logo first
+        const syncedLogo = DB.get('site_logo_base64');
+        if (syncedLogo) {
+            applyLogo(syncedLogo);
+            // Also cache it locally to MediaDB just in case
+            MediaDB.set('site_logo', syncedLogo).catch(() => { });
+        } else {
+            // Fallback to purely local MediaDB or legacy
+            MediaDB.get('site_logo').then(src => {
+                if (src) applyLogo(src);
+                else applyLogo(DB.get('site_logo'));
+            });
+        }
     }
     // Site name font size + Font Family + Animation
     document.querySelectorAll('.navbar-brand').forEach(el => {
@@ -978,7 +987,7 @@ DB.init();
 // Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {
     FirebaseDB.onReady(() => {
-        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments'];
+        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo_base64', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments'];
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {
@@ -1001,11 +1010,19 @@ if (typeof FirebaseDB !== 'undefined') {
                     localStorage.setItem('tc_' + key, remoteJSON);
 
                     // Specific re-renders depending on what changed
-                    if ((key === 'settings' || key === 'site_logo') && typeof applySettings === 'function') applySettings();
-                    if (key === 'custom_pages' && typeof renderDynamicNav === 'function') renderDynamicNav();
+                    DB.set(key, remoteData);
 
-                    // Dispatch event for UI updates
-                    document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: remoteData } }));
+                    // Specific reactions
+                    if (key === 'settings' || key === 'site_logo_base64') {
+                        applySettings();
+                    } else if (key === 'user_tiers' && typeof renderTiers === 'function') {
+                        renderTiers();
+                    } else if (key === 'custom_pages' && typeof renderDynamicNav === 'function') {
+                        renderDynamicNav();
+                    }
+
+                    // Dispatch event so individual pages can re-render (like forum list or home cards)
+                    document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key } }));
                 }
             });
         });

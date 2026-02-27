@@ -807,15 +807,16 @@
                 const reader = new FileReader();
                 reader.onload = async function (e) {
                     const base64 = e.target.result;
+                    // Save to local IndexedDB for fast local access
                     await MediaDB.set('site_logo', base64);
-                    // Also set legacy for main.js until fully migrated if needed
-                    // localStorage.setItem('tc_site_logo', JSON.stringify(base64)); 
+                    // Crucial fix: Trigger Firebase Sync by saving Base64 to a specific key
+                    DB.set('site_logo_base64', base64);
 
                     document.getElementById('logoPreviewImg').src = base64;
                     document.getElementById('logoPreviewImg').style.display = 'block';
                     document.getElementById('logoPlaceholder').style.display = 'none';
                     document.getElementById('logoRemoveRow').style.display = 'block';
-                    showAdminToast('✅ Logo kaydedildi!', 'success');
+                    showAdminToast('✅ Logo kaydedildi ve senkronize ediliyor!', 'success');
                 };
                 reader.readAsDataURL(file);
             });
@@ -823,6 +824,7 @@
             // Logo remove
             document.getElementById('logoRemoveBtn').addEventListener('click', async () => {
                 await MediaDB.set('site_logo', null);
+                DB.set('site_logo_base64', null); // Trigger Firebase delete
                 DB.set('site_logo', null);
                 document.getElementById('logoPreviewImg').style.display = 'none';
                 document.getElementById('logoPlaceholder').style.display = 'block';

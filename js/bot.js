@@ -152,12 +152,19 @@ window.BotEngine = (function () {
         const ogImage = doc.querySelector('meta[property="og:image"]');
         if (ogImage) image = ogImage.getAttribute('content');
 
-        // Try to find Content text
-        let content = '';
-        // Best guess: <article> tag or elements with "content", "post-content"
-        const articleTag = doc.querySelector('article') || doc.querySelector('.post-content') || doc.querySelector('.entry-content');
-
+        let bodyImages = [];
         if (articleTag) {
+            // Extract images before stripping tags
+            const imgs = Array.from(articleTag.querySelectorAll('img'));
+            imgs.forEach(img => {
+                const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+                if (src && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon')) {
+                    // Resolve relative if needed
+                    if (src.startsWith('/')) bodyImages.push(baseObj.origin + src);
+                    else if (src.startsWith('http')) bodyImages.push(src);
+                }
+            });
+
             // Strip out scripts and styles before extracting text length
             const clone = articleTag.cloneNode(true);
             const scripts = clone.querySelectorAll('script, style, iframe, nav, header, footer');
@@ -169,14 +176,10 @@ window.BotEngine = (function () {
             content = paragraphs.filter(p => p.length > 50).join('\n\n');
         }
 
-        // Clean up title
-        if (title) {
-            // Remove common separators and site names
-            title = title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
-            title = title.replace(/ShiftDelete\.Net/gi, '').replace(/DonanımHaber/gi, '').replace(/Webtekno/gi, '').trim();
-        }
+        // Limit images to max 3
+        bodyImages = bodyImages.slice(0, 3);
 
-        return { title, image, content, url };
+        return { title, image, content, url, bodyImages };
     }
 
     function publishArticle(aiHtmlCode, originalData, category) {
@@ -186,10 +189,35 @@ window.BotEngine = (function () {
         let finalTitle = originalData.title;
         finalTitle = finalTitle.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
 
+        // Inject images into the AI HTML code if they exist
+        let enrichedHtml = aiHtmlCode;
+        if (originalData.bodyImages && originalData.bodyImages.length > 0) {
+            // Place the first image after the first paragraph if possible, otherwise at top
+            const firstImg = `<div class="article-body-img" style="margin: 1.5rem 0;"><img src="${originalData.bodyImages[0]}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`;
+
+            if (enrichedHtml.includes('</p>')) {
+                enrichedHtml = enrichedHtml.replace('</p>', '</p>' + firstImg);
+            } else {
+                enrichedHtml = firstImg + enrichedHtml;
+            }
+
+            // Add remaining images at the bottom
+            if (originalData.bodyImages.length > 1) {
+                const moreImgs = originalData.bodyImages.slice(1).map(src =>
+                    `<div class="article-body-img" style="margin: 1.5rem 0;"><img src="${src}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`
+                ).join('');
+                enrichedHtml += moreImgs;
+            }
+        }
+
         // Use a short text snippet for description
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = aiHtmlCode;
         const shortDesc = (tempDiv.textContent || tempDiv.innerText).replace(/\n/g, ' ').slice(0, 150) + '...';
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
         const newArticle = {
             id: Date.now(),
@@ -199,9 +227,9 @@ window.BotEngine = (function () {
             image: "🤖",
             cover: originalData.image || '',
             desc: shortDesc,
-            body: aiHtmlCode,
+            body: enrichedHtml,
             views: 0,
-            date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' - ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+            date: `${dateStr} - ${timeStr}`
         };
 
         articles.unshift(newArticle); // Add to top

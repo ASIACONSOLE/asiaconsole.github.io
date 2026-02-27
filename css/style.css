@@ -795,7 +795,8 @@ h6 {
 .hero .container {
   display: flex;
   align-items: center;
-  gap: 3rem;
+  gap: 8rem;
+  /* Daha sola yaslamak için gap artırıldı */
   position: relative;
   z-index: 5;
 }
@@ -804,6 +805,28 @@ h6 {
   flex: 1;
   position: relative;
   z-index: 1;
+  text-align: center;
+  /* Yazıları ortala */
+}
+
+.hero-content .hero-badge {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-content h1 {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-content p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-buttons {
+  justify-content: center;
+  /* Butonları ortala */
 }
 
 /* ===== SNIPPET CARD (Compact Square) ===== */

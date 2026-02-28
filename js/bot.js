@@ -218,22 +218,32 @@ window.BotEngine = (function () {
         // Inject images into the AI HTML code if they exist
         let enrichedHtml = aiHtmlCode;
         if (originalData.bodyImages && originalData.bodyImages.length > 0) {
-            // Place the first image after the first paragraph if possible, otherwise at top
-            const firstImg = `<div class="article-body-img" style="margin: 1.5rem 0;"><img src="${originalData.bodyImages[0]}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`;
+            const paragraphs = enrichedHtml.split('</p>');
+            const totalParas = paragraphs.length - 1; // Last split is usually empty
+            const images = originalData.bodyImages;
 
-            if (enrichedHtml.includes('</p>')) {
-                enrichedHtml = enrichedHtml.replace('</p>', '</p>' + firstImg);
-            } else {
-                enrichedHtml = firstImg + enrichedHtml;
+            let finalHtml = "";
+            let imgIdx = 0;
+
+            // Distribute images every few paragraphs
+            const interval = Math.max(1, Math.floor(totalParas / (images.length + 1)));
+
+            for (let i = 0; i < paragraphs.length; i++) {
+                finalHtml += paragraphs[i] + (i < paragraphs.length - 1 ? '</p>' : '');
+
+                // If it's time to insert an image and we have images left
+                if (imgIdx < images.length && (i + 1) % interval === 0 && i < paragraphs.length - 2) {
+                    finalHtml += `<div class="article-body-img" style="margin: 2rem 0;"><img src="${images[imgIdx]}" style="width:100%; border-radius:12px; border:1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></div>`;
+                    imgIdx++;
+                }
             }
 
-            // Add remaining images at the bottom
-            if (originalData.bodyImages.length > 1) {
-                const moreImgs = originalData.bodyImages.slice(1).map(src =>
-                    `<div class="article-body-img" style="margin: 1.5rem 0;"><img src="${src}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`
-                ).join('');
-                enrichedHtml += moreImgs;
+            // If any images left, add at bottom
+            while (imgIdx < images.length) {
+                finalHtml += `<div class="article-body-img" style="margin: 2rem 0;"><img src="${images[imgIdx]}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`;
+                imgIdx++;
             }
+            enrichedHtml = finalHtml;
         }
 
         // Use a short text snippet for description

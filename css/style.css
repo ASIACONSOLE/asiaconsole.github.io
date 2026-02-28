@@ -1007,6 +1007,13 @@ h6 {
   pointer-events: auto;
 }
 
+/* Hide Tip Trigger on Mobile to prevent layout issues */
+@media (max-width: 768px) {
+  .tip-trigger-wrapper {
+    display: none !important;
+  }
+}
+
 .btn-tip-trigger {
   background: rgba(79, 142, 247, 0.1);
   border: 2px solid var(--accent-blue);

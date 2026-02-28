@@ -66,13 +66,20 @@ window.BotEngine = (function () {
         // This doesn't trigger 'preflight' issues because the response is a standard JSON
         const proxies = [
             async (u) => {
+                // Try corsproxy.io first (more reliable direct text)
+                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error("Corsproxy failed");
+                return await res.text();
+            },
+            async (u) => {
+                // allorigins as backup
                 const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
                 const json = await res.json();
                 return json.contents;
             },
             async (u) => {
-                // Combined with corsproxy.io as fallback
-                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
+                // New backup: thingproxy
+                const res = await fetch(`https://thingproxy.freeboard.io/fetch/${u}`);
                 return await res.text();
             }
         ];
@@ -139,6 +146,7 @@ window.BotEngine = (function () {
     async function extractArticleData(html, url) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
+        const baseObj = new URL(url);
 
         // Try to find Title
         let title = '';
@@ -152,7 +160,16 @@ window.BotEngine = (function () {
         const ogImage = doc.querySelector('meta[property="og:image"]');
         if (ogImage) image = ogImage.getAttribute('content');
 
+        // SECURITY & EXTRACTION: Find the main article content tag
+        const articleTag = doc.querySelector('article') ||
+            doc.querySelector('.post-content') ||
+            doc.querySelector('.entry-content') ||
+            doc.querySelector('.article-content') ||
+            doc.querySelector('main');
+
         let bodyImages = [];
+        let content = "";
+
         if (articleTag) {
             // Extract images before stripping tags
             const imgs = Array.from(articleTag.querySelectorAll('img'));
@@ -167,8 +184,8 @@ window.BotEngine = (function () {
 
             // Strip out scripts and styles before extracting text length
             const clone = articleTag.cloneNode(true);
-            const scripts = clone.querySelectorAll('script, style, iframe, nav, header, footer');
-            scripts.forEach(s => s.remove());
+            const useless = clone.querySelectorAll('script, style, iframe, nav, header, footer, .ads, .social-share');
+            useless.forEach(s => s.remove());
             content = clone.innerText;
         } else {
             // Fallback: Just grab large paragraphs
@@ -177,7 +194,7 @@ window.BotEngine = (function () {
         }
 
         // Limit images to max 3
-        bodyImages = bodyImages.slice(0, 3);
+        bodyImages = [...new Set(bodyImages)].slice(0, 3); // Unique images
 
         return { title, image, content, url, bodyImages };
     }

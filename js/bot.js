@@ -66,20 +66,29 @@ window.BotEngine = (function () {
         // This doesn't trigger 'preflight' issues because the response is a standard JSON
         const proxies = [
             async (u) => {
-                // Try corsproxy.io first (more reliable direct text)
+                // Proxy 1: corsproxy.io (Very fast, but sometimes 403)
                 const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
-                if (!res.ok) throw new Error("Corsproxy failed");
+                if (res.status === 403) throw new Error("403 Forbidden");
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // allorigins as backup
+                // Proxy 2: allorigins.win (Reliable)
                 const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error("Allorigins failed");
                 const json = await res.json();
                 return json.contents;
             },
             async (u) => {
-                // New backup: thingproxy
+                // Proxy 3: thingproxy.freeboard.io (Good fallback)
                 const res = await fetch(`https://thingproxy.freeboard.io/fetch/${u}`);
+                if (!res.ok) throw new Error("Thingproxy failed");
+                return await res.text();
+            },
+            async (u) => {
+                // Proxy 4: wsrv.nl or similar filters (Last resort for images/content)
+                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error("Allorigins raw failed");
                 return await res.text();
             }
         ];

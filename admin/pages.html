@@ -706,17 +706,20 @@
                 return;
             }
             empty.style.display = 'none';
-            tbody.innerHTML = list.map(a => `
+            tbody.innerHTML = list.map(a => {
+                const desc = a.desc || '';
+                const views = a.views || 0;
+                return `
     <tr>
       <td style="font-size:1.4rem;">${a.image || '📄'}</td>
       <td>
         <div style="font-weight:600; font-size:0.875rem; max-width:280px;">${a.title}</div>
-        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${a.desc.slice(0, 60)}${a.desc.length > 60 ? '...' : ''}</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${desc.slice(0, 60)}${desc.length > 60 ? '...' : ''}</div>
       </td>
       <td>${catBadge[a.category] || a.category}</td>
       <td style="color:var(--text-secondary); font-size:0.85rem;">@${a.author}</td>
       <td style="color:var(--text-muted); font-size:0.8rem;">${a.date}</td>
-      <td style="color:var(--text-secondary); font-size:0.85rem;">👁️ ${a.views.toLocaleString('tr-TR')}</td>
+      <td style="color:var(--text-secondary); font-size:0.85rem;">👁️ ${views.toLocaleString('tr-TR')}</td>
       <td>
         <div style="display:flex; gap:0.4rem;">
           <button class="btn-action btn-edit" onclick="editArticle(${a.id})">✏️ Düzenle</button>
@@ -724,7 +727,7 @@
         </div>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
         }
 
         function renderArticles() {

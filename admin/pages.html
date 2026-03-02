@@ -994,7 +994,10 @@
                     if (!title || !desc || !author) { showAdminToast('Başlık, açıklama ve yazar zorunlu!', 'error'); return; }
 
                     const editId = document.getElementById('editId').value;
-                    const now = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const nowObj = new Date();
+                    const datePart = nowObj.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const timePart = nowObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                    const now = `${datePart} - ${timePart}`;
 
                     if (editId) {
                         const idx = articles.findIndex(a => a.id == editId);

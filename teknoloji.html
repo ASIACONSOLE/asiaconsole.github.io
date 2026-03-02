@@ -90,13 +90,6 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" id="searchInput" placeholder="Teknoloji haberlerinde ara...">
                 </div>
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">Tümü</button>
-                    <button class="filter-tab" data-filter="yapay-zeka">🤖 Yapay Zeka</button>
-                    <button class="filter-tab" data-filter="donanim">⚙️ Donanım</button>
-                    <button class="filter-tab" data-filter="yazilim">💾 Yazılım</button>
-                    <button class="filter-tab" data-filter="internet">🌐 İnternet</button>
-                </div>
                 <div class="cards-grid" id="articleGrid"></div>
             </div>
         </section>
@@ -125,12 +118,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const articles = (DB.get('articles') || []).filter(a => a.category === 'teknoloji');
-            let filtered = [...articles];
             const grid = document.getElementById('articleGrid');
 
             function render(list) {
                 if (list.length === 0) {
-                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">💻</div><h3>Makale bulunamadı</h3><p>Arama kriterinizi değiştirmeyi deneyin.</p></div>';
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">💻</div><h3>Makale bulunamadı</h3><p>Yeni haberler yakında eklenecek.</p></div>';
                     return;
                 }
                 grid.innerHTML = list.map(a => {

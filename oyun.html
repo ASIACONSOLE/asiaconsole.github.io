@@ -90,13 +90,6 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" id="searchInput" placeholder="Oyun haberlerinde ara...">
                 </div>
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">Tümü</button>
-                    <button class="filter-tab" data-filter="pc">🖥️ PC</button>
-                    <button class="filter-tab" data-filter="konsol">🕹️ Konsol</button>
-                    <button class="filter-tab" data-filter="mobil">📱 Mobil</button>
-                    <button class="filter-tab" data-filter="espor">⚡ E-Spor</button>
-                </div>
                 <div class="cards-grid" id="articleGrid"></div>
             </div>
         </section>
@@ -130,7 +123,7 @@
 
             function render(list) {
                 if (list.length === 0) {
-                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🎮</div><h3>İçerik bulunamadı</h3><p>Arama kriterinizi değiştirmeyi deneyin.</p></div>';
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🎮</div><h3>İçerik bulunamadı</h3><p>Yeni haberler yakında eklenecek.</p></div>';
                     return;
                 }
 

@@ -575,6 +575,8 @@
                 relGrid.innerHTML = related.map(a => {
                     const coverBg = a.cover ? `url(${a.cover})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                     const coverStyle = a.cover ? `background:${coverBg}; background-size:cover; background-position:center;` : `background:${coverBg};`;
+                    const desc = a.desc || '';
+                    const views = a.views || 0;
                     return `
       <a href="makale-detay.html?id=${a.id}" class="card article-card" style="text-decoration:none; display:block; padding:0; overflow:hidden;">
         <div style="${coverStyle} height:140px; position:relative;">
@@ -582,9 +584,9 @@
         </div>
         <div style="padding:1rem;">
           <h3 style="font-size:0.95rem; font-weight:700; margin:0 0 0.5rem; line-height:1.4;">${a.title}</h3>
-          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">${a.desc.slice(0, 70)}...</p>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">${desc.slice(0, 70)}...</p>
           <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
-            <span>👁️ ${a.views.toLocaleString('tr-TR')}</span>
+            <span>👁️ ${views.toLocaleString('tr-TR')}</span>
             <span>@${a.author}</span>
           </div>
         </div>

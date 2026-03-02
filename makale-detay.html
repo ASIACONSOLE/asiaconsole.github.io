@@ -543,11 +543,12 @@
             document.getElementById('artCategoryBadge').className = 'badge ' + cls;
             document.getElementById('artCategoryBadge').textContent = label;
             document.getElementById('artTitle').textContent = article.title;
-            document.getElementById('artDesc').textContent = article.desc;
+            document.getElementById('artDesc').textContent = article.desc || '';
             document.getElementById('artAuthor').textContent = '@' + article.author;
-            document.getElementById('artAuthorAvatar').textContent = article.author[0].toUpperCase();
+            const authorInitial = (article.author && article.author[0]) ? article.author[0].toUpperCase() : '?';
+            document.getElementById('artAuthorAvatar').textContent = authorInitial;
             document.getElementById('artDate').textContent = article.date;
-            document.getElementById('artViews').textContent = article.views.toLocaleString('tr-TR');
+            document.getElementById('artViews').textContent = (article.views || 0).toLocaleString('tr-TR');
 
             // Apply cover image if exists
             if (article.cover) {

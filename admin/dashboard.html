@@ -256,10 +256,12 @@
             const tbody = document.getElementById('recentArticlesBody');
             tbody.innerHTML = articles.slice(0, 6).map(a => {
                 const [cls, label] = catMap[a.category] || ['badge-blue', a.category];
+                const title = a.title || '';
+                const views = a.views || 0;
                 return `<tr>
-      <td><div style="font-weight:600; font-size:0.85rem;">${a.image || '📄'} ${a.title.slice(0, 45)}${a.title.length > 45 ? '...' : ''}</div></td>
+      <td><div style="font-weight:600; font-size:0.85rem;">${a.image || '📄'} ${title.slice(0, 45)}${title.length > 45 ? '...' : ''}</div></td>
       <td><span class="badge ${cls}">${label}</span></td>
-      <td style="color:var(--text-secondary);">👁️ ${(a.views || 0).toLocaleString('tr-TR')}</td>
+      <td style="color:var(--text-secondary);">👁️ ${views.toLocaleString('tr-TR')}</td>
     </tr>`;
             }).join('');
 
@@ -285,16 +287,18 @@
 
             // Recent forum
             const ftbody = document.getElementById('recentForumBody');
-            ftbody.innerHTML = posts.sort((a, b) => b.id - a.id).slice(0, 5).map(p => `
+            ftbody.innerHTML = posts.sort((a, b) => b.id - a.id).slice(0, 5).map(p => {
+                const title = p.title || '';
+                return `
     <tr>
-      <td><div style="font-weight:600; font-size:0.85rem; color:var(--text-primary); cursor:pointer;" onclick="location.href='forum-moderation.html'">${p.title.slice(0, 40)}${p.title.length > 40 ? '...' : ''}</div></td>
+      <td><div style="font-weight:600; font-size:0.85rem; color:var(--text-primary); cursor:pointer;" onclick="location.href='forum-moderation.html'">${title.slice(0, 40)}${title.length > 40 ? '...' : ''}</div></td>
       <td style="font-size:0.8rem; color:var(--text-secondary);">@${p.author}</td>
       <td style="font-size:0.75rem;"><span class="badge badge-blue">${p.category}</span></td>
       <td style="text-align:center; font-size:0.8rem; color:var(--text-muted);">${p.replies || 0}</td>
       <td>${p.status === 'pending' ? '<span class="badge badge-orange">⏳ Bekliyor</span>' : '<span class="badge badge-green">✅ Aktif</span>'}</td>
       <td style="font-size:0.75rem; color:var(--text-muted);">${p.date}</td>
     </tr>
-  `).join('');
+  `}).join('');
 
             // Project stats (Async)
             const projects = DB.get('user_projects') || [];

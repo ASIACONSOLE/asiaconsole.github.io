@@ -282,7 +282,7 @@
                 <tr>
                     <td>
                         <div style="font-weight:600; color:var(--text-primary);">${p.title}</div>
-                        <div style="font-size:0.75rem; color:var(--text-secondary);">${p.desc.slice(0, 50)}${p.desc.length > 50 ? '...' : ''}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary);">${(p.desc || '').slice(0, 50)}${(p.desc || '').length > 50 ? '...' : ''}</div>
                     </td>
                     <td><span class="badge ${p.category === 'oyun' ? 'badge-purple' : 'badge-green'}">${p.category.toUpperCase()}</span></td>
                     <td>@${p.author}</td>

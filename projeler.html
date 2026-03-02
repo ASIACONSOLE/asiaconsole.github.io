@@ -139,19 +139,22 @@
                     return;
                 }
 
-                grid.innerHTML = filtered.map(p => `
+                grid.innerHTML = filtered.map(p => {
+                    const desc = p.desc || '';
+                    const views = p.views || 0;
+                    return `
                     <a href="proje-izle.html?id=${p.id}" class="card article-card" style="text-decoration:none; display:block; cursor:pointer; border: 1px solid var(--border); transition: transform 0.2s, border-color 0.2s;">
                         <div class="card-badge badge-game" style="background:var(--accent-purple);">${p.category === 'oyun' ? '🎮 Oyun' : '📱 Uygulama'}</div>
                         <div style="font-size:3rem; margin-bottom:1rem; text-align:center;">${p.category === 'oyun' ? '🕹️' : '💻'}</div>
                         <div class="card-title" style="text-align:center;">${p.title}</div>
-                        <div class="card-desc" style="text-align:center;">${p.desc.slice(0, 80)}${p.desc.length > 80 ? '...' : ''}</div>
+                        <div class="card-desc" style="text-align:center;">${desc.slice(0, 80)}${desc.length > 80 ? '...' : ''}</div>
                         <div class="card-meta" style="justify-content:center; margin-top:1rem; gap:1.5rem;">
                             <span>👤 ${p.author}</span>
-                            <span>👁️ ${(p.views || 0).toLocaleString('tr-TR')}</span>
+                            <span>👁️ ${views.toLocaleString('tr-TR')}</span>
                         </div>
                         <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); text-align:center; font-size:0.875rem; color:var(--accent-blue); font-weight:600;">Projeyi İncele →</div>
                     </a>
-                `).join('');
+                `}).join('');
             }
 
             // Bind Events

@@ -1090,44 +1090,33 @@
             const proxies = [
                 { name: 'Jina Reader', build: (u) => `https://r.jina.ai/${u}` },
                 { name: 'CorsProxy', build: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}` },
-                { name: 'CORS.lol', build: (u) => `https://api.cors.lol/?url=${encodeURIComponent(u)}` }
+                { name: 'AllOrigins', build: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}` }
             ];
 
             for (const proxy of proxies) {
                 try {
                     setStepState(1, 'active', `${proxy.name} üzerinden okunuyor...`);
-                    console.log(`[FetchNews] Trying proxy: ${proxy.name}`);
-
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-                    const resp = await fetch(proxy.build(url), {
-                        signal: controller.signal
-                    });
+                    const resp = await fetch(proxy.build(url), { signal: controller.signal });
                     clearTimeout(timeoutId);
 
-                    if (resp.status === 451 || resp.status === 403) {
-                        console.warn(`[FetchNews] ${proxy.name}: ${resp.status}, trying next...`);
-                        continue;
-                    }
-                    if (!resp.ok) {
-                        console.warn(`[FetchNews] ${proxy.name}: ${resp.status}, trying next...`);
-                        continue;
+                    if (!resp.ok) continue;
+
+                    let text = "";
+                    if (proxy.name === 'AllOrigins') {
+                        const json = await resp.json();
+                        text = json.contents;
+                    } else {
+                        text = await resp.text();
                     }
 
-                    const text = await resp.text();
-                    if (text.length < 200) {
-                        console.warn(`[FetchNews] ${proxy.name}: too short (${text.length} chars)`);
-                        continue;
-                    }
+                    if (text.length < 200) continue;
 
-                    console.log(`[FetchNews] Success via ${proxy.name} (${text.length} chars)`);
                     setStepState(1, 'done', `${proxy.name} ile okundu (✓)`);
                     return text;
-                } catch (err) {
-                    console.warn(`[FetchNews] ${proxy.name} error:`, err.message);
-                    continue;
-                }
+                } catch (err) { continue; }
             }
             return null;
         }
@@ -1216,13 +1205,13 @@
         async function processUrlFetch() {
             const url = document.getElementById('fetchUrlInput').value.trim();
             if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
-                showAdminToast('Lütfen geçerli bir URL girin! (https://...)', 'error');
+                showAdminToast('Lütfen geçerli bir URL girin!', 'error');
                 return;
             }
 
             const settings = DB.get('settings') || {};
             if (!settings.geminiApiKey && !settings.groqApiKey) {
-                showAdminToast('API anahtarı eksik! Site Ayarlarından Gemini veya Groq anahtarı ekleyin.', 'error');
+                showAdminToast('API anahtarı eksik!', 'error');
                 return;
             }
 
@@ -1235,62 +1224,75 @@
             try {
                 // STEP 1: Read content
                 setStepState(1, 'active', 'Kaynak okunuyor...');
-                const pageContent = await fetchContentViaProxy(url);
+                const rawHtml = await fetchContentViaProxy(url);
 
-                if (!pageContent) {
-                    setStepState(1, 'error', 'Hiçbir proxy ile okunamadı');
-                    showFetchError('⚠️ <strong>Kaynak okunamadı.</strong><br>Bu site bot erişimini engelliyor olabilir.<br><br>💡 <strong>Öneri:</strong> ShiftDelete.net, DonanımHaber, Webtekno gibi Türk teknoloji sitelerini deneyin.');
+                if (!rawHtml) {
+                    setStepState(1, 'error', 'Kaynak okunamadı');
+                    showFetchError('⚠️ <strong>Kaynak okunamadı.</strong>');
                     return;
                 }
 
+                // AI PRE-PROCESSING: Extract data similar to Bot
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(rawHtml.includes('<html') ? rawHtml : `<html><body>${rawHtml}</body></html>`, "text/html");
+                const baseObj = new URL(url);
+
+                let originalImage = '';
+                const ogImg = doc.querySelector('meta[property="og:image"]');
+                if (ogImg) originalImage = ogImg.getAttribute('content');
+
+                const articleTag = doc.querySelector('article') || doc.querySelector('.post-content') || doc.querySelector('.entry-content') || doc.querySelector('main');
+                let bodyImages = [];
+                if (articleTag) {
+                    const imgs = Array.from(articleTag.querySelectorAll('img')).slice(0, 3);
+                    imgs.forEach(img => {
+                        let src = img.getAttribute('src') || img.getAttribute('data-src');
+                        if (src && !src.includes('avatar')) {
+                            if (src.startsWith('/')) src = baseObj.origin + src;
+                            bodyImages.push(src);
+                        }
+                    });
+                }
+
+                // Clean text for AI
+                const textForAi = (articleTag ? articleTag.innerText : doc.body.innerText).substring(0, 10000);
+
                 // STEP 2: AI Analysis
-                const prompt = `Aşağıdaki metin bir haber sayfasından alınmıştır:\n---\n${pageContent.substring(0, 12000)}\n---\nBu içeriği "AsiaConsole" teknoloji portalı için profesyonel bir makaleye dönüştür.\nAşağıdaki JSON formatında döndür:\n{"title": "Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Kısa özet (max 2 cümle)", "body": "HTML formatlı tam makale içeriği (<h2>, <p>, <ul> vb. kullan)", "image": "tek emoji"}\nKurallar:\n- Türkçe yaz\n- body içinde en az 3 paragraf olsun\n- Sadece JSON döndür, başka bir şey yazma\n- ÖNEMLİ: JSON içinde çift tırnak ve satır sonu (\\n) karakterlerini doğru şekilde kaçır (escape).`;
+                const prompt = `Aşağıdaki haber metnini AsiaConsole teknoloji portalı için profesyonel, kusursuz ve ilgi çekici bir makaleye dönüştür.\n---\n${textForAi}\n---\nAşağıdaki JSON formatında döndür:\n{"title": "Göz Alıcı Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Etkileyici kısa özet", "body": "HTML formatlı (<p>, <h2>, <ul> vb.) tam makale içeriği"}\nKurallar:\n1. Kusursuz bir Türkçe kullan.\n2. Makale sonuna mutlaka şu cümleyi ekle: "Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!"\n3. İçerik zengin ve detaylı olsun.\n4. Sadece JSON döndür.`;
 
                 const aiResult = await fetchAIAnalysis(prompt, settings);
 
                 if (aiResult.error) {
                     setStepState(2, 'error', aiResult.message);
-                    const icon = aiResult.error === 'QUOTA' ? '⏳' : '❌';
-                    showFetchError(`${icon} <strong>${aiResult.message}</strong>`);
+                    showFetchError(`❌ ${aiResult.message}`);
                     return;
                 }
 
-                // STEP 3: Parse and load
+                // STEP 3: Parse and Load
                 setStepState(3, 'active', 'Makale hazırlanıyor...');
+                const startIdx = aiResult.data.indexOf('{');
+                const endIdx = aiResult.data.lastIndexOf('}');
+                if (startIdx === -1) throw new Error('Geçersiz AI yanıtı');
 
-                let resultText = aiResult.data;
-                const startIdx = resultText.indexOf('{');
-                const endIdx = resultText.lastIndexOf('}');
+                const articleData = JSON.parse(aiResult.data.substring(startIdx, endIdx + 1));
 
-                if (startIdx === -1 || endIdx === -1) {
-                    setStepState(3, 'error', 'JSON parse hatası');
-                    showFetchError('❌ <strong>AI çıktısı işlenemedi.</strong><br>Farklı bir URL ile tekrar deneyin.');
-                    return;
+                // Image Injection (Like Bot)
+                let enrichedBody = articleData.body;
+                if (bodyImages.length > 0) {
+                    const paras = enrichedBody.split('</p>');
+                    let finalHtml = "";
+                    let imgIdx = 0;
+                    const interval = Math.max(1, Math.floor(paras.length / (bodyImages.length + 1)));
+
+                    for (let i = 0; i < paras.length; i++) {
+                        finalHtml += paras[i] + (i < paras.length - 1 ? '</p>' : '');
+                        if (imgIdx < bodyImages.length && (i + 1) % interval === 0 && i < paras.length - 1) {
+                            finalHtml += `<div style="margin:20px 0;"><img src="${bodyImages[imgIdx]}" style="width:100%; border-radius:8px;"></div>`;
+                            imgIdx++;
+                        }
+                    }
+                    enrichedBody = finalHtml;
                 }
-
-                let jsonStr = resultText.substring(startIdx, endIdx + 1);
-
-                // Robust Sanitization
-                // 1. Convert actual control chars to escaped versions
-                jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, (ch) => {
-                    if (ch === '\n') return '\\n';
-                    if (ch === '\r') return '';
-                    if (ch === '\t') return '\\t';
-                    return '';
-                });
-
-                let articleData;
-                try {
-                    articleData = JSON.parse(jsonStr);
-                } catch (e) {
-                    console.warn('[FetchNews] JSON Parse failed, attempting fallback cleanup...', e);
-                    // Fallback: Remove literal newlines that AI might have injected raw inside strings
-                    const fallbackStr = jsonStr.replace(/\n/g, ' ');
-                    articleData = JSON.parse(fallbackStr);
-                }
-                setStepState(3, 'done', 'Makale hazır! (✓)');
-
-                await _delay(500);
 
                 closeModal('fetchUrlModal');
                 document.getElementById('modalTitle').textContent = '📝 Çekilen Haberi Onayla';
@@ -1298,17 +1300,19 @@
                 document.getElementById('artTitle').value = articleData.title || '';
                 document.getElementById('artCategory').value = articleData.category || 'teknoloji';
                 document.getElementById('artDesc').value = articleData.desc || '';
-                document.getElementById('artBody').value = articleData.body || '';
+                document.getElementById('artBody').value = enrichedBody || '';
                 document.getElementById('artAuthor').value = 'Editör';
-                document.getElementById('artImage').value = articleData.image || '📄';
+                document.getElementById('artImage').value = '📄';
+                document.getElementById('artCover').value = originalImage || '';
                 document.getElementById('artViews').value = Math.floor(Math.random() * 50) + 10;
                 openModal('articleModal');
 
-                showAdminToast('Haber başarıyla çekildi! Kontrol edip kaydedin. ✅', 'success');
+                setStepState(3, 'done', 'Makale hazır! (✓)');
+                showAdminToast('Haber başarıyla çekildi! ✅', 'success');
 
             } catch (err) {
                 console.error('[FetchNews] Error:', err);
-                showFetchError(`❌ <strong>Beklenmeyen hata:</strong> ${err.message}`);
+                showFetchError(`❌ <strong>Hata:</strong> ${err.message}`);
             } finally {
                 document.getElementById('startFetchBtn').disabled = false;
                 document.getElementById('startFetchBtn').textContent = '🚀 Haberi Getir';

@@ -176,15 +176,6 @@
                 const filteredProjs = currentProjs.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
                 render(filtered, filteredProjs);
             });
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    const currentArts = (DB.get('articles') || []).filter(a => a.category === 'oyun');
-                    const currentProjs = (DB.get('user_projects') || []).filter(p => p.category === 'oyun' && p.status === 'approved');
-                    render(currentArts, currentProjs);
-                });
-            });
         });
     </script>
     <script src="js/ai-assistant.js?v=3.0"></script>

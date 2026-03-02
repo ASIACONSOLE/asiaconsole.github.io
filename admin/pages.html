@@ -722,8 +722,8 @@
       <td style="color:var(--text-secondary); font-size:0.85rem;">👁️ ${views.toLocaleString('tr-TR')}</td>
       <td>
         <div style="display:flex; gap:0.4rem;">
-          <button class="btn-action btn-edit" onclick="editArticle(${a.id})">✏️ Düzenle</button>
-          <button class="btn-action btn-delete" onclick="deleteArticle(${a.id})">🗑️ Sil</button>
+          <button class="btn-action btn-edit" onclick="editArticle('${a.id}')">✏️ Düzenle</button>
+          <button class="btn-action btn-delete" onclick="deleteArticle('${a.id}')">🗑️ Sil</button>
         </div>
       </td>
     </tr>
@@ -761,7 +761,7 @@
 
         function deleteArticle(id) {
             confirmDelete('Bu makaleyi silmek istediğinizden emin misiniz?', () => {
-                articles = articles.filter(a => a.id !== id);
+                articles = articles.filter(a => String(a.id) !== String(id));
                 DB.set('articles', articles);
                 renderTable(getFiltered());
                 showAdminToast('Makale silindi! 🗑️', 'error');

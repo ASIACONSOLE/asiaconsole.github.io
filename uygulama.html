@@ -62,7 +62,7 @@
 
             </div>
         </div>
-        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü"><span></span><span></span><span></span></button>
     </nav>
     <div class="mobile-nav" id="mobileNav">
         <a href="index.html">🏠 Ana Sayfa</a>
@@ -161,25 +161,21 @@
             // REAL-TIME SYNC: Listen for database updates
             document.addEventListener('dbUpdated', (e) => {
                 const key = e.detail?.key;
-                if (key === 'articles' || key === 'user_projects' || key === 'users' || key === 'profiles') {
+                if (key === 'articles' || key === 'users' || key === 'profiles') {
                     console.log(`[Sync] ${key} updated`);
                     const newArticles = (DB.get('articles') || []).filter(a => a.category === 'uygulama');
-                    const newProjects = (DB.get('user_projects') || []).filter(p => p.category === 'uygulama' && p.status === 'approved');
-                    render(newArticles, newProjects);
+                    render(newArticles);
                 }
             });
 
             document.getElementById('searchInput').addEventListener('input', e => {
                 const q = e.target.value.toLowerCase();
                 const currentArts = (DB.get('articles') || []).filter(a => a.category === 'uygulama');
-                const currentProjs = (DB.get('user_projects') || []).filter(p => p.category === 'uygulama' && p.status === 'approved');
-                const filtered = currentArts.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q));
-                const filteredProjs = currentProjs.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
-                render(filtered, filteredProjs);
+                render(currentArts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q)));
             });
         });
     </script>
-    <script src="js/ai-assistant.js?v=3.0"></script>
+
 </body>
 
 </html>

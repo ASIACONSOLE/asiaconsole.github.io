@@ -1116,7 +1116,7 @@ const Comments = {
     }
 };
 
-DB.init();
+// DB.init() is called inside DOMContentLoaded handler above
 
 // Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {

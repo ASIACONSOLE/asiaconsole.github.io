@@ -62,7 +62,7 @@
 
             </div>
         </div>
-        <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü"><span></span><span></span><span></span></button>
     </nav>
     <div class="mobile-nav" id="mobileNav">
         <a href="index.html">🏠 Ana Sayfa</a>
@@ -164,7 +164,7 @@
             document.getElementById('searchInput').addEventListener('input', e => {
                 const q = e.target.value.toLowerCase();
                 const currentArts = (DB.get('articles') || []).filter(a => a.category === 'teknoloji');
-                render(currentArts.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)));
+                render(currentArts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q)));
             });
 
         });

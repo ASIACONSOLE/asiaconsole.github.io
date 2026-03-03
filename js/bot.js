@@ -45,72 +45,55 @@ window.BotEngine = (function () {
 
     // Proxy service to bypass CORS - Final Robust Version
     async function fetchViaProxy(url) {
-        // 1. If it's a feed/RSS, use a specialized XML-to-JSON service (best for CORS)
+        // 1. If it's a feed/RSS, use a specialized XML-to-JSON service
         if (url.includes('/feed') || url.includes('.xml') || url.includes('rss')) {
             try {
-                logTerminal("RSS Beslemesi tespit edildi, XML servisleri kullanılıyor...", "info");
                 const rssProxy = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
                 const response = await fetch(rssProxy);
                 const data = await response.json();
                 if (data.status === 'ok') {
-                    // Convert RSS JSON items back to a pseudo-HTML links list for our link parser
-                    logTerminal("RSS verisi başarıyla JSON'a dönüştürüldü.", "success");
+                    logTerminal("RSS verisi başarıyla çekildi.", "success");
                     return data.items.map(item => `<a href="${item.link}">${item.title}</a>`).join('');
                 }
-            } catch (e) {
-                logTerminal("RSS Servis hatası, standart proxy deneniyor...", "warning");
-            }
+            } catch (e) { }
         }
 
-        // 2. Use JSON Wrapping Proxy (The most reliable way to avoid browser CORS blocks)
-        // This doesn't trigger 'preflight' issues because the response is a standard JSON
         const proxies = [
             async (u) => {
-                // Proxy 1: corsproxy.io (Very fast, but sometimes 403)
-                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
-                if (res.status === 403) throw new Error("403 Forbidden");
-                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+                // Priority 1: Jina Reader (Extremely good for 403/Forbidden)
+                const res = await fetch(`https://r.jina.ai/${u}`);
+                if (!res.ok) throw new Error(`Jina Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Proxy 2: allorigins.win (Reliable)
-                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
-                if (!res.ok) throw new Error("Allorigins failed");
-                const json = await res.json();
-                return json.contents;
-            },
-            async (u) => {
-                // Proxy 3: thingproxy.freeboard.io (Good fallback)
-                const res = await fetch(`https://thingproxy.freeboard.io/fetch/${u}`);
-                if (!res.ok) throw new Error("Thingproxy failed");
-                return await res.text();
-            },
-            async (u) => {
-                // Proxy 4: wsrv.nl or similar filters (Last resort for images/content)
+                // Priority 2: AllOrigins Raw (Direct)
                 const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
-                if (!res.ok) throw new Error("Allorigins raw failed");
+                if (!res.ok) throw new Error("AllOrigins failed");
+                return await res.text();
+            },
+            async (u) => {
+                // Priority 3: CorsProxy.io
+                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error("CorsProxy failed");
                 return await res.text();
             }
         ];
 
         for (const proxyFn of proxies) {
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-
                 const html = await proxyFn(url);
-                clearTimeout(timeoutId);
-
-                if (html && html.length > 200) {
+                if (html && html.length > 300) {
+                    // Quick check for bot blocking pages
+                    const lower = html.toLowerCase();
+                    if (lower.includes('forbidden') || lower.includes('access denied') || lower.includes('cloudflare')) {
+                        continue;
+                    }
                     return html;
                 }
-                throw new Error("İçerik çok kısa veya boş.");
-            } catch (err) {
-                logTerminal(`Bağlantı denemesi başarısız (${err.message})`, 'warning');
-            }
+            } catch (err) { }
         }
 
-        logTerminal(`KRİTİK: '${url}' adresine erişilemedi. Hedef site veya proxy servisleri geçici olarak kapalı olabilir.`, 'error');
+        logTerminal(`⚠️ '${url}' kaynağı şu an okunamıyor.`, 'error');
         return null;
     }
 

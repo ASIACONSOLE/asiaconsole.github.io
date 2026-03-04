@@ -729,6 +729,21 @@ window.BotEngine = (function () {
         if (term) term.innerHTML = '<div><span class="log-info">Sistem:</span> Ekran temizlendi.</div>';
     }
 
+    function getLogs() {
+        const term = document.getElementById('botTerminal');
+        return term ? term.innerText : '';
+    }
+
+    function copyLogs() {
+        const logs = getLogs();
+        if (!logs) return;
+        navigator.clipboard.writeText(logs).then(() => {
+            if (typeof showAdminToast === 'function') {
+                showAdminToast('📋 Loglar panoya kopyalandı!', 'success');
+            }
+        });
+    }
+
     function resetBotData() {
         if (!confirm('Botun taranmış URL hafızasını ve ayarlarını sıfırlamak istediğinize emin misiniz?')) return;
 
@@ -755,6 +770,7 @@ window.BotEngine = (function () {
         },
         loadConfig,
         clearLogs,
+        copyLogs,
         resetBotData
     };
 

@@ -66,65 +66,37 @@ window.BotEngine = (function () {
 
     function isValidImage(img) {
         if (!img) return false;
-        const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || '';
+        const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || img.getAttribute('srcset') || '';
         const alt = (img.getAttribute('alt') || '').toLowerCase();
         const className = (img.className || '').toLowerCase();
         const id = (img.id || '').toLowerCase();
 
-        // 1. URL Blacklist (Common ad/social signatures)
+        // 1. URL Blacklist (Removed 'tanitim' and 'promo' as they can be valid news images)
         const blacklist = [
-            'ads', 'advert', 'banner', 'reklam', 'tanitim', 'promo', 'coupon', 'gift', 'pixel', 'tracking',
+            'ads', 'advert', 'banner', 'reklam', 'coupon', 'gift', 'pixel', 'tracking',
             'social', 'button', 'icon', 'sponsor', 'click', 'redirect', 'taboola', 'outbrain', 'doubleclick',
             'amazon', 'adnxs', 'openx', 'pubmatic', 'criteo', 'smartadserver', 'zemanta', 'triplelift',
             'nativo', 'revcontent', 'sharethrough', 'affiliate', 'widget', 'sidebar', 'footer', 'header',
-            'nav', 'menu', 'popup', 'modal', 'sharing', 'related', 'author-box', 'recommend'
+            'nav', 'menu', 'popup', 'modal', 'sharing', 'author-box', 'recommend'
         ];
         if (blacklist.some(word => src.toLowerCase().includes(word))) return false;
 
-        // 2. Alt Text Blacklist
-        if (blacklist.some(word => alt.includes(word))) return false;
+        // 2. Class Name & ID Blacklist
+        const containerLabels = ['ad-', 'sidebar', 'footer', 'nav-', 'widget', 'social-', 'related', 'popup'];
+        if (containerLabels.some(word => className.includes(word) || id.includes(word))) return false;
 
-        // 3. Class Name & ID Blacklist
-        if (blacklist.some(word => className.includes(word) || id.includes(word))) return false;
-
-        // 3. Dimension & Ratio Heuristics
-        // Softened: If it's a lazy image, we don't know dimensions yet, so we assume it might be valid
+        // 3. Dimension Heuristics (Relaxed: allow 0 if lazy or probable content)
         const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset', 'data-lazy', 'data-src-webp', 'srcset'];
         const hasLazy = lazyAttrs.some(attr => img.hasAttribute(attr));
 
-        const widthAttr = img.getAttribute('width');
-        const heightAttr = img.getAttribute('height');
-        const width = parseInt(widthAttr || img.naturalWidth || (hasLazy ? '1000' : '0'), 10);
-        const height = parseInt(heightAttr || img.naturalHeight || (hasLazy ? '1000' : '0'), 10);
+        const width = parseInt(img.getAttribute('width') || img.naturalWidth || '0', 10);
+        const height = parseInt(img.getAttribute('height') || img.naturalHeight || '0', 10);
 
-        // If explicitly small (e.g. 1x1 placeholder), but has lazy, we allow it for now
-        if (!hasLazy && (width < 50 || height < 50)) return false;
-        if (!hasLazy && (width < 150 && height < 150)) return false;
+        // If it looks like a tracker/icon, reject. If 0 but has lazy/content indicators, accept.
+        if (!hasLazy && width > 0 && width < 100) return false;
+        if (!hasLazy && height > 0 && height < 100) return false;
 
-        const ratio = width / height;
-        if (!hasLazy && (ratio > 5 || ratio < 0.2)) return false;
-
-        const commonAds = ['300x250', '728x90', '160x600', '300x600', '970x250', '320x50', '320x100'];
-        if (commonAds.some(size => src.includes(size))) return false;
-
-        // 4. Deep Parent Checks (Traverse up 5 levels)
-        let parent = img.parentElement;
-        for (let i = 0; i < 5 && parent; i++) {
-            const pClass = (parent.className || '').toLowerCase();
-            const pId = (parent.id || '').toLowerCase();
-            const pTag = parent.tagName.toLowerCase();
-
-            if (['aside', 'footer', 'nav', 'header'].includes(pTag)) return false;
-            if (blacklist.some(word => pClass.includes(word) || pId.includes(word))) {
-                // Exceptional case: if it's a known article container, don't reject
-                const articleContainers = ['article', 'post-content', 'entry-content', 'article-content', 'td-post-content'];
-                if (!articleContainers.some(c => pClass.includes(c))) return false;
-            }
-
-            parent = parent.parentElement;
-        }
-
-        return src.startsWith('http') || src.startsWith('//') || src.startsWith('/') || hasLazy;
+        return src.length > 5;
     }
 
     function extractVideos(container) {

@@ -484,8 +484,8 @@ YAZIM KURALLARI:
 1. ÇIKTI SADECE HTML FORMATINDA OLMALIDIR. Markdown kullanma. \`\`\`html gibi blok etiketleri KULLANMA.
 2. Sadece yazının gövde HTML'ini ver (<html>, <body>, <head> gibi kapsayıcı etiketler KULLANMA).
 3. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul>/<li> kullan.
-4. ÖNEMLİ (MEDYA): Sana bir medya listesi verilecek. Yazı içine bu medyaları yerleştirmek için SADECE [RESiM-1], [ViDEO-1] gibi yer tutucuları kullan.
-5. <img> veya <iframe> etiketlerini ASLA kendin yazma. Sadece köşeli parantez içindeki yer tutucuları paragraf aralarına yerleştir.
+4. ÖNEMLİ (MEDYA): Sana bir medya listesi verilecek. Yazı içine bu medyaları yerleştirmek için SADECE [RESiM-1], [ViDEO-1] gibi yer tutucuları kullan. Her habere mutlaka en az 2-3 adet [RESiM-X] yer tutucusu yerleştir.
+5. <img> veya <iframe> etiketlerini ASLA kendin yazma. Sadece köşeli parantez içindeki yer tutucuları paragrafların hemen altına yerleştir.
 6. Haberin içindeki önemli kaynak bağlantılarını (<a> etiketlerini) mutlaka yazı içinde uygun yerlerde koru.
 
 EDİTÖRYEL KALİTE:

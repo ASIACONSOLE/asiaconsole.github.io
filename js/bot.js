@@ -62,25 +62,28 @@ window.BotEngine = (function () {
             async (u) => {
                 // Priority 1: Jina Reader (Best for bypassing bot-blocking)
                 const res = await fetch(`https://r.jina.ai/${u}`, {
-                    headers: { 'Accept': 'text/html' }
+                    headers: {
+                        'Accept': 'text/html',
+                        'X-Return-Format': 'html'
+                    }
                 });
                 if (!res.ok) throw new Error(`Jina Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Priority 2: Corsfix (Modern, reliable free CORS proxy)
-                const res = await fetch(`https://proxy.corsfix.com/?${encodeURIComponent(u)}`);
+                // Priority 2: Corsfix (raw URL after ?, NOT encoded)
+                const res = await fetch(`https://proxy.corsfix.com/?${u}`);
                 if (!res.ok) throw new Error(`Corsfix Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Priority 3: Cloudflare CORS proxy worker
-                const res = await fetch(`https://test.cors.workers.dev/?${encodeURIComponent(u)}`);
+                // Priority 3: Cloudflare CORS proxy worker (raw URL after ?)
+                const res = await fetch(`https://test.cors.workers.dev/?${u}`);
                 if (!res.ok) throw new Error(`CF Worker Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Priority 4: AllOrigins (fallback, may be unreliable)
+                // Priority 4: AllOrigins (uses url= param with encoding)
                 const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
                 if (!res.ok) throw new Error("AllOrigins failed");
                 return await res.text();
@@ -91,9 +94,9 @@ window.BotEngine = (function () {
             try {
                 const html = await proxyFn(url);
                 if (html && html.length > 300) {
-                    // Quick check for bot blocking pages
+                    // Quick check for bot blocking pages (strict phrases to avoid false positives)
                     const lower = html.toLowerCase();
-                    if (lower.includes('forbidden') || lower.includes('access denied') || lower.includes('cloudflare')) {
+                    if (lower.includes('sorry, you have been blocked') || lower.includes('access denied') || lower.includes('attention required! | cloudflare') || lower.includes('just a moment...')) {
                         continue;
                     }
                     return html;

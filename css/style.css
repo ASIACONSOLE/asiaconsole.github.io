@@ -640,46 +640,54 @@ h6 {
   padding: 0 1.5rem;
 }
 
-/* ===== NEWS TICKER ===== */
+/* ===== NEWS TICKER (Full-Width Refactor) ===== */
 .news-ticker-container {
-  margin-bottom: 2rem;
-  background: rgba(22, 27, 34, 0.4);
-  border: 1px solid var(--border);
-  border-radius: 50px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(13, 17, 23, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   overflow: hidden;
-  height: 44px;
-  padding-right: 20px;
-  position: relative;
-  animation: fadeInUp 0.6s ease 0.2s both;
+  height: 50px;
+  z-index: 100;
+  animation: slideInUp 0.6s ease both;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 .ticker-label {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  /* Emergency Red for Breaking News */
   color: white;
   padding: 0 1.5rem;
   height: 100%;
   display: flex;
   align-items: center;
-  font-weight: 800;
-  font-size: 0.75rem;
+  font-weight: 900;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   white-space: nowrap;
   position: relative;
   z-index: 2;
-  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .ticker-label::after {
-  content: "";
-  position: absolute;
-  right: -10px;
-  top: 0;
-  border-left: 10px solid var(--accent-purple);
-  border-top: 22px solid transparent;
-  border-bottom: 22px solid transparent;
+  display: none;
+  /* Removed arrow for cleaner full bar look */
 }
 
 .ticker-content-wrapper {
@@ -693,8 +701,8 @@ h6 {
 .ticker-content {
   display: flex;
   white-space: nowrap;
-  padding-left: 20px;
-  animation: ticker-scroll 30s linear infinite;
+  padding-left: 2rem;
+  animation: ticker-scroll 40s linear infinite;
 }
 
 .ticker-content:hover {
@@ -742,12 +750,11 @@ h6 {
 /* ===== HERO ===== */
 .hero {
   position: relative;
-  min-height: 10vh;
-  /* Minimum height as requested */
+  min-height: 70vh;
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 5vh 0;
+  padding: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1151,10 +1158,11 @@ h6 {
 /* ===== GÜNÜN İPUCU (TIP) BUTTON & MODAL v4.13.0 ===== */
 .tip-trigger-wrapper {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: 64px;
+  /* Position above the ticker */
   left: 1.5rem;
-  z-index: 50;
-  pointer-events: auto;
+  z-index: 10;
+  animation: fadeInUp 0.6s ease 0.4s both;
 }
 
 /* Hide Tip Trigger on Mobile to prevent layout issues */

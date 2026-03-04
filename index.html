@@ -90,12 +90,6 @@
         <section class="hero" id="mainHero">
             <div class="hero-glow-effect"></div>
 
-            <div class="tip-trigger-wrapper">
-                <button class="btn-tip-trigger" onclick="openTipModal()">
-                    <span>💡</span> Günün İpucu
-                </button>
-            </div>
-
             <div class="container">
 
                 <div class="hero-content">
@@ -108,23 +102,26 @@
                         <span class="gradient-text">Bir Adım Önde Ol</span>
                     </h1>
                     <p class="site-slogan">Teknoloji, Oyun ve Uygulama Dünyasına Kapınız</p>
+                </div>
+            </div>
 
-                    <!-- NEWS TICKER -->
-                    <div class="news-ticker-container" id="newsTicker" style="display:none;">
-                        <div class="ticker-label">SON DAKİKA</div>
-                        <div class="ticker-content-wrapper">
-                            <div class="ticker-content" id="tickerItems">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
+            <!-- TIP TRIGGER (Repositioned above ticker) -->
+            <div class="tip-trigger-wrapper">
+                <button class="btn-tip-trigger" onclick="openTipModal()">
+                    <span>💡</span> Günün İpucu
+                </button>
+            </div>
 
-                    <div class="hero-buttons">
-                        <a href="teknoloji.html" class="btn-primary">🚀 Haberleri Keşfet</a>
-                        <a href="forum.html" class="btn-secondary">💬 Foruma Katıl</a>
+            <!-- NEWS TICKER (Full-width bar at the bottom) -->
+            <div class="news-ticker-container" id="newsTicker" style="display:none;">
+                <div class="ticker-label">SON DAKİKA</div>
+                <div class="ticker-content-wrapper">
+                    <div class="ticker-content" id="tickerItems">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
             </div>
+
             <div class="hero-visual" id="heroProjectGrid">
                 <!-- Projects injected by JS -->
             </div>

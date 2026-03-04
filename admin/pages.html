@@ -1268,6 +1268,32 @@
         }
 
 
+        function cleanAIJson(raw) {
+            if (!raw) return "";
+            let clean = raw.trim();
+            // Remove markdown format if AI included it
+            if (clean.startsWith('```json')) clean = clean.slice(7);
+            else if (clean.startsWith('```')) clean = clean.slice(3);
+            if (clean.endsWith('```')) clean = clean.slice(0, -3);
+            clean = clean.trim();
+
+            const startIdx = clean.indexOf('{');
+            const endIdx = clean.lastIndexOf('}');
+            if (startIdx === -1) return clean;
+
+            clean = clean.substring(startIdx, endIdx + 1);
+
+            // ESCAPE BAD CONTROL CHARACTERS: 
+            // JSON.parse fails if there are raw newlines, tabs etc. INSIDE string literals.
+            // This regex finds content inside double quotes and escapes special chars within them.
+            return clean.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, function (match, capture) {
+                return '"' + capture
+                    .replace(/\n/g, '\\n')
+                    .replace(/\r/g, '\\r')
+                    .replace(/\t/g, '\\t') + '"';
+            });
+        }
+
         async function processUrlFetch() {
             const url = document.getElementById('fetchUrlInput').value.trim();
             if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
@@ -1324,7 +1350,7 @@
                 const textForAi = (articleTag ? articleTag.innerText : doc.body.innerText).substring(0, 10000);
 
                 // STEP 2: AI Analysis
-                const prompt = `Aşağıdaki haber metnini AsiaConsole teknoloji portalı için profesyonel, kusursuz ve ilgi çekici bir makaleye dönüştür.\n---\n${textForAi}\n---\nAşağıdaki JSON formatında döndür:\n{"title": "Göz Alıcı Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Etkileyici kısa özet", "body": "HTML formatlı (<p>, <h2>, <ul> vb.) tam makale içeriği"}\nKurallar:\n1. Kusursuz bir Türkçe kullan.\n2. Makale sonuna mutlaka şu cümleyi ekle: "Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!"\n3. İçerik zengin ve detaylı olsun.\n4. Sadece JSON döndür.`;
+                const prompt = `Aşağıdaki haber metnini AsiaConsole teknoloji portalı için profesyonel, kusursuz ve ilgi çekici bir makaleye dönüştür.\n---\n${textForAi}\n---\nAşağıdaki JSON formatında döndür:\n{"title": "Göz Alıcı Başlık", "category": "teknoloji veya oyun veya uygulama", "desc": "Etkileyici kısa özet", "body": "HTML formatlı (<p>, <h2>, <ul> vb.) tam makale içeriği"}\nKurallar:\n1. Kusursuz bir Türkçe kullan.\n2. Makale sonuna mutlaka şu cümleyi ekle: "Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!"\n3. İçerik zengin ve detaylı olsun.\n4. Sadece JSON döndür. JSON içindeki metinlerde tırnak işaretlerini kaçır (\") ve yeni satırları \\n ile ifade et. Kesinlikle ham yeni satır kullanma.`;
 
                 const aiResult = await fetchAIAnalysis(prompt, settings);
 
@@ -1336,11 +1362,15 @@
 
                 // STEP 3: Parse and Load
                 setStepState(3, 'active', 'Makale hazırlanıyor...');
-                const startIdx = aiResult.data.indexOf('{');
-                const endIdx = aiResult.data.lastIndexOf('}');
-                if (startIdx === -1) throw new Error('Geçersiz AI yanıtı');
 
-                const articleData = JSON.parse(aiResult.data.substring(startIdx, endIdx + 1));
+                let articleData;
+                try {
+                    const cleanedJson = cleanAIJson(aiResult.data);
+                    articleData = JSON.parse(cleanedJson);
+                } catch (pe) {
+                    console.error('[FetchNews] JSON Parse Error:', pe, aiResult.data);
+                    throw new Error('AI yanıtı işlenemedi (Format Hatası). Lütfen tekrar deneyin.');
+                }
 
                 // Image Injection (Like Bot)
                 let enrichedBody = articleData.body;

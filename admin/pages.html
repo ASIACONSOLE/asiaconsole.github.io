@@ -701,9 +701,7 @@
                 const src = img.getAttribute('src');
                 const wrapper = doc.createElement('div');
                 wrapper.className = 'preview-img-wrapper';
-                wrapper.dataset.index = idx;
-                wrapper.dataset.src = src;
-                wrapper.onclick = (e) => handlePreviewImgClick(e, idx, src);
+                wrapper.setAttribute('onclick', 'handlePreviewImgClick(event)'); // Use attribute for persistence
 
                 img.parentNode.insertBefore(wrapper, img);
                 wrapper.appendChild(img);
@@ -711,8 +709,8 @@
                 const overlay = doc.createElement('div');
                 overlay.className = 'img-edit-overlay';
                 overlay.innerHTML = `
-                    <button class="topbar-btn" style="background:#ef4444;" onclick="removeImgFromPreview(event, '${src}')">🗑️ Sil</button>
-                    <button class="topbar-btn" onclick="changeImgInPreview(event, '${src}')">🔄 Değiştir</button>
+                    <button class="topbar-btn" style="background:#ef4444;" onclick="removeImgFromPreview(event, \`${src}\`)">🗑️ Sil</button>
+                    <button class="topbar-btn" onclick="changeImgInPreview(event, \`${src}\`)">🔄 Değiştir</button>
                 `;
                 wrapper.appendChild(overlay);
             });
@@ -722,7 +720,7 @@
             const previewHTML = `
                 <div class="preview-container" style="max-width:800px; margin:0 auto; font-family:'Inter', sans-serif;">
                     <div style="text-align:center; padding:0.75rem; background:linear-gradient(135deg,#f59e0b,#f97316); color:#000; font-weight:700; font-size:0.8rem; border-radius:8px; margin-bottom:2rem;">
-                        👁️ ETKİLEŞİMLİ ÖNİZLEME — Düzenlemek için öğelere tıklayın
+                        👁️ ETKİLEŞİMLİ ÖNİZLEME — Düzenlemek için resimlere tıklayın
                     </div>
                     ${cover ? `<img src="${cover}" style="width:100%; max-height:350px; object-fit:cover; border-radius:16px; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.1);">` : `<div style="width:100%; height:200px; border-radius:16px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; font-size:3rem; background:linear-gradient(135deg, ${catColors[category] || '#667eea'}, #764ba2);">📰</div>`}
                     <div style="display:inline-block; padding:0.2rem 0.7rem; border-radius:50px; font-size:0.75rem; font-weight:600; margin-bottom:1rem; background:rgba(79,142,247,0.15); color:${catColors[category] || '#4f8ef7'};">${catLabels[category] || category}</div>
@@ -742,36 +740,49 @@
             openModal('interactivePreviewModal');
         }
 
-        function handlePreviewImgClick(e, idx, src) {
+        window.handlePreviewImgClick = function (e) {
             e.stopPropagation();
             const wrapper = e.currentTarget;
             wrapper.classList.toggle('editing');
-        }
+        };
 
-        function removeImgFromPreview(e, src) {
+        window.removeImgFromPreview = function (e, src) {
             e.stopPropagation();
             if (!confirm('Bu resmi makaleden kaldırmak istediğinizden emin misiniz?')) return;
 
             const textarea = document.getElementById('artBody');
-            const body = textarea.value;
+            let body = textarea.value;
 
-            // Regex to find the img tag (or its div container if we added one)
-            // Note: Since we use simple string replacement, we need to be careful.
-            // A more robust way is to find the img tag with that specific src.
-            const imgRegex = new RegExp(`<img[^>]*src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'i');
-            const divImgRegex = new RegExp(`<div[^>]*>\\s*<img[^>]*src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>\\s*<\/div>`, 'i');
+            // Escape src for regex
+            const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-            let newBody = body.replace(divImgRegex, '');
-            if (newBody === body) newBody = body.replace(imgRegex, '');
+            // Remove img tag or its div/p wrapper
+            const regexes = [
+                new RegExp(`<div[^>]*>\\s*<img[^>]*src=["']${escapedSrc}["'][^>]*>\\s*<\/div>`, 'gi'),
+                new RegExp(`<p[^>]*>\\s*<img[^>]*src=["']${escapedSrc}["'][^>]*>\\s*<\/p>`, 'gi'),
+                new RegExp(`<img[^>]*src=["']${escapedSrc}["'][^>]*>`, 'gi')
+            ];
 
-            textarea.value = newBody;
+            let replaced = false;
+            for (let reg of regexes) {
+                if (reg.test(body)) {
+                    body = body.replace(reg, '');
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (!replaced) {
+                // Last ditch effort: simple string replace if regex failed
+                body = body.replace(src, '');
+            }
+
+            textarea.value = body;
             showAdminToast('Resim kaldırıldı. ✅', 'success');
-
-            // Refresh preview
             previewArticle();
-        }
+        };
 
-        function changeImgInPreview(e, oldSrc) {
+        window.changeImgInPreview = function (e, oldSrc) {
             e.stopPropagation();
             const newUrl = prompt("Yeni resim URL'sini girin:", oldSrc);
             if (!newUrl || newUrl === oldSrc) return;
@@ -779,15 +790,13 @@
             const textarea = document.getElementById('artBody');
             const body = textarea.value;
 
-            const oldSrcEscaped = oldSrc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const srcRegex = new RegExp(oldSrcEscaped, 'g');
+            const escapedOldSrc = oldSrc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const srcRegex = new RegExp(escapedOldSrc, 'g');
 
             textarea.value = body.replace(srcRegex, newUrl);
             showAdminToast('Resim güncellendi. ✅', 'success');
-
-            // Refresh preview
             previewArticle();
-        }
+        };
 
         // Rich Text Helper
         function insertTag(tag) {

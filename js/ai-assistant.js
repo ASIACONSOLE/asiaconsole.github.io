@@ -471,13 +471,14 @@ YAZIM KURALLARI:
 2. Sadece yazının gövde HTML'ini ver (<html>, <body>, <head> gibi kapsayıcı etiketler KULLANMA).
 3. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul>/<li> kullan.
 4. Yazı içine ASLA <img> resim etiketi EKLEME. Resimler sistem tarafından otomatik yerleştirilecek.
+5. ÖNEMLİ: Haberin içindeki video linklerini, ürün satın alma linklerini veya önemli kaynak bağlantılarını (<a> etiketlerini) mutlaka yazı içinde uygun yerlerde koru ve yeniden kullan.
 
 EDİTÖRYEL KALİTE:
 - İlk paragrafta okuyucuyu hemen yakalayan, merak uyandıran güçlü bir giriş yaz.
 - Haberin teknik detaylarını analiz et, sektörel bağlamı açıkla. Sadece "ne oldu" değil, "neden önemli" sorusunu yanıtla.
 - Alt başlıklar (<h2>) kullanarak haberi bölümlere ayır. Her bölüm kendi içinde tutarlı ve bilgi dolu olsun.
 - Teknik terimleri okuyucunun anlayacağı şekilde, ama kibirli olmadan açıkla.
-- Orijinal içerik çok kısaysa, kendi sektörel bilgini kullanarak haberi genişlet ve derinleştir.
+- Orijinal içerik HTML formatında olabilir, bu yapı içindeki önemli bilgileri ve bağlantıları yakala ve metni derinleştir.
 - Minimum 4-5 paragraf, ideal olarak 6-8 paragraf yaz. Haber kısa bile olsa detaylı analiz ekle.
 
 KRİTİK KURALLAR:

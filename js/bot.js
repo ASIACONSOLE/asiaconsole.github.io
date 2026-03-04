@@ -99,7 +99,12 @@ window.BotEngine = (function () {
         const commonAds = ['300x250', '728x90', '160x600', '300x600', '970x250', '320x50', '320x100'];
         if (commonAds.some(size => src.includes(size))) return false;
 
-        // 4. Deep Parent Checks (Traverse up 5 levels)
+        // 4. Lazy-load specific attribute check (Ensure we haven't missed it)
+        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset'];
+        const hasLazy = lazyAttrs.some(attr => img.hasAttribute(attr));
+        if (hasLazy && !src) return true; // It's likely a valid lazy image
+
+        // 5. Deep Parent Checks (Traverse up 5 levels)
         let parent = img.parentElement;
         for (let i = 0; i < 5 && parent; i++) {
             const pClass = (parent.className || '').toLowerCase();
@@ -112,7 +117,7 @@ window.BotEngine = (function () {
             parent = parent.parentElement;
         }
 
-        return src.startsWith('http') || src.startsWith('//') || src.startsWith('/');
+        return src.startsWith('http') || src.startsWith('//') || src.startsWith('/') || hasLazy;
     }
 
     function extractVideos(container) {
@@ -177,11 +182,11 @@ window.BotEngine = (function () {
 
                 return {
                     title: (post.title?.rendered || '').replace(/<[^>]*>/g, ''),
-                    content: parser.textContent || parser.innerText || '',
+                    content: post.content?.rendered || '', // Pass HTML to AI for better context
                     contentHtml: post.content?.rendered || '',
                     url: post.link,
                     image: coverImage,
-                    bodyImages: [...new Set(bodyImages)].slice(0, 5),
+                    bodyImages: [...new Set(bodyImages)].slice(0, 15), // Increased limit
                     videos: videos,
                     author: post._embedded?.author?.[0]?.name || 'Editör',
                     categories: post._embedded?.['wp:term']?.[0]?.map(t => t.name) || [],
@@ -228,10 +233,10 @@ window.BotEngine = (function () {
 
                         return {
                             title: item.title,
-                            content: extractor.textContent || extractor.innerText || '',
+                            content: htmlContent, // Pass HTML for links
                             url: item.link,
                             image: item.thumbnail || item.enclosure?.link || imgs[0] || '',
-                            bodyImages: [...new Set(imgs)].slice(0, 5),
+                            bodyImages: [...new Set(imgs)].slice(0, 15), // Increased limit
                             videos: videos,
                             author: item.author || 'Editör',
                             categories: item.categories || [],
@@ -333,15 +338,23 @@ window.BotEngine = (function () {
             doc.querySelector('.post-content') ||
             doc.querySelector('.entry-content') ||
             doc.querySelector('.article-content') ||
+            doc.querySelector('.td-post-content') ||
+            doc.querySelector('.entry-content-single') ||
             doc.querySelector('main');
 
         let bodyImages = [];
-        let content = "";
+        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset'];
 
         if (articleTag) {
             articleTag.querySelectorAll('img').forEach(img => {
                 if (isValidImage(img)) {
-                    let src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+                    let src = img.getAttribute('src');
+                    for (const attr of lazyAttrs) {
+                        if (!src || src.startsWith('data:image')) {
+                            src = img.getAttribute(attr);
+                        }
+                    }
+
                     if (src) {
                         if (src.startsWith('/')) src = baseObj.origin + src;
                         else if (src.startsWith('//')) src = 'https:' + src;
@@ -353,13 +366,32 @@ window.BotEngine = (function () {
             const vids = extractVideos(articleTag);
 
             const clone = articleTag.cloneNode(true);
-            const useless = clone.querySelectorAll('script, style, iframe, nav, header, footer, .ads, .sidebar, .social-share');
+            const useless = clone.querySelectorAll('script, style, iframe, nav, header, footer, .ads, .sidebar, .social-share, .comments');
             useless.forEach(s => s.remove());
-            const content = clone.innerText;
-            return { title, image, content, url, bodyImages: [...new Set(bodyImages)].slice(0, 3), videos: vids };
+
+            // Keep the HTML but clean it up for AI (remove classes/IDs to save tokens)
+            clone.querySelectorAll('*').forEach(el => {
+                el.removeAttribute('class');
+                el.removeAttribute('id');
+                el.removeAttribute('style');
+            });
+
+            return { title, image, content: clone.innerHTML, url, bodyImages: [...new Set(bodyImages)].slice(0, 15), videos: vids };
         } else {
-            const paragraphs = Array.from(doc.querySelectorAll('p')).map(p => p.innerText);
-            const content = paragraphs.filter(p => p.length > 50).join('\n\n');
+            // Fallback: try to find the container with most paragraphs
+            const containers = Array.from(doc.querySelectorAll('div, section, main'));
+            let bestContainer = null;
+            let maxP = 0;
+
+            containers.forEach(c => {
+                const pCount = c.querySelectorAll('p').length;
+                if (pCount > maxP) {
+                    maxP = pCount;
+                    bestContainer = c;
+                }
+            });
+
+            const content = bestContainer ? bestContainer.innerHTML : doc.body.innerHTML;
             return { title, image, content, url, bodyImages: [], videos: [] };
         }
     }

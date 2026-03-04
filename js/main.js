@@ -544,7 +544,7 @@ function applySettings() {
         ticker.id = 'announcementTicker';
         ticker.style.cssText = `background:${s.tickerBg || '#4f8ef7'}; color:${s.tickerColor || '#fff'}; padding:7px 0; font-size:0.84rem; font-weight:600; overflow:hidden; white-space:nowrap; position:relative; z-index:999;`;
         const inner = document.createElement('div');
-        inner.style.cssText = `display:inline-block; animation:tickerScroll ${speed}s linear infinite;`;
+        inner.style.cssText = `display:inline-block; animation:tickerScroll ${speed}s linear infinite; will-change: transform;`;
         const fullText = messages.join('  •  ') + '  •  ' + messages.join('  •  ');
         inner.textContent = fullText;
         ticker.appendChild(inner);
@@ -799,12 +799,12 @@ function renderHeroProjects() {
     `).join('');
 }
 
-// Auto-refresh hero projects every 30 seconds for banner effect
-setInterval(() => {
-    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+// Refresh hero projects only on data updates
+document.addEventListener('dbUpdated', (e) => {
+    if (e.detail.key === 'user_projects') {
         renderHeroProjects();
     }
-}, 30000);
+});
 
 // ---- NAVBAR ACTIVE STATE ----
 function setNavActive() {
@@ -879,19 +879,28 @@ function showToast(msg, type = 'info') {
 
 // ---- SCROLL ANIMATIONS ----
 function initScrollAnimations() {
+    // Add global styles for scroll animations once if they don't exist
+    if (!document.getElementById('scrollAnimStyles')) {
+        const style = document.createElement('style');
+        style.id = 'scrollAnimStyles';
+        style.textContent = `
+            .scroll-reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+            .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+        `;
+        document.head.appendChild(style);
+    }
+
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // Performance: stop observing once revealed
             }
         });
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.card, .forum-topic, .dash-stat').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        el.classList.add('scroll-reveal');
         observer.observe(el);
     });
 }

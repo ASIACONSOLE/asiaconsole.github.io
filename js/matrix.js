@@ -62,15 +62,28 @@
 
         let accentHex = getAccentColor();
         let rgb = hexToRgb(accentHex);
-        // Refresh color every 2 seconds in case it changes
-        setInterval(() => {
-            accentHex = getAccentColor();
-            rgb = hexToRgb(accentHex);
-        }, 2000);
 
-        function draw() {
-            // Fade trail
-            ctx.fillStyle = 'rgba(13, 17, 23, 0.05)';
+        // Refresh color only when it likely changes (e.g. after theme toggle)
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail.key === 'settings') {
+                accentHex = getAccentColor();
+                rgb = hexToRgb(accentHex);
+            }
+        });
+
+        const fps = 30;
+        const interval = 1000 / fps;
+        let lastTime = 0;
+
+        function draw(timestamp) {
+            requestAnimationFrame(draw);
+
+            const elapsed = timestamp - lastTime;
+            if (elapsed < interval) return;
+            lastTime = timestamp - (elapsed % interval);
+
+            // Fade trail - Slightly more opaque for better performance (less history needed)
+            ctx.fillStyle = 'rgba(13, 17, 23, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.font = fontSize + 'px monospace';
@@ -80,28 +93,18 @@
                 const x = i * fontSize;
                 const y = drops[i] * fontSize;
 
-                // Head of drop — bright white/accent
-                if (drops[i] * fontSize > 0) {
-                    ctx.fillStyle = `rgba(255, 255, 255, 0.9)`;
+                // Only draw the head and one trailing char for performance
+                // Head (Bright)
+                if (y > 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                     ctx.fillText(char, x, y);
                 }
 
-                // Body — accent color with fade
-                const bodyChar = charArr[Math.floor(Math.random() * charArr.length)];
-                if ((drops[i] - 1) * fontSize > 0) {
-                    const alpha = 0.6 + Math.random() * 0.3;
-                    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
-                    ctx.fillText(bodyChar, x, (drops[i] - 1) * fontSize);
-                }
-
-                // Dim older characters
-                for (let j = 2; j < 8; j++) {
-                    if ((drops[i] - j) * fontSize > 0) {
-                        const alpha = Math.max(0, 0.4 - j * 0.05);
-                        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
-                        const oldChar = charArr[Math.floor(Math.random() * charArr.length)];
-                        ctx.fillText(oldChar, x, (drops[i] - j) * fontSize);
-                    }
+                // Body (Accent)
+                const bodyY = (drops[i] - 1) * fontSize;
+                if (bodyY > 0) {
+                    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`;
+                    ctx.fillText(charArr[Math.floor(Math.random() * charArr.length)], x, bodyY);
                 }
 
                 // Reset drop randomly
@@ -112,8 +115,7 @@
             }
         }
 
-        // Run at ~30fps for performance
-        setInterval(draw, 33);
+        requestAnimationFrame(draw);
     }
 
     if (document.readyState === 'loading') {

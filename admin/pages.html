@@ -357,6 +357,24 @@
         </div>
     </div>
 
+    <!-- INTERACTIVE PREVIEW MODAL -->
+    <div class="modal-overlay" id="interactivePreviewModal" style="display:none; z-index:10001;">
+        <div class="modal" style="max-width:900px; width:95%; height:90vh; display:flex; flex-direction:column;">
+            <button class="modal-close" onclick="closeModal('interactivePreviewModal')">✕</button>
+            <div class="modal-title">👁️ Etkileşimli Önizleme</div>
+            <div id="previewArea"
+                style="flex:1; overflow-y:auto; padding:2rem; background:#0d1117; color:#e6edf3; border:1px solid var(--border); border-radius:12px;">
+                <!-- Content injected by JS -->
+            </div>
+            <div class="modal-footer">
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-right:auto;">💡 Resimlere tıklayarak
+                    silebilir veya değiştirebilirsiniz.</p>
+                <button class="topbar-btn secondary" onclick="closeModal('interactivePreviewModal')">Kapat</button>
+                <button class="topbar-btn" onclick="closeModal('interactivePreviewModal')">Tamam</button>
+            </div>
+        </div>
+    </div>
+
     <!-- PROFESSIONAL URL FETCH MODAL -->
     <div class="modal-overlay" id="fetchUrlModal" style="display:none;">
         <div class="modal fetch-modal">
@@ -602,6 +620,55 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Interactive Preview Styles */
+        .preview-img-wrapper {
+            position: relative;
+            display: block;
+            margin: 1.5rem 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .preview-img-wrapper:hover {
+            transform: scale(1.01);
+        }
+
+        .preview-img-wrapper::after {
+            content: "🖼️ Düzenlemek için Tıkla";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .preview-img-wrapper:hover::after {
+            opacity: 1;
+        }
+
+        .img-edit-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .preview-img-wrapper.editing .img-edit-overlay {
+            display: flex;
+        }
     </style>
 
     <script src="../js/firebase.js?v=3.2"></script>
@@ -626,48 +693,100 @@
             const catLabels = { teknoloji: '💻 Teknoloji', oyun: '🎮 Oyun', uygulama: '📱 Uygulama' };
             const catColors = { teknoloji: '#667eea', oyun: '#f093fb', uygulama: '#4facfe' };
 
-            const previewHTML = `<!DOCTYPE html>
-<html lang="tr"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Önizleme: ${title}</title>
-<link rel="stylesheet" href="../css/style.css">
-<style>
-  body { background: #0d1117; color: #e6edf3; font-family: 'Inter', sans-serif; padding: 2rem; }
-  .preview-banner { text-align:center; padding:0.75rem; background:linear-gradient(135deg,#f59e0b,#f97316); color:#000; font-weight:700; font-size:0.9rem; border-radius:8px; margin-bottom:2rem; }
-  .preview-cover { width:100%; max-height:400px; object-fit:cover; border-radius:16px; margin-bottom:2rem; border:1px solid rgba(255,255,255,0.1); }
-  .preview-cover-gradient { width:100%; height:250px; border-radius:16px; margin-bottom:2rem; display:flex; align-items:center; justify-content:center; font-size:4rem; }
-  .preview-badge { display:inline-block; padding:0.3rem 0.8rem; border-radius:50px; font-size:0.8rem; font-weight:600; margin-bottom:1rem; }
-  .preview-title { font-size:2.5rem; font-weight:800; line-height:1.2; margin-bottom:1rem; }
-  .preview-meta { display:flex; gap:1.5rem; color:#8b949e; font-size:0.85rem; margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); }
-  .preview-desc { font-size:1.1rem; color:#8b949e; margin-bottom:2rem; line-height:1.6; font-style:italic; }
-  .preview-body { font-size:1rem; line-height:1.8; color:#c9d1d9; }
-  .preview-body img { max-width:100%; border-radius:12px; margin:1.5rem 0; }
-  .preview-body h2 { font-size:1.5rem; margin:2rem 0 1rem; color:#e6edf3; }
-  .preview-body p { margin-bottom:1rem; }
-  .preview-container { max-width:800px; margin:0 auto; }
-</style></head><body>
-<div class="preview-container">
-  <div class="preview-banner">👁️ ÖNİZLEME MODU — Bu makale henüz yayınlanmamıştır</div>
-  ${cover ? '<img class="preview-cover" src="' + cover + '" alt="Kapak">' : '<div class="preview-cover-gradient" style="background:linear-gradient(135deg, ' + (catColors[category] || '#667eea') + ', #764ba2);">📰</div>'}
-  <div class="preview-badge" style="background:rgba(79,142,247,0.15); color:${catColors[category] || '#4f8ef7'};">${catLabels[category] || category}</div>
-  <h1 class="preview-title">${title}</h1>
-  <div class="preview-meta">
-    <span>👤 ${author}</span>
-    <span>📅 ${date}</span>
-    <span>👁️ 0</span>
-  </div>
-  ${desc ? '<p class="preview-desc">' + desc + '</p>' : ''}
-  <div class="preview-body">${body || '<p style="color:#6b7280;">İçerik henüz eklenmedi...</p>'}</div>
-</div>
-</body></html>`;
+            // Transform body to make images interactive
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(body || '<div></div>', 'text/html');
+            const imgs = doc.querySelectorAll('img');
+            imgs.forEach((img, idx) => {
+                const src = img.getAttribute('src');
+                const wrapper = doc.createElement('div');
+                wrapper.className = 'preview-img-wrapper';
+                wrapper.dataset.index = idx;
+                wrapper.dataset.src = src;
+                wrapper.onclick = (e) => handlePreviewImgClick(e, idx, src);
 
-            const win = window.open('', '_blank', 'width=900,height=700');
-            if (win) {
-                win.document.write(previewHTML);
-                win.document.close();
-            } else {
-                showAdminToast('Önizleme penceresi açılamadı. Popup engelleyiciyi devre dışı bırakın.', 'error');
-            }
+                img.parentNode.insertBefore(wrapper, img);
+                wrapper.appendChild(img);
+
+                const overlay = doc.createElement('div');
+                overlay.className = 'img-edit-overlay';
+                overlay.innerHTML = `
+                    <button class="topbar-btn" style="background:#ef4444;" onclick="removeImgFromPreview(event, '${src}')">🗑️ Sil</button>
+                    <button class="topbar-btn" onclick="changeImgInPreview(event, '${src}')">🔄 Değiştir</button>
+                `;
+                wrapper.appendChild(overlay);
+            });
+
+            const interactiveBody = doc.body.innerHTML;
+
+            const previewHTML = `
+                <div class="preview-container" style="max-width:800px; margin:0 auto; font-family:'Inter', sans-serif;">
+                    <div style="text-align:center; padding:0.75rem; background:linear-gradient(135deg,#f59e0b,#f97316); color:#000; font-weight:700; font-size:0.8rem; border-radius:8px; margin-bottom:2rem;">
+                        👁️ ETKİLEŞİMLİ ÖNİZLEME — Düzenlemek için öğelere tıklayın
+                    </div>
+                    ${cover ? `<img src="${cover}" style="width:100%; max-height:350px; object-fit:cover; border-radius:16px; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.1);">` : `<div style="width:100%; height:200px; border-radius:16px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; font-size:3rem; background:linear-gradient(135deg, ${catColors[category] || '#667eea'}, #764ba2);">📰</div>`}
+                    <div style="display:inline-block; padding:0.2rem 0.7rem; border-radius:50px; font-size:0.75rem; font-weight:600; margin-bottom:1rem; background:rgba(79,142,247,0.15); color:${catColors[category] || '#4f8ef7'};">${catLabels[category] || category}</div>
+                    <h1 style="font-size:2rem; font-weight:800; line-height:1.2; margin-bottom:1rem;">${title}</h1>
+                    <div style="display:flex; gap:1rem; color:#8b949e; font-size:0.8rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.08);">
+                        <span>👤 ${author}</span>
+                        <span>📅 ${date}</span>
+                    </div>
+                    ${desc ? `<p style="font-size:1rem; color:#8b949e; margin-bottom:2rem; line-height:1.6; font-style:italic;">${desc}</p>` : ''}
+                    <div class="preview-body-content" style="font-size:1rem; line-height:1.8; color:#c9d1d9;">
+                        ${interactiveBody || '<p style="color:#6b7280;">İçerik henüz eklenmedi...</p>'}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('previewArea').innerHTML = previewHTML;
+            openModal('interactivePreviewModal');
+        }
+
+        function handlePreviewImgClick(e, idx, src) {
+            e.stopPropagation();
+            const wrapper = e.currentTarget;
+            wrapper.classList.toggle('editing');
+        }
+
+        function removeImgFromPreview(e, src) {
+            e.stopPropagation();
+            if (!confirm('Bu resmi makaleden kaldırmak istediğinizden emin misiniz?')) return;
+
+            const textarea = document.getElementById('artBody');
+            const body = textarea.value;
+
+            // Regex to find the img tag (or its div container if we added one)
+            // Note: Since we use simple string replacement, we need to be careful.
+            // A more robust way is to find the img tag with that specific src.
+            const imgRegex = new RegExp(`<img[^>]*src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'i');
+            const divImgRegex = new RegExp(`<div[^>]*>\\s*<img[^>]*src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>\\s*<\/div>`, 'i');
+
+            let newBody = body.replace(divImgRegex, '');
+            if (newBody === body) newBody = body.replace(imgRegex, '');
+
+            textarea.value = newBody;
+            showAdminToast('Resim kaldırıldı. ✅', 'success');
+
+            // Refresh preview
+            previewArticle();
+        }
+
+        function changeImgInPreview(e, oldSrc) {
+            e.stopPropagation();
+            const newUrl = prompt("Yeni resim URL'sini girin:", oldSrc);
+            if (!newUrl || newUrl === oldSrc) return;
+
+            const textarea = document.getElementById('artBody');
+            const body = textarea.value;
+
+            const oldSrcEscaped = oldSrc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const srcRegex = new RegExp(oldSrcEscaped, 'g');
+
+            textarea.value = body.replace(srcRegex, newUrl);
+            showAdminToast('Resim güncellendi. ✅', 'success');
+
+            // Refresh preview
+            previewArticle();
         }
 
         // Rich Text Helper

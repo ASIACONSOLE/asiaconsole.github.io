@@ -43,24 +43,41 @@ window.BotEngine = (function () {
         terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
     }
 
-    // Proxy service to bypass CORS - Final Robust Version
-    async function fetchViaProxy(url) {
-        // 1. If it's a feed/RSS, use a specialized XML-to-JSON service
-        if (url.includes('/feed') || url.includes('.xml') || url.includes('rss')) {
+    // ==================== RSS-FIRST APPROACH ====================
+    // Many sites (like shiftdelete.net) have Cloudflare bot protection
+    // that blocks ALL CORS proxies. RSS feeds bypass this entirely.
+
+    // Try to fetch articles via RSS feed (primary method)
+    async function fetchViaRSS(baseUrl) {
+        // Common RSS feed URL patterns to try
+        const feedPaths = ['/feed', '/rss', '/feed.xml', '/rss.xml', '/atom.xml'];
+        const baseObj = new URL(baseUrl);
+        const origin = baseObj.origin;
+
+        for (const path of feedPaths) {
+            const feedUrl = origin + path;
             try {
-                const rssProxy = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+                logTerminal(`📡 RSS deneniyor: ${feedUrl}`);
+                const rssProxy = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
                 const response = await fetch(rssProxy);
                 const data = await response.json();
-                if (data.status === 'ok') {
-                    logTerminal("RSS verisi başarıyla çekildi.", "success");
-                    return data.items.map(item => `<a href="${item.link}">${item.title}</a>`).join('');
-                }
-            } catch (e) { }
-        }
 
+                if (data.status === 'ok' && data.items && data.items.length > 0) {
+                    logTerminal(`✅ RSS başarılı! ${data.items.length} makale bulundu.`, 'success');
+                    return data.items;
+                }
+            } catch (e) {
+                logTerminal(`RSS denemesi başarısız: ${feedUrl}`, 'warning');
+            }
+        }
+        return null;
+    }
+
+    // Proxy-based fetch (fallback for non-RSS sites)
+    async function fetchViaProxy(url) {
         const proxies = [
             async (u) => {
-                // Priority 1: Jina Reader (Best for bypassing bot-blocking)
+                // Jina Reader (Best for bypassing bot-blocking)
                 const res = await fetch(`https://r.jina.ai/${u}`, {
                     headers: {
                         'Accept': 'text/html',
@@ -71,19 +88,13 @@ window.BotEngine = (function () {
                 return await res.text();
             },
             async (u) => {
-                // Priority 2: Corsfix (raw URL after ?, NOT encoded)
+                // Corsfix
                 const res = await fetch(`https://proxy.corsfix.com/?${u}`);
                 if (!res.ok) throw new Error(`Corsfix Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Priority 3: Cloudflare CORS proxy worker (raw URL after ?)
-                const res = await fetch(`https://test.cors.workers.dev/?${u}`);
-                if (!res.ok) throw new Error(`CF Worker Error ${res.status}`);
-                return await res.text();
-            },
-            async (u) => {
-                // Priority 4: AllOrigins (uses url= param with encoding)
+                // AllOrigins
                 const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
                 if (!res.ok) throw new Error("AllOrigins failed");
                 return await res.text();
@@ -94,9 +105,8 @@ window.BotEngine = (function () {
             try {
                 const html = await proxyFn(url);
                 if (html && html.length > 300) {
-                    // Quick check for bot blocking pages (strict phrases to avoid false positives)
                     const lower = html.toLowerCase();
-                    if (lower.includes('sorry, you have been blocked') || lower.includes('access denied') || lower.includes('attention required! | cloudflare') || lower.includes('just a moment...')) {
+                    if (lower.includes('sorry, you have been blocked') || lower.includes('attention required! | cloudflare') || lower.includes('just a moment...')) {
                         continue;
                     }
                     return html;
@@ -104,11 +114,11 @@ window.BotEngine = (function () {
             } catch (err) { }
         }
 
-        logTerminal(`⚠️ '${url}' kaynağı şu an okunamıyor.`, 'error');
+        logTerminal(`⚠️ '${url}' kaynağı proxy ile okunamıyor.`, 'warning');
         return null;
     }
 
-    // Scrapes the main page to find article links
+    // Scrapes the main page to find article links (fallback when RSS fails)
     async function findLinksOnPage(html, baseUrl) {
         logTerminal("Bağlantılar ayrıştırılıyor...");
         const parser = new DOMParser();
@@ -123,19 +133,15 @@ window.BotEngine = (function () {
             let href = a.getAttribute('href');
             if (!href) return;
 
-            // Resolve relative URLs
             if (href.startsWith('/')) {
                 href = baseObj.origin + href;
             }
-            // Add if it belongs to the same domain and looks like an article (has multiple dashes)
             if (href.startsWith(baseObj.origin) && href.includes('-') && href.length > baseObj.origin.length + 10) {
-                // Strip queries/hashes
                 href = href.split('?')[0].split('#')[0];
                 foundUrls.add(href);
             }
         });
 
-        // Convert set to array, filter out already scraped ones
         const allLinks = Array.from(foundUrls);
         const newLinks = allLinks.filter(url => !scrapedUrls.includes(url));
 
@@ -268,8 +274,9 @@ window.BotEngine = (function () {
         logTerminal(`[BAŞARILI] '${finalTitle}' yayına alındı!`, 'success');
     }
 
+    // ==================== MAIN SCRAPE CYCLE ====================
     async function runScrapeCycle() {
-        const config = loadConfig(); // Get latest from UI even if running
+        const config = loadConfig();
         if (!config.baseUrl) {
             logTerminal('Hata: Hedef site URL adresi boş!', 'error');
             stopBot();
@@ -279,8 +286,83 @@ window.BotEngine = (function () {
         logTerminal('---------------------------------------');
         logTerminal(`🎯 Taramaya başlanıyor: ${config.baseUrl}`);
 
+        // ========== STRATEGY 1: RSS Feed (Primary - Cloudflare-proof) ==========
+        const rssItems = await fetchViaRSS(config.baseUrl);
+
+        if (rssItems && rssItems.length > 0) {
+            logTerminal(`📰 RSS ile ${rssItems.length} makale bulundu. RSS modu kullanılıyor.`, 'success');
+
+            // Filter out already scraped URLs
+            const newItems = rssItems.filter(item => !scrapedUrls.includes(item.link));
+
+            if (newItems.length === 0) {
+                logTerminal("Bu döngüde eklenecek yeni haber bulunamadı.", "warning");
+                return;
+            }
+
+            logTerminal(`🆕 ${newItems.length} yeni makale işlenecek.`, 'success');
+
+            // Process max 2 per cycle
+            const itemsToProcess = newItems.slice(0, 2);
+
+            for (const item of itemsToProcess) {
+                logTerminal(`📝 RSS Makale: ${item.title}`);
+
+                // RSS already provides content - build articleData from RSS
+                const articleData = {
+                    title: item.title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim(),
+                    content: item.content || item.description || '',
+                    url: item.link,
+                    image: item.thumbnail || item.enclosure?.link || '',
+                    bodyImages: [],
+                    author: item.author || 'Editör',
+                    categories: item.categories || []
+                };
+
+                // Strip HTML from content for AI processing
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = articleData.content;
+                articleData.content = tempDiv.textContent || tempDiv.innerText;
+
+                if (articleData.content.length < 100) {
+                    logTerminal(`⚠️ RSS içeriği kısa, atlanıyor: ${item.link}`, 'warning');
+                    scrapedUrls.push(item.link);
+                    DB.set('scraped_urls', scrapedUrls);
+                    continue;
+                }
+
+                try {
+                    logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
+                    const rewrittenHtml = await AIAssistant.rewriteArticle(articleData, (msg) => {
+                        if (msg.includes("API")) logTerminal(msg, "info");
+                    });
+
+                    let finalHtml = rewrittenHtml.trim();
+                    if (finalHtml.startsWith("```html")) finalHtml = finalHtml.substring(7);
+                    if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
+                    if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
+
+                    publishArticle(finalHtml, articleData, config.category);
+
+                    scrapedUrls.push(item.link);
+                    DB.set('scraped_urls', scrapedUrls);
+
+                } catch (err) {
+                    logTerminal(`❌ AI İşleme Hatası: ${err.message}`, 'error');
+                }
+
+                await new Promise(r => setTimeout(r, 2000));
+            }
+
+            logTerminal('Tüm yeni içerikler işlendi. Bekleme moduna dönülüyor.', 'info');
+            return;
+        }
+
+        // ========== STRATEGY 2: Proxy Scraping (Fallback for non-RSS sites) ==========
+        logTerminal('⚠️ RSS bulunamadı, proxy ile HTML tarama deneniyor...', 'warning');
+
         const html = await fetchViaProxy(config.baseUrl);
-        if (!html) return; // Error already logged
+        if (!html) return;
 
         const newLinks = await findLinksOnPage(html, config.baseUrl);
         if (newLinks.length === 0) {
@@ -288,7 +370,6 @@ window.BotEngine = (function () {
             return;
         }
 
-        // To avoid spamming APIs and taking too long, let's process max 2 articles per cycle
         const linksToProcess = newLinks.slice(0, 2);
 
         for (const link of linksToProcess) {
@@ -299,32 +380,27 @@ window.BotEngine = (function () {
                 const articleData = await extractArticleData(articleHtml, link);
 
                 if (articleData.title && articleData.content && articleData.content.length > 200) {
-                    // CRITICAL: Check for "Blocked" or "Cloudflare" messages in the content
                     const lowerContent = articleData.content.toLowerCase();
-                    if (lowerContent.includes("sorry, you have been blocked") || lowerContent.includes("cloudflare") || articleData.title.toLowerCase().includes("blocked")) {
-                        logTerminal(`⚠️ İçerik engellenmiş (Blocked/Cloudflare), atlanıyor: ${link}`, 'warning');
+                    if (lowerContent.includes("sorry, you have been blocked") || articleData.title.toLowerCase().includes("blocked")) {
+                        logTerminal(`⚠️ İçerik engellenmiş, atlanıyor: ${link}`, 'warning');
                         scrapedUrls.push(link);
                         DB.set('scraped_urls', scrapedUrls);
                         continue;
                     }
 
                     try {
-                        // Pass to AI
                         logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
                         const rewrittenHtml = await AIAssistant.rewriteArticle(articleData, (msg) => {
                             if (msg.includes("API")) logTerminal(msg, "info");
                         });
 
-                        // Clean AI output block ticks if any
                         let finalHtml = rewrittenHtml.trim();
                         if (finalHtml.startsWith("```html")) finalHtml = finalHtml.substring(7);
                         if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
                         if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
 
-                        // Publish
                         publishArticle(finalHtml, articleData, config.category);
 
-                        // Save url as scraped so we don't do it again
                         scrapedUrls.push(link);
                         DB.set('scraped_urls', scrapedUrls);
 
@@ -332,14 +408,12 @@ window.BotEngine = (function () {
                         logTerminal(`❌ AI İşleme Hatası: ${err.message}`, 'error');
                     }
                 } else {
-                    // Mark as scraped anyway so we don't retry invalid content
-                    logTerminal(`⚠️ Makale içeriği yetersiz veya bulunamadı, atlanıyor.`, 'warning');
+                    logTerminal(`⚠️ Makale içeriği yetersiz, atlanıyor.`, 'warning');
                     scrapedUrls.push(link);
                     DB.set('scraped_urls', scrapedUrls);
                 }
             }
 
-            // Add a small delay between processing multiple to prevent rate limits
             await new Promise(r => setTimeout(r, 2000));
         }
 

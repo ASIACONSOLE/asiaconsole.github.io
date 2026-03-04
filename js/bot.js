@@ -64,39 +64,69 @@ window.BotEngine = (function () {
 
     // ==================== HELPERS: MEDIA FILTERING & EXTRACTION ====================
 
+    // Helper: Extract the best possible image URL from an <img> element
+    function getBestImageSrc(img) {
+        if (!img) return '';
+        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-src-webp', 'srcset', 'data-srcset', 'data-lazy'];
+
+        // 1. Check <picture> parent
+        const picture = img.closest('picture');
+        if (picture) {
+            const source = picture.querySelector('source');
+            if (source) {
+                const srcset = source.getAttribute('srcset');
+                if (srcset) {
+                    const url = srcset.split(',').pop().trim().split(' ')[0];
+                    if (url && !url.startsWith('data:')) return url;
+                }
+            }
+        }
+
+        // 2. Try lazy-load attributes (prefer these, they usually have the real URL)
+        for (const attr of lazyAttrs) {
+            const val = img.getAttribute(attr);
+            if (val && !val.startsWith('data:image')) {
+                // Handle srcset format: "url1 300w, url2 600w"
+                const url = val.split(',').pop().trim().split(' ')[0];
+                if (url && url.length > 10) return url;
+            }
+        }
+
+        // 3. Fallback to src
+        const src = img.getAttribute('src');
+        if (src && !src.startsWith('data:image') && src.length > 10) return src;
+
+        return '';
+    }
+
     function isValidImage(img) {
         if (!img) return false;
-        const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || img.getAttribute('srcset') || '';
-        const alt = (img.getAttribute('alt') || '').toLowerCase();
+        const src = getBestImageSrc(img);
         const className = (img.className || '').toLowerCase();
         const id = (img.id || '').toLowerCase();
 
-        // 1. URL Blacklist (Removed 'tanitim' and 'promo' as they can be valid news images)
+        if (!src || src.length < 10) return false;
+
+        // 1. URL Blacklist
         const blacklist = [
             'ads', 'advert', 'banner', 'reklam', 'coupon', 'gift', 'pixel', 'tracking',
             'social', 'button', 'icon', 'sponsor', 'click', 'redirect', 'taboola', 'outbrain', 'doubleclick',
             'amazon', 'adnxs', 'openx', 'pubmatic', 'criteo', 'smartadserver', 'zemanta', 'triplelift',
-            'nativo', 'revcontent', 'sharethrough', 'affiliate', 'widget', 'sidebar', 'footer', 'header',
-            'nav', 'menu', 'popup', 'modal', 'sharing', 'author-box', 'recommend'
+            'nativo', 'revcontent', 'sharethrough', 'affiliate', 'widget', 'popup', 'modal'
         ];
         if (blacklist.some(word => src.toLowerCase().includes(word))) return false;
 
-        // 2. Class Name & ID Blacklist
-        const containerLabels = ['ad-', 'sidebar', 'footer', 'nav-', 'widget', 'social-', 'related', 'popup'];
+        // 2. Class Name & ID Blacklist (more specific)
+        const containerLabels = ['ad-', 'sidebar', 'footer', 'nav-', 'widget', 'social-', 'popup'];
         if (containerLabels.some(word => className.includes(word) || id.includes(word))) return false;
 
-        // 3. Dimension Heuristics (Relaxed: allow 0 if lazy or probable content)
-        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset', 'data-lazy', 'data-src-webp', 'srcset'];
-        const hasLazy = lazyAttrs.some(attr => img.hasAttribute(attr));
+        // 3. Dimension Heuristics
+        const width = parseInt(img.getAttribute('width') || '0', 10);
+        const height = parseInt(img.getAttribute('height') || '0', 10);
+        if (width > 0 && width < 50) return false;
+        if (height > 0 && height < 50) return false;
 
-        const width = parseInt(img.getAttribute('width') || img.naturalWidth || '0', 10);
-        const height = parseInt(img.getAttribute('height') || img.naturalHeight || '0', 10);
-
-        // If it looks like a tracker/icon, reject. If 0 but has lazy/content indicators, accept.
-        if (!hasLazy && width > 0 && width < 100) return false;
-        if (!hasLazy && height > 0 && height < 100) return false;
-
-        return src.length > 5;
+        return true;
     }
 
     function extractVideos(container) {
@@ -152,8 +182,12 @@ window.BotEngine = (function () {
                 const bodyImages = [];
                 parser.querySelectorAll('img').forEach(img => {
                     if (isValidImage(img)) {
-                        const src = img.getAttribute('src') || img.getAttribute('data-src');
-                        if (src) bodyImages.push(src);
+                        let src = getBestImageSrc(img);
+                        if (src) {
+                            if (src.startsWith('/')) src = baseObj.origin + src;
+                            else if (src.startsWith('//')) src = 'https:' + src;
+                            bodyImages.push(src);
+                        }
                     }
                 });
 
@@ -203,7 +237,7 @@ window.BotEngine = (function () {
                         const imgs = [];
                         extractor.querySelectorAll('img').forEach(img => {
                             if (isValidImage(img)) {
-                                const src = img.getAttribute('src') || img.getAttribute('data-src');
+                                const src = getBestImageSrc(img);
                                 if (src) imgs.push(src);
                             }
                         });
@@ -329,47 +363,20 @@ window.BotEngine = (function () {
             doc.querySelector('main');
 
         let bodyImages = [];
-        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset', 'data-lazy', 'data-src-webp', 'srcset'];
 
         if (articleTag) {
             articleTag.querySelectorAll('img').forEach(img => {
                 if (isValidImage(img)) {
-                    let src = '';
-
-                    // 1. Check if it's inside a <picture> tag
-                    const picture = img.closest('picture');
-                    if (picture) {
-                        const source = picture.querySelector('source');
-                        if (source) {
-                            const srcset = source.getAttribute('srcset');
-                            if (srcset) {
-                                src = srcset.split(' ')[0].split(',')[0]; // Get first real URL
-                            }
-                        }
-                    }
-
-                    // 2. Try lazy attributes
-                    if (!src) {
-                        for (const attr of lazyAttrs) {
-                            const val = img.getAttribute(attr);
-                            if (val && !val.startsWith('data:image')) {
-                                src = val;
-                                break;
-                            }
-                        }
-                    }
-
-                    // 3. Fallback to src
-                    if (!src) src = img.getAttribute('src');
-
+                    let src = getBestImageSrc(img);
                     if (src && !src.startsWith('data:image')) {
-                        if (src.includes(' ')) src = src.trim().split(' ')[0]; // Handle srcset formats
+                        if (src.includes(' ')) src = src.trim().split(' ')[0];
                         if (src.startsWith('/')) src = baseObj.origin + src;
                         else if (src.startsWith('//')) src = 'https:' + src;
                         bodyImages.push(src);
                     }
                 }
             });
+
             logTerminal(`Makale gövdesinde ${bodyImages.length} adet geçerli resim bulundu.`, bodyImages.length > 0 ? 'success' : 'warning');
 
             const vids = extractVideos(articleTag);
@@ -490,6 +497,29 @@ window.BotEngine = (function () {
                 enrichedHtml = finalHtml;
             }
         }
+
+        // 4. CLEANUP: Replace any remaining [RESiM-X] placeholders with cover image or remove them
+        const remainingPlaceholders = enrichedHtml.match(/\[RESiM-\d+\]/g);
+        if (remainingPlaceholders && remainingPlaceholders.length > 0) {
+            logTerminal(`⚠️ ${remainingPlaceholders.length} adet [RESiM] yer tutucusu değiştirilemedi, kapak resmi ile doldurulacak.`, 'warning');
+            const fallbackImg = originalData.image || '';
+            remainingPlaceholders.forEach(ph => {
+                if (fallbackImg) {
+                    const imgHtml = `
+                        <div class="article-body-img" style="margin: 2.5rem 0; text-align: center;">
+                            <img src="${fallbackImg}" style="max-width:100%; height:auto; border-radius:16px; border:1px solid var(--border); box-shadow: 0 15px 45px rgba(0,0,0,0.3);">
+                        </div>
+                    `;
+                    enrichedHtml = enrichedHtml.split(ph).join(imgHtml);
+                } else {
+                    // No cover image either — remove the placeholder text entirely
+                    enrichedHtml = enrichedHtml.split(ph).join('');
+                }
+            });
+        }
+
+        // 5. CLEANUP: Remove any remaining [ViDEO-X] placeholders
+        enrichedHtml = enrichedHtml.replace(/\[ViDEO-\d+\]/g, '');
 
         // Use a short text snippet for description
         const tempDiv = document.createElement('div');

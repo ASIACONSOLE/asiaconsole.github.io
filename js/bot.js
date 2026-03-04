@@ -498,24 +498,46 @@ window.BotEngine = (function () {
             }
         }
 
-        // 4. CLEANUP: Replace any remaining [RESiM-X] placeholders with cover image or remove them
+        // 4. CLEANUP: Smart placeholder handling
         const remainingPlaceholders = enrichedHtml.match(/\[RESiM-\d+\]/g);
         if (remainingPlaceholders && remainingPlaceholders.length > 0) {
-            logTerminal(`⚠️ ${remainingPlaceholders.length} adet [RESiM] yer tutucusu değiştirilemedi, kapak resmi ile doldurulacak.`, 'warning');
             const fallbackImg = originalData.image || '';
+            let coverUsed = false;
+
             remainingPlaceholders.forEach(ph => {
-                if (fallbackImg) {
+                if (fallbackImg && !coverUsed) {
+                    // Use cover image only ONCE for the first unresolved placeholder
                     const imgHtml = `
                         <div class="article-body-img" style="margin: 2.5rem 0; text-align: center;">
                             <img src="${fallbackImg}" style="max-width:100%; height:auto; border-radius:16px; border:1px solid var(--border); box-shadow: 0 15px 45px rgba(0,0,0,0.3);">
                         </div>
                     `;
                     enrichedHtml = enrichedHtml.split(ph).join(imgHtml);
+                    coverUsed = true;
+                    logTerminal(`📸 Kapak resmi 1 kez yerleştirildi.`, 'info');
                 } else {
-                    // No cover image either — remove the placeholder text entirely
+                    // Remove all other placeholders silently
                     enrichedHtml = enrichedHtml.split(ph).join('');
                 }
             });
+
+            // If no cover image at all, try Unsplash stock photo based on title
+            if (!fallbackImg && originalData.title) {
+                const keywords = originalData.title.split(' ').slice(0, 3).join(' ');
+                const unsplashUrl = `https://source.unsplash.com/800x450/?${encodeURIComponent(keywords)},technology`;
+                const stockHtml = `
+                    <div class="article-body-img" style="margin: 2.5rem 0; text-align: center;">
+                        <img src="${unsplashUrl}" alt="${originalData.title}" 
+                             style="max-width:100%; height:auto; border-radius:16px; border:1px solid var(--border); box-shadow: 0 15px 45px rgba(0,0,0,0.3);">
+                    </div>
+                `;
+                // Insert stock image after the first paragraph
+                const firstPEnd = enrichedHtml.indexOf('</p>');
+                if (firstPEnd !== -1) {
+                    enrichedHtml = enrichedHtml.slice(0, firstPEnd + 4) + stockHtml + enrichedHtml.slice(firstPEnd + 4);
+                    logTerminal(`🌄 Haber ile ilgili stok fotoğraf eklendi (Unsplash).`, 'info');
+                }
+            }
         }
 
         // 5. CLEANUP: Remove any remaining [ViDEO-X] placeholders

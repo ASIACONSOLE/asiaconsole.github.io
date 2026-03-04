@@ -71,7 +71,14 @@ window.BotEngine = (function () {
         const className = (img.className || '').toLowerCase();
 
         // 1. URL Blacklist (Common ad/social signatures)
-        const blacklist = ['ads', 'advert', 'banner', 'reklam', 'tanitim', 'promo', 'coupon', 'gift', 'pixel', 'tracking', 'social', 'button', 'icon', 'avatar', 'logo', 'gravatar', '1x1', 'spinner', 'loader'];
+        const blacklist = [
+            'ads', 'advert', 'banner', 'reklam', 'tanitim', 'promo', 'coupon', 'gift', 'pixel', 'tracking',
+            'social', 'button', 'icon', 'avatar', 'logo', 'gravatar', '1x1', 'spinner', 'loader',
+            'sponsor', 'click', 'redirect', 'taboola', 'outbrain', 'doubleclick', 'googleads',
+            'amazon-adsystem', 'adnxs', 'openx', 'rubicon', 'pubmatic', 'criteo', 'smartad',
+            'adform', 'zemanta', 'triplelift', 'nativo', 'revcontent', 'sharethrough', 'partner',
+            'affiliate', 'widget', 'sidebar', 'footer', 'header', 'nav', 'menu', 'popup', 'modal'
+        ];
         if (blacklist.some(word => src.toLowerCase().includes(word))) return false;
 
         // 2. Alt Text Blacklist

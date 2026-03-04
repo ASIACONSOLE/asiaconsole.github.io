@@ -108,6 +108,17 @@
                         <span class="gradient-text">Bir Adım Önde Ol</span>
                     </h1>
                     <p class="site-slogan">Teknoloji, Oyun ve Uygulama Dünyasına Kapınız</p>
+
+                    <!-- NEWS TICKER -->
+                    <div class="news-ticker-container" id="newsTicker" style="display:none;">
+                        <div class="ticker-label">SON DAKİKA</div>
+                        <div class="ticker-content-wrapper">
+                            <div class="ticker-content" id="tickerItems">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="hero-buttons">
                         <a href="teknoloji.html" class="btn-primary">🚀 Haberleri Keşfet</a>
                         <a href="forum.html" class="btn-secondary">💬 Foruma Katıl</a>
@@ -301,6 +312,26 @@
             if (elGame) elGame.textContent = gameCount + ' makale';
             if (elApp) elApp.textContent = appCount + ' makale';
             if (elForum) elForum.textContent = forumPosts.length + ' konu';
+
+            // News Ticker Logic
+            const tickerContainer = document.getElementById('newsTicker');
+            const tickerContent = document.getElementById('tickerItems');
+            if (tickerContainer && tickerContent) {
+                const latestArticles = articles.slice(0, 5);
+                if (latestArticles.length > 0) {
+                    tickerContainer.style.display = 'flex';
+                    // Duplicate for seamless scroll
+                    const tickerHTML = latestArticles.map(a => `
+                        <a href="makale-detay.html?id=${a.id}" class="ticker-item">
+                            <span class="dot"></span>
+                            ${a.title}
+                        </a>
+                    `).join('');
+                    tickerContent.innerHTML = tickerHTML + tickerHTML;
+                } else {
+                    tickerContainer.style.display = 'none';
+                }
+            }
 
             // News Feed (Combined Articles & Projects)
             const catMap = { teknoloji: 'badge-tech', oyun: 'badge-game', uygulama: 'badge-app' };

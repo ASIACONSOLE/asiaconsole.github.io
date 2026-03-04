@@ -233,12 +233,19 @@
                                 modun çalışması için bu sayfanın tarayıcıda açık kalması gerekir.</div>
 
                             <div
-                                style="display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+                                style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
                                 <button id="btnStartBot" class="topbar-btn"
-                                    style="background:#10b981; width:100%; justify-content:center; font-size:1rem; padding:0.8rem;">▶️
-                                    Otonom Botu Başlat</button>
+                                    style="background:#10b981; flex:1.5; justify-content:center; font-size:1rem; padding:0.8rem;">▶️
+                                    Başlat</button>
+                                <button id="btnSaveConfig" class="topbar-btn secondary"
+                                    onclick="BotEngine.saveConfigWithToast()"
+                                    style="background:var(--bg-glass); flex:1; justify-content:center; font-size:0.9rem; padding:0.8rem;">💾
+                                    Kaydet</button>
+                                <button id="btnResetBot" class="topbar-btn secondary" onclick="BotEngine.resetBotData()"
+                                    style="background:var(--bg-glass); flex:1; justify-content:center; font-size:0.9rem; padding:0.8rem; color:#ef4444;">🧹
+                                    Sıfırla</button>
                                 <button id="btnStopBot" class="topbar-btn secondary"
-                                    style="background:#ef4444; color:white; border:none; display:none; width:100%; justify-content:center; font-size:1rem; padding:0.8rem;">⏹️
+                                    style="background:#ef4444; color:white; border:none; display:none; flex:1.5; justify-content:center; font-size:1rem; padding:0.8rem;">⏹️
                                     Durdur</button>
                             </div>
                         </div>
@@ -269,11 +276,11 @@
     <!-- Modals and Scripts -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="../js/firebase.js"></script>
-    <script src="../js/main.js"></script>
-    <script src="../js/ai-assistant.js"></script>
-    <script src="../js/admin.js"></script>
-    <script src="../js/bot.js"></script>
+    <script src="../js/firebase.js?v=3.2"></script>
+    <script src="../js/main.js?v=3.2"></script>
+    <script src="../js/ai-assistant.js?v=3.2"></script>
+    <script src="../js/admin.js?v=3.2"></script>
+    <script src="../js/bot.js?v=3.2"></script>
 </body>
 
 </html>

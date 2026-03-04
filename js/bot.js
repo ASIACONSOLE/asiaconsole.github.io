@@ -556,13 +556,37 @@ window.BotEngine = (function () {
         if (term) term.innerHTML = '<div><span class="log-info">Sistem:</span> Ekran temizlendi.</div>';
     }
 
+    function resetBotData() {
+        if (!confirm('Botun taranmış URL hafızasını ve ayarlarını sıfırlamak istediğinize emin misiniz?')) return;
+
+        DB.delete('bot_config');
+        DB.delete('bot_scraped_urls');
+        logTerminal(`[SIFIRLANDI] Bot hafızası ve ayarları temizlendi. Sayfayı yenileyin.`, 'warning');
+
+        setTimeout(() => location.reload(), 1500);
+    }
+
     // Expose public API
-    return {
+    const exports = {
         init,
         startBot,
         stopBot,
-        clearLogs
+        saveConfig,
+        saveConfigWithToast: function () {
+            saveConfig();
+            if (typeof showAdminToast === 'function') {
+                showAdminToast('✅ Bot ayarları kaydedildi!', 'success');
+            } else {
+                alert('Ayarlar kaydedildi!');
+            }
+        },
+        loadConfig,
+        clearLogs,
+        resetBotData
     };
+
+    window.BotEngine = exports;
+    return exports;
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -570,8 +594,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('botTerminal')) {
         BotEngine.init();
 
-        document.getElementById('btnStartBot').addEventListener('click', BotEngine.startBot);
-        document.getElementById('btnStopBot').addEventListener('click', BotEngine.stopBot);
+        document.getElementById('btnStartBot').addEventListener('click', () => BotEngine.startBot());
+        document.getElementById('btnStopBot').addEventListener('click', () => BotEngine.stopBot());
 
         // Expose clear function for the inline onclick in html
         window.clearLogs = BotEngine.clearLogs;

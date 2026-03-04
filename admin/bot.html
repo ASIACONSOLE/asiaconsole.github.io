@@ -149,40 +149,88 @@
                         <div style="padding: 1.5rem;">
                             <p
                                 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">
-                                Bu bot, hedef sitenin ana sayfasını tarayarak yeni çıkan haberleri bulur, kapak
-                                resimlerini çeker ve içeriği <span
+                                Bu bot, hedef sitelerin <strong>WordPress REST API</strong> veya <strong>RSS</strong>
+                                beslemelerini tarayarak
+                                yeni haberleri çeker, kapak resimlerini ve gövde resimlerini alır, <span
                                     style="color:var(--accent-blue); font-weight:600;">Gemini/Groq</span> yapay zekasına
                                 yeniden yazdırarak sitenize özgün makaleler halinde ekler.
                             </p>
 
-                            <div class="form-group">
-                                <label>Hedef Site URL (Haber Kaynağı)</label>
-                                <input type="text" id="botBaseUrl" placeholder="Örn: https://shiftdelete.net"
-                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
+                            <div
+                                style="font-size:0.8rem; color:var(--accent-blue); font-weight:600; margin-bottom:0.75rem;">
+                                📡 Haber Kaynakları (1-4 Arası)</div>
+
+                            <div id="sourcesContainer" style="display:flex; flex-direction:column; gap:0.75rem;">
+                                <div class="source-row" style="display:flex; gap:0.5rem; align-items:center;">
+                                    <span style="color:#10b981; font-weight:700; min-width:18px;">1</span>
+                                    <input type="text" id="botUrl1" placeholder="https://shiftdelete.net"
+                                        style="flex:2; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                    <select id="botCat1"
+                                        style="flex:0.8; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                        <option value="teknoloji">💻 Teknoloji</option>
+                                        <option value="oyun">🎮 Oyun</option>
+                                        <option value="uygulama">📱 Uygulama</option>
+                                    </select>
+                                </div>
+                                <div class="source-row" style="display:flex; gap:0.5rem; align-items:center;">
+                                    <span style="color:#3b82f6; font-weight:700; min-width:18px;">2</span>
+                                    <input type="text" id="botUrl2" placeholder="https://webtekno.com"
+                                        style="flex:2; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                    <select id="botCat2"
+                                        style="flex:0.8; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                        <option value="teknoloji">💻 Teknoloji</option>
+                                        <option value="oyun">🎮 Oyun</option>
+                                        <option value="uygulama">📱 Uygulama</option>
+                                    </select>
+                                </div>
+                                <div class="source-row" style="display:flex; gap:0.5rem; align-items:center;">
+                                    <span style="color:#f59e0b; font-weight:700; min-width:18px;">3</span>
+                                    <input type="text" id="botUrl3" placeholder="https://technopat.net"
+                                        style="flex:2; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                    <select id="botCat3"
+                                        style="flex:0.8; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                        <option value="teknoloji">💻 Teknoloji</option>
+                                        <option value="oyun">🎮 Oyun</option>
+                                        <option value="uygulama">📱 Uygulama</option>
+                                    </select>
+                                </div>
+                                <div class="source-row" style="display:flex; gap:0.5rem; align-items:center;">
+                                    <span style="color:#ef4444; font-weight:700; min-width:18px;">4</span>
+                                    <input type="text" id="botUrl4" placeholder="https://donanimhaber.com"
+                                        style="flex:2; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                    <select id="botCat4"
+                                        style="flex:0.8; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                        <option value="teknoloji">💻 Teknoloji</option>
+                                        <option value="oyun">🎮 Oyun</option>
+                                        <option value="uygulama">📱 Uygulama</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div class="form-group" style="margin-top:1rem;">
-                                <label>Yayınlanacağı Kategori</label>
-                                <select id="botCategory"
-                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
-                                    <option value="teknoloji">💻 Teknoloji</option>
-                                    <option value="oyun">🎮 Oyun</option>
-                                    <option value="uygulama">📱 Uygulama</option>
-                                </select>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-top:1.25rem;">
+                                <div class="form-group">
+                                    <label>Tarama Sıklığı</label>
+                                    <select id="botInterval"
+                                        style="width:100%; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                        <option value="5">Her 5 dk</option>
+                                        <option value="15" selected>Her 15 dk</option>
+                                        <option value="30">Her 30 dk</option>
+                                        <option value="60">Saat başı</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Haber Paylaşım Aralığı</label>
+                                    <select id="botPublishDelay"
+                                        style="width:100%; padding:0.6rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white; font-size:0.85rem;">
+                                        <option value="30">30 saniye</option>
+                                        <option value="60" selected>1 dakika</option>
+                                        <option value="120">2 dakika</option>
+                                        <option value="300">5 dakika</option>
+                                    </select>
+                                </div>
                             </div>
-
-                            <div class="form-group" style="margin-top:1rem;">
-                                <label>Çalışma Sıklığı (Zamanlayıcı)</label>
-                                <select id="botInterval"
-                                    style="width:100%; padding:0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; color:white;">
-                                    <option value="5">Her 5 Dakikada Bir</option>
-                                    <option value="15" selected>Her 15 Dakikada Bir</option>
-                                    <option value="30">Her 30 Dakikada Bir</option>
-                                    <option value="60">Her Saat Başı</option>
-                                </select>
-                                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Not: Otonom
-                                    modun çalışması için bu sayfanın tarayıcıda açık kalması gerekir.</div>
-                            </div>
+                            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.4rem;">Not: Otonom
+                                modun çalışması için bu sayfanın tarayıcıda açık kalması gerekir.</div>
 
                             <div
                                 style="display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">

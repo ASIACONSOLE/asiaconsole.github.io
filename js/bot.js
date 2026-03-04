@@ -16,17 +16,36 @@ window.BotEngine = (function () {
 
     function loadConfig() {
         const config = DB.get('bot_config') || {};
-        if (config.baseUrl) document.getElementById('botBaseUrl').value = config.baseUrl;
-        if (config.category) document.getElementById('botCategory').value = config.category;
+        // Load 4 source URLs and categories
+        for (let i = 1; i <= 4; i++) {
+            const urlEl = document.getElementById(`botUrl${i}`);
+            const catEl = document.getElementById(`botCat${i}`);
+            if (urlEl && config.sources && config.sources[i - 1]) {
+                urlEl.value = config.sources[i - 1].url || '';
+                if (catEl && config.sources[i - 1].category) catEl.value = config.sources[i - 1].category;
+            }
+        }
         if (config.interval) document.getElementById('botInterval').value = config.interval;
+        if (config.publishDelay) {
+            const delayEl = document.getElementById('botPublishDelay');
+            if (delayEl) delayEl.value = config.publishDelay;
+        }
         return config;
     }
 
     function saveConfig() {
+        const sources = [];
+        for (let i = 1; i <= 4; i++) {
+            const url = (document.getElementById(`botUrl${i}`)?.value || '').trim();
+            const category = document.getElementById(`botCat${i}`)?.value || 'teknoloji';
+            if (url) {
+                sources.push({ url, category });
+            }
+        }
         const config = {
-            baseUrl: document.getElementById('botBaseUrl').value.trim(),
-            category: document.getElementById('botCategory').value,
-            interval: parseInt(document.getElementById('botInterval').value, 10)
+            sources: sources,
+            interval: parseInt(document.getElementById('botInterval').value, 10),
+            publishDelay: parseInt(document.getElementById('botPublishDelay')?.value || '60', 10)
         };
         DB.set('bot_config', config);
         return config;
@@ -358,148 +377,138 @@ window.BotEngine = (function () {
     // ==================== MAIN SCRAPE CYCLE ====================
     async function runScrapeCycle() {
         const config = loadConfig();
-        if (!config.baseUrl) {
-            logTerminal('Hata: Hedef site URL adresi boş!', 'error');
+        const sources = config.sources || [];
+
+        if (sources.length === 0) {
+            logTerminal('Hata: En az 1 kaynak URL girilmelidir!', 'error');
             stopBot();
             return;
         }
 
-        logTerminal('---------------------------------------');
-        logTerminal(`🎯 Taramaya başlanıyor: ${config.baseUrl}`);
+        const publishDelay = (config.publishDelay || 60) * 1000; // seconds to ms
+        let allNewArticles = []; // Collect from all sources
 
-        // ========== STRATEGY 1: WP REST API (Best - full content + images) ==========
-        // ========== STRATEGY 2: RSS Feed (Fallback - partial content) ==========
-        let articles = await fetchViaWPAPI(config.baseUrl);
-        let sourceLabel = 'WP API';
+        logTerminal('═══════════════════════════════════════');
+        logTerminal(`🚀 Çoklu kaynak taraması başlıyor (${sources.length} kaynak)`, 'success');
+        logTerminal('═══════════════════════════════════════');
 
-        if (!articles || articles.length === 0) {
-            articles = await fetchViaRSS(config.baseUrl);
-            sourceLabel = 'RSS';
-        }
+        // ========== PHASE 1: Fetch from ALL sources ==========
+        for (let si = 0; si < sources.length; si++) {
+            const source = sources[si];
+            const sourceNum = si + 1;
+            const sourceColors = ['🟢', '🔵', '🟡', '🔴'];
 
-        if (articles && articles.length > 0) {
-            logTerminal(`📰 ${sourceLabel} ile ${articles.length} makale bulundu.`, 'success');
+            logTerminal(`${sourceColors[si]} ─── Kaynak ${sourceNum}: ${source.url} ───`);
 
-            // Filter out already scraped URLs
-            const newItems = articles.filter(item => !scrapedUrls.includes(item.url));
+            // Try WP API first, then RSS
+            let articles = await fetchViaWPAPI(source.url);
+            let sourceLabel = 'WP API';
 
-            if (newItems.length === 0) {
-                logTerminal("Bu döngüde eklenecek yeni haber bulunamadı.", "warning");
-                return;
+            if (!articles || articles.length === 0) {
+                articles = await fetchViaRSS(source.url);
+                sourceLabel = 'RSS';
             }
 
-            logTerminal(`🆕 ${newItems.length} yeni makale işlenecek.`, 'success');
+            if (articles && articles.length > 0) {
+                logTerminal(`📰 [Kaynak ${sourceNum}] ${sourceLabel} ile ${articles.length} makale bulundu.`, 'success');
 
-            // Process max 2 per cycle
-            const itemsToProcess = newItems.slice(0, 2);
+                // Filter already scraped
+                const newItems = articles.filter(item => !scrapedUrls.includes(item.url));
+                logTerminal(`🆕 [Kaynak ${sourceNum}] ${newItems.length} yeni makale.`);
 
-            for (const articleData of itemsToProcess) {
-                // Clean title
-                articleData.title = articleData.title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
+                // Take max 2 per source
+                newItems.slice(0, 2).forEach(item => {
+                    item._sourceCategory = source.category;
+                    item._sourceNum = sourceNum;
+                    item._sourceLabel = sourceLabel;
+                    allNewArticles.push(item);
+                });
+            } else {
+                // Try proxy fallback for non-WP, non-RSS sites
+                logTerminal(`⚠️ [Kaynak ${sourceNum}] WP API ve RSS bulunamadı, proxy deneniyor...`, 'warning');
+                const html = await fetchViaProxy(source.url);
+                if (html) {
+                    const newLinks = await findLinksOnPage(html, source.url);
+                    const filteredLinks = newLinks.filter(l => !scrapedUrls.includes(l));
+                    logTerminal(`🔗 [Kaynak ${sourceNum}] Proxy ile ${filteredLinks.length} yeni link.`);
 
-                logTerminal(`📝 [${sourceLabel}] ${articleData.title}`);
-                logTerminal(`📸 Kapak: ${articleData.image ? '✓' : '✗'} | Gövde resimleri: ${articleData.bodyImages.length}`);
-
-                if (articleData.content.length < 100) {
-                    logTerminal(`⚠️ İçerik kısa, atlanıyor: ${articleData.url}`, 'warning');
-                    scrapedUrls.push(articleData.url);
-                    DB.set('scraped_urls', scrapedUrls);
-                    continue;
-                }
-
-                try {
-                    logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
-                    const rewrittenHtml = await AIAssistant.rewriteArticle(articleData, (msg) => {
-                        if (msg.includes("API")) logTerminal(msg, "info");
-                    });
-
-                    let finalHtml = rewrittenHtml.trim();
-                    if (finalHtml.startsWith("```html")) finalHtml = finalHtml.substring(7);
-                    if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
-                    if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
-
-                    publishArticle(finalHtml, articleData, config.category);
-
-                    scrapedUrls.push(articleData.url);
-                    DB.set('scraped_urls', scrapedUrls);
-
-                } catch (err) {
-                    logTerminal(`❌ AI İşleme Hatası: ${err.message}`, 'error');
-                }
-
-                await new Promise(r => setTimeout(r, 2000));
-            }
-
-            logTerminal('Tüm yeni içerikler işlendi. Bekleme moduna dönülüyor.', 'info');
-            return;
-        }
-
-        // ========== STRATEGY 2: Proxy Scraping (Fallback for non-RSS sites) ==========
-        logTerminal('⚠️ RSS bulunamadı, proxy ile HTML tarama deneniyor...', 'warning');
-
-        const html = await fetchViaProxy(config.baseUrl);
-        if (!html) return;
-
-        const newLinks = await findLinksOnPage(html, config.baseUrl);
-        if (newLinks.length === 0) {
-            logTerminal("Bu döngüde eklenecek yeni haber bulunamadı.", "warning");
-            return;
-        }
-
-        const linksToProcess = newLinks.slice(0, 2);
-
-        for (const link of linksToProcess) {
-            logTerminal(`Makale çekiliyor: ${link}`);
-            const articleHtml = await fetchViaProxy(link);
-
-            if (articleHtml) {
-                const articleData = await extractArticleData(articleHtml, link);
-
-                if (articleData.title && articleData.content && articleData.content.length > 200) {
-                    const lowerContent = articleData.content.toLowerCase();
-                    if (lowerContent.includes("sorry, you have been blocked") || articleData.title.toLowerCase().includes("blocked")) {
-                        logTerminal(`⚠️ İçerik engellenmiş, atlanıyor: ${link}`, 'warning');
-                        scrapedUrls.push(link);
-                        DB.set('scraped_urls', scrapedUrls);
-                        continue;
-                    }
-
-                    try {
-                        logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
-                        const rewrittenHtml = await AIAssistant.rewriteArticle(articleData, (msg) => {
-                            if (msg.includes("API")) logTerminal(msg, "info");
-                        });
-
-                        let finalHtml = rewrittenHtml.trim();
-                        if (finalHtml.startsWith("```html")) finalHtml = finalHtml.substring(7);
-                        if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
-                        if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
-
-                        publishArticle(finalHtml, articleData, config.category);
-
-                        scrapedUrls.push(link);
-                        DB.set('scraped_urls', scrapedUrls);
-
-                    } catch (err) {
-                        logTerminal(`❌ AI İşleme Hatası: ${err.message}`, 'error');
+                    for (const link of filteredLinks.slice(0, 2)) {
+                        const articleHtml = await fetchViaProxy(link);
+                        if (articleHtml) {
+                            const articleData = await extractArticleData(articleHtml, link);
+                            if (articleData.title && articleData.content && articleData.content.length > 200) {
+                                articleData._sourceCategory = source.category;
+                                articleData._sourceNum = sourceNum;
+                                articleData._sourceLabel = 'Proxy';
+                                allNewArticles.push(articleData);
+                            }
+                        }
                     }
                 } else {
-                    logTerminal(`⚠️ Makale içeriği yetersiz, atlanıyor.`, 'warning');
-                    scrapedUrls.push(link);
-                    DB.set('scraped_urls', scrapedUrls);
+                    logTerminal(`❌ [Kaynak ${sourceNum}] Erişilemiyor.`, 'error');
                 }
             }
-
-            await new Promise(r => setTimeout(r, 2000));
         }
 
-        logTerminal('Tüm yeni içerikler işlendi. Bekleme moduna dönülüyor.', 'info');
+        // ========== PHASE 2: Process & Publish with delay ==========
+        if (allNewArticles.length === 0) {
+            logTerminal('📭 Hiçbir kaynakta yeni makale bulunamadı.', 'warning');
+            return;
+        }
+
+        logTerminal(`\n📋 Toplam ${allNewArticles.length} yeni makale işlenecek (${config.publishDelay || 60}sn arayla)`, 'success');
+
+        for (let i = 0; i < allNewArticles.length; i++) {
+            const articleData = allNewArticles[i];
+            const category = articleData._sourceCategory || 'teknoloji';
+
+            // Clean title
+            articleData.title = articleData.title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
+
+            logTerminal(`\n📝 [${i + 1}/${allNewArticles.length}] [Kaynak ${articleData._sourceNum}] ${articleData.title}`);
+            logTerminal(`📸 Kapak: ${articleData.image ? '✓' : '✗'} | Gövde resimleri: ${(articleData.bodyImages || []).length}`);
+
+            if ((articleData.content || '').length < 100) {
+                logTerminal(`⚠️ İçerik kısa, atlanıyor: ${articleData.url}`, 'warning');
+                scrapedUrls.push(articleData.url);
+                DB.set('scraped_urls', scrapedUrls);
+                continue;
+            }
+
+            try {
+                logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
+                const rewrittenHtml = await AIAssistant.rewriteArticle(articleData, (msg) => {
+                    if (msg.includes("API")) logTerminal(msg, "info");
+                });
+
+                let finalHtml = rewrittenHtml.trim();
+                if (finalHtml.startsWith("```html")) finalHtml = finalHtml.substring(7);
+                if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
+                if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
+
+                publishArticle(finalHtml, articleData, category);
+
+                scrapedUrls.push(articleData.url);
+                DB.set('scraped_urls', scrapedUrls);
+
+            } catch (err) {
+                logTerminal(`❌ AI İşleme Hatası: ${err.message}`, 'error');
+            }
+
+            // Wait between publishes (except after last article)
+            if (i < allNewArticles.length - 1) {
+                logTerminal(`⏳ Sonraki makale için ${config.publishDelay || 60} saniye bekleniyor...`, 'info');
+                await new Promise(r => setTimeout(r, publishDelay));
+            }
+        }
+
+        logTerminal('✅ Tüm kaynaklar tarandı ve içerikler yayınlandı. Bekleme moduna dönülüyor.', 'success');
     }
 
     function startBot() {
         const config = saveConfig();
-        if (!config.baseUrl) {
-            showAdminToast("Lütfen bot için hedef ana URL adresini girin!", "error");
+        if (!config.sources || config.sources.length === 0) {
+            showAdminToast("Lütfen en az 1 kaynak URL girin!", "error");
             return;
         }
 
@@ -517,7 +526,8 @@ window.BotEngine = (function () {
         dot.classList.remove('status-idle');
         dot.classList.add('status-running');
 
-        logTerminal(`[BAŞLATILDI] Otonom Bot devreye girdi. Çalışma sıklığı: ${config.interval} Dakika.`, 'success');
+        logTerminal(`[BAŞLATILDI] Otonom Bot devreye girdi.`, 'success');
+        logTerminal(`📡 ${config.sources.length} kaynak | ⏰ ${config.interval} dk tarama | ⏳ ${config.publishDelay}sn yayın aralığı`, 'info');
 
         // Run immediately first time
         runScrapeCycle();

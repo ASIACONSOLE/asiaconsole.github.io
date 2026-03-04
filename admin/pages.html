@@ -604,9 +604,11 @@
         }
     </style>
 
-    <script src="../js/firebase.js"></script>
-    <script src="../js/main.js"></script>
-    <script src="../js/admin.js"></script>
+    <script src="../js/firebase.js?v=3.2"></script>
+    <script src="../js/main.js?v=3.2"></script>
+    <script src="../js/ai-assistant.js?v=3.2"></script>
+    <script src="../js/admin.js?v=3.2"></script>
+    <script src="../js/bot.js?v=3.2"></script>
     <script>
         let articles = [];
         let currentFilter = '';
@@ -803,19 +805,24 @@
         }
 
         function editArticle(id) {
-            const a = articles.find(x => x.id === id);
-            if (!a) return;
+            // Robust search with type coercion
+            const a = articles.find(x => String(x.id) === String(id));
+            if (!a) {
+                console.error('[Admin] Article not found:', id);
+                showAdminToast('❌ Makale bulunamadı!', 'error');
+                return;
+            }
             document.getElementById('modalTitle').textContent = '✏️ Makaleyi Düzenle';
-            document.getElementById('editId').value = id;
+            document.getElementById('editId').value = a.id;
             document.getElementById('artTitle').value = a.title;
             document.getElementById('artCategory').value = a.category;
-            document.getElementById('artDesc').value = a.desc;
-            document.getElementById('artBody').value = a.body || ''; // Add body
+            document.getElementById('artDesc').value = a.desc || '';
+            document.getElementById('artBody').value = a.body || '';
             document.getElementById('artAuthor').value = a.author;
             document.getElementById('artImage').value = a.image || '';
             document.getElementById('artCover').value = a.cover || '';
-            document.getElementById('artViews').value = a.views;
-            document.getElementById('artDate').value = a.date;
+            document.getElementById('artViews').value = a.views || 0;
+            document.getElementById('artDate').value = a.date || '';
             openModal('articleModal');
         }
 
@@ -1541,6 +1548,12 @@
             }
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            renderArticles();
+            renderStaticPages();
+            renderCustomPages();
+        });
+
         document.addEventListener('dbUpdated', (e) => {
             const key = e.detail?.key;
             if (key === 'articles') {
@@ -1551,7 +1564,7 @@
                 }
                 articles = Array.isArray(data) ? data : [];
                 console.log('[Admin] Articles updated from DB:', articles.length);
-                renderArticles();
+                renderTable(getFiltered());
             }
             if (key === 'custom_pages') renderCustomPages();
             if (key === 'settings') renderStaticPages();

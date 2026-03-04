@@ -462,22 +462,46 @@ const AIAssistant = (() => {
     const rewriteArticle = async (articleData, onProgress) => {
         const s = DB.get('settings') || {};
 
-        const systemPrompt = `Sen profesyonel bir teknoloji ve oyun editörüsün. AsiaConsole adlı blog sitesi için içerik üretiyorsun.
-Sana verilen haberi BAŞTAN AŞAĞI tamamen ÖZGÜN olarak yeniden yazmalısın. 
-Kopya içerik cezası yememek için cümle yapılarını değiştir, daha akıcı ve ilgi çekici hale getir.
+        const systemPrompt = `Sen Türkiye'nin en prestijli teknoloji platformlarından biri olan AsiaConsole'un baş editörüsün. 
+Deneyimli, profesyonel, derinlikli ve akıcı bir üslupla teknoloji haberleri yazıyorsun.
+Sana verilen haberi SIFIRDAN, tamamen ÖZGÜN ve SEO uyumlu olarak yeniden yazmalısın.
 
-KURALLAR:
-1. Çıktıda ASLA genel konuşma veya selamlama olmamalıdır. SADECE YAZININ KENDİSİNİ VER.
-2. ÇIKTI SADECE HTML FORMATINDA OLMALIDIR. Markdown ( \`\`\`html vs.) KULLANMA.
-3. Sadece yazının gövde HTML kodlarını ver (<html>, <body>, <head> KULLANMA).
-4. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul> ve <li> etiketlerini kullan. 
-5. Yazı içine asla <img ...> gibi resim etiketleri EKLEME (sadece metin).
-6. Haberin ana teması, verdiği teknolojik/donanımsal bilgiler tamamen doğru kalmalı.
-7. Orijinal haber çok kısaysa, kendi sektörel bilgini kullanarak detaylandır ve makaleyi okuyucu için doyurucu hale getir.
-8. ÖNEMLİ: Yazı içinde veya başlıkta ASLA kaynak sitenin ismini GEÇİRME. 
-9. **KAPANIŞ**: Yazının en sonuna mutlaka okuyucuyu etkileşime davet eden, "Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!" benzeri samimi ve profesyonel bir editör notu cümlesi ekle.`;
+YAZIM KURALLARI:
+1. ÇIKTI SADECE HTML FORMATINDA OLMALIDIR. Markdown kullanma. \`\`\`html gibi blok etiketleri KULLANMA.
+2. Sadece yazının gövde HTML'ini ver (<html>, <body>, <head> gibi kapsayıcı etiketler KULLANMA).
+3. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul>/<li> kullan.
+4. Yazı içine ASLA <img> resim etiketi EKLEME. Resimler sistem tarafından otomatik yerleştirilecek.
 
-        const userPrompt = `ORJİNAL BAŞLIK: ${articleData.title}\n\nORJİNAL METİN:\n${articleData.content}`;
+EDİTÖRYEL KALİTE:
+- İlk paragrafta okuyucuyu hemen yakalayan, merak uyandıran güçlü bir giriş yaz.
+- Haberin teknik detaylarını analiz et, sektörel bağlamı açıkla. Sadece "ne oldu" değil, "neden önemli" sorusunu yanıtla.
+- Alt başlıklar (<h2>) kullanarak haberi bölümlere ayır. Her bölüm kendi içinde tutarlı ve bilgi dolu olsun.
+- Teknik terimleri okuyucunun anlayacağı şekilde, ama kibirli olmadan açıkla.
+- Orijinal içerik çok kısaysa, kendi sektörel bilgini kullanarak haberi genişlet ve derinleştir.
+- Minimum 4-5 paragraf, ideal olarak 6-8 paragraf yaz. Haber kısa bile olsa detaylı analiz ekle.
+
+KRİTİK KURALLAR:
+- Kaynak sitenin ismini (ShiftDelete, Webtekno vb.) ASLA yazıya dahil etme.
+- Haberin teknik bilgileri (isimler, tarihler, özellikler, rakamlar) mutlaka DOĞRU kalmalı.
+- Başlığı <h1> olarak YAZMA, başlık ayrıca ayarlanır.
+
+KAPANIŞ (ZORUNLU):
+Yazının en son paragrafında MUTLAKA samimi, sıcak ve etkileşimi teşvik eden bir editör notu yaz. Örnek tonlar:
+- "Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!"
+- "Bu gelişme sizi heyecanlandırdı mı? Düşüncelerinizi aşağıdaki yorumlarda okumak isteriz!"
+- "Sizce bu hamle doğru bir adım mı? Fikirlerinizi yorumlarda bekliyoruz!"
+Bu kapanış cümlesi <p><strong>...</strong></p> formatında ve italik veya kalın yazılmalı.`;
+
+        const userPrompt = `HABER BAŞLIĞI: ${articleData.title}
+
+HABER İÇERİĞİ:
+${articleData.content}
+
+${articleData.categories && articleData.categories.length > 0 ? 'KATEGORİLER: ' + articleData.categories.join(', ') : ''}
+${articleData.author ? 'YAZAR: ' + articleData.author : ''}
+
+Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı bir şekilde yeniden yaz.`;
+
         const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
 
         if (onProgress) onProgress('Yapay zekaya haber aktarılıyor...');
@@ -485,7 +509,7 @@ KURALLAR:
         try {
             // Try Gemini first
             if (s.geminiApiKey && s.geminiApiKey.length > 20) {
-                if (onProgress) onProgress('Gemini ile makale özgünleştiriliyor...');
+                if (onProgress) onProgress('Gemini API ile makale özgünleştiriliyor...');
                 const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -505,7 +529,7 @@ KURALLAR:
 
             // Try Groq as fallback
             if (s.groqApiKey) {
-                if (onProgress) onProgress('Groq ile makale özgünleştiriliyor...');
+                if (onProgress) onProgress('Groq API ile makale özgünleştiriliyor...');
                 const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
@@ -515,7 +539,7 @@ KURALLAR:
                             { role: 'system', content: systemPrompt },
                             { role: 'user', content: userPrompt }
                         ],
-                        temperature: 0.7, max_tokens: 3000
+                        temperature: 0.7, max_tokens: 4000
                     })
                 });
 

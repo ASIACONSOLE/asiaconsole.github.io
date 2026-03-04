@@ -118,6 +118,46 @@ window.BotEngine = (function () {
         return null;
     }
 
+    // Try to fetch full article page via cache services (bypasses Cloudflare)
+    async function fetchFullArticle(articleUrl) {
+        const cacheStrategies = [
+            async (u) => {
+                // Google Cache
+                const cacheUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(u)}`;
+                const res = await fetch(cacheUrl);
+                if (!res.ok) throw new Error('Google Cache failed');
+                return await res.text();
+            },
+            async (u) => {
+                // Wayback Machine (latest snapshot)
+                const checkUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(u)}`;
+                const checkRes = await fetch(checkUrl);
+                const checkData = await checkRes.json();
+                if (checkData.archived_snapshots?.closest?.url) {
+                    const snapUrl = checkData.archived_snapshots.closest.url;
+                    const res = await fetch(snapUrl);
+                    if (!res.ok) throw new Error('Wayback failed');
+                    return await res.text();
+                }
+                throw new Error('No Wayback snapshot');
+            },
+            // Also try regular proxies as last resort
+            async (u) => { return await fetchViaProxy(u); }
+        ];
+
+        for (const strategy of cacheStrategies) {
+            try {
+                const html = await strategy(articleUrl);
+                if (html && html.length > 500) {
+                    const lower = html.toLowerCase();
+                    if (lower.includes('sorry, you have been blocked') || lower.includes('just a moment...')) continue;
+                    return html;
+                }
+            } catch (err) { }
+        }
+        return null;
+    }
+
     // Scrapes the main page to find article links (fallback when RSS fails)
     async function findLinksOnPage(html, baseUrl) {
         logTerminal("Bağlantılar ayrıştırılıyor...");
@@ -308,28 +348,55 @@ window.BotEngine = (function () {
             for (const item of itemsToProcess) {
                 logTerminal(`📝 RSS Makale: ${item.title}`);
 
-                // RSS already provides content - build articleData from RSS
+                // 1. Extract images from RSS HTML content before stripping
+                const rssHtmlContent = item.content || item.description || '';
+                const imgExtractor = document.createElement('div');
+                imgExtractor.innerHTML = rssHtmlContent;
+                const rssImages = [];
+                imgExtractor.querySelectorAll('img').forEach(img => {
+                    const src = img.getAttribute('src') || img.getAttribute('data-src');
+                    if (src && src.startsWith('http') && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon') && !src.includes('1x1')) {
+                        rssImages.push(src);
+                    }
+                });
+
+                // 2. Build articleData from RSS
                 const articleData = {
                     title: item.title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim(),
-                    content: item.content || item.description || '',
+                    content: imgExtractor.textContent || imgExtractor.innerText || '',
                     url: item.link,
-                    image: item.thumbnail || item.enclosure?.link || '',
-                    bodyImages: [],
+                    image: item.thumbnail || item.enclosure?.link || rssImages[0] || '',
+                    bodyImages: [...new Set(rssImages)].slice(0, 5),
                     author: item.author || 'Editör',
                     categories: item.categories || []
                 };
 
-                // Strip HTML from content for AI processing
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = articleData.content;
-                articleData.content = tempDiv.textContent || tempDiv.innerText;
+                // 3. Try to fetch full article page for richer content + images
+                logTerminal(`🔍 Tam makale sayfası aranıyor...`);
+                const fullHtml = await fetchFullArticle(item.link);
+                if (fullHtml) {
+                    logTerminal(`✅ Tam makale sayfası bulundu!`, 'success');
+                    const fullData = await extractArticleData(fullHtml, item.link);
+                    // Merge: prefer full page data if richer
+                    if (fullData.content && fullData.content.length > articleData.content.length) {
+                        articleData.content = fullData.content;
+                    }
+                    if (fullData.image) articleData.image = fullData.image;
+                    if (fullData.bodyImages && fullData.bodyImages.length > 0) {
+                        articleData.bodyImages = [...new Set([...fullData.bodyImages, ...articleData.bodyImages])].slice(0, 5);
+                    }
+                } else {
+                    logTerminal(`ℹ️ Tam sayfa erişilemiyor, RSS içeriği kullanılıyor.`, 'info');
+                }
 
                 if (articleData.content.length < 100) {
-                    logTerminal(`⚠️ RSS içeriği kısa, atlanıyor: ${item.link}`, 'warning');
+                    logTerminal(`⚠️ İçerik kısa, atlanıyor: ${item.link}`, 'warning');
                     scrapedUrls.push(item.link);
                     DB.set('scraped_urls', scrapedUrls);
                     continue;
                 }
+
+                logTerminal(`📸 Kapak: ${articleData.image ? '✓' : '✗'} | Gövde resimleri: ${articleData.bodyImages.length}`);
 
                 try {
                     logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);

@@ -69,23 +69,23 @@ window.BotEngine = (function () {
         const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || '';
         const alt = (img.getAttribute('alt') || '').toLowerCase();
         const className = (img.className || '').toLowerCase();
+        const id = (img.id || '').toLowerCase();
 
         // 1. URL Blacklist (Common ad/social signatures)
         const blacklist = [
             'ads', 'advert', 'banner', 'reklam', 'tanitim', 'promo', 'coupon', 'gift', 'pixel', 'tracking',
-            'social', 'button', 'icon', 'avatar', 'logo', 'gravatar', '1x1', 'spinner', 'loader',
-            'sponsor', 'click', 'redirect', 'taboola', 'outbrain', 'doubleclick', 'googleads',
-            'amazon-adsystem', 'adnxs', 'openx', 'rubicon', 'pubmatic', 'criteo', 'smartad',
-            'adform', 'zemanta', 'triplelift', 'nativo', 'revcontent', 'sharethrough', 'partner',
-            'affiliate', 'widget', 'sidebar', 'footer', 'header', 'nav', 'menu', 'popup', 'modal'
+            'social', 'button', 'icon', 'sponsor', 'click', 'redirect', 'taboola', 'outbrain', 'doubleclick',
+            'amazon', 'adnxs', 'openx', 'pubmatic', 'criteo', 'smartadserver', 'zemanta', 'triplelift',
+            'nativo', 'revcontent', 'sharethrough', 'affiliate', 'widget', 'sidebar', 'footer', 'header',
+            'nav', 'menu', 'popup', 'modal', 'sharing', 'related', 'author-box', 'recommend'
         ];
         if (blacklist.some(word => src.toLowerCase().includes(word))) return false;
 
         // 2. Alt Text Blacklist
         if (blacklist.some(word => alt.includes(word))) return false;
 
-        // 3. Class Name Blacklist
-        if (blacklist.some(word => className.includes(word))) return false;
+        // 3. Class Name & ID Blacklist
+        if (blacklist.some(word => className.includes(word) || id.includes(word))) return false;
 
         // 3. Dimension & Ratio Heuristics
         // Softened: If it's a lazy image, we don't know dimensions yet, so we assume it might be valid
@@ -347,6 +347,13 @@ window.BotEngine = (function () {
             doc.querySelector('.article-content') ||
             doc.querySelector('.td-post-content') ||
             doc.querySelector('.entry-content-single') ||
+            doc.querySelector('#main-content') ||
+            doc.querySelector('#article-content') ||
+            doc.querySelector('.body-container') ||
+            doc.querySelector('.article-detail') ||
+            doc.querySelector('.news-detail') ||
+            doc.querySelector('.content-wrapper') ||
+            doc.querySelector('.post-media') || // Some sites put media outside main body
             doc.querySelector('main');
 
         let bodyImages = [];
@@ -396,14 +403,21 @@ window.BotEngine = (function () {
             const vids = extractVideos(articleTag);
 
             const clone = articleTag.cloneNode(true);
-            const useless = clone.querySelectorAll('script, style, iframe, nav, header, footer, .ads, .sidebar, .social-share, .comments');
+            const adSelectors = '.ads, .sharing, .related, .author-box, .social-share, .comments, .sidebar, .banner, .promo, .widget, [class*="ad-"], [id*="ad-"], .taboola, .outbrain';
+            const useless = clone.querySelectorAll(`script, style, iframe, nav, header, footer, ${adSelectors}`);
             useless.forEach(s => s.remove());
 
             // Keep the HTML but clean it up for AI (remove classes/IDs to save tokens)
             clone.querySelectorAll('*').forEach(el => {
+                // Keep only essential structural tags
+                if (!['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'B', 'I', 'BLOCKQUOTE', 'A', 'IMG'].includes(el.tagName)) {
+                    // Optional: filter non-content tags if needed
+                }
                 el.removeAttribute('class');
                 el.removeAttribute('id');
                 el.removeAttribute('style');
+                el.removeAttribute('data-id');
+                el.removeAttribute('data-src');
             });
 
             return { title, image, content: clone.innerHTML, url, bodyImages: [...new Set(bodyImages)].slice(0, 15), videos: vids };

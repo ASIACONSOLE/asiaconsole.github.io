@@ -60,21 +60,29 @@ window.BotEngine = (function () {
 
         const proxies = [
             async (u) => {
-                // Priority 1: Jina Reader (Extremely good for 403/Forbidden)
-                const res = await fetch(`https://r.jina.ai/${u}`);
+                // Priority 1: Jina Reader (Best for bypassing bot-blocking)
+                const res = await fetch(`https://r.jina.ai/${u}`, {
+                    headers: { 'Accept': 'text/html' }
+                });
                 if (!res.ok) throw new Error(`Jina Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Priority 2: AllOrigins Raw (Direct)
-                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
-                if (!res.ok) throw new Error("AllOrigins failed");
+                // Priority 2: Corsfix (Modern, reliable free CORS proxy)
+                const res = await fetch(`https://proxy.corsfix.com/?${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error(`Corsfix Error ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Priority 3: CorsProxy.io
-                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(u)}`);
-                if (!res.ok) throw new Error("CorsProxy failed");
+                // Priority 3: Cloudflare CORS proxy worker
+                const res = await fetch(`https://test.cors.workers.dev/?${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error(`CF Worker Error ${res.status}`);
+                return await res.text();
+            },
+            async (u) => {
+                // Priority 4: AllOrigins (fallback, may be unreliable)
+                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
+                if (!res.ok) throw new Error("AllOrigins failed");
                 return await res.text();
             }
         ];

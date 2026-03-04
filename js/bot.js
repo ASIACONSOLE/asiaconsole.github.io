@@ -62,6 +62,57 @@ window.BotEngine = (function () {
         terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
     }
 
+    // ==================== HELPERS: MEDIA FILTERING & EXTRACTION ====================
+
+    function isValidImage(img) {
+        if (!img) return false;
+        const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || '';
+        const alt = (img.getAttribute('alt') || '').toLowerCase();
+        const className = (img.className || '').toLowerCase();
+
+        // 1. URL Blacklist (Common ad/social signatures)
+        const blacklist = ['ads', 'advert', 'banner', 'reklam', 'tanitim', 'promo', 'coupon', 'gift', 'pixel', 'tracking', 'social', 'button', 'icon', 'avatar', 'logo', 'gravatar', '1x1', 'spinner', 'loader'];
+        if (blacklist.some(word => src.toLowerCase().includes(word))) return false;
+
+        // 2. Alt Text Blacklist
+        if (blacklist.some(word => alt.includes(word))) return false;
+
+        // 3. Class Name Blacklist
+        if (blacklist.some(word => className.includes(word))) return false;
+
+        // 4. Dimension Checks
+        const width = parseInt(img.getAttribute('width') || '1000', 10);
+        const height = parseInt(img.getAttribute('height') || '1000', 10);
+        if (width < 150 || height < 150) return false;
+
+        // 5. Parent Checks
+        let parent = img.parentElement;
+        for (let i = 0; i < 3 && parent; i++) {
+            const pClass = (parent.className || '').toLowerCase();
+            const pId = (parent.id || '').toLowerCase();
+            if (blacklist.some(word => pClass.includes(word) || pId.includes(word))) return false;
+            parent = parent.parentElement;
+        }
+
+        return src.startsWith('http') || src.startsWith('//');
+    }
+
+    function extractVideos(container) {
+        const videos = [];
+        const iframes = container.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+            const src = iframe.getAttribute('src') || '';
+            if (src.includes('youtube.com') || src.includes('youtu.be') || src.includes('vimeo.com') || src.includes('dailymotion.com')) {
+                videos.push(src);
+            }
+        });
+        container.querySelectorAll('video').forEach(v => {
+            const src = v.getAttribute('src') || v.querySelector('source')?.getAttribute('src');
+            if (src) videos.push(src);
+        });
+        return [...new Set(videos)];
+    }
+
     // ==================== WP REST API + RSS APPROACH ====================
     // WordPress sites expose a REST API that bypasses Cloudflare entirely.
     // This gives us: full content + cover image + body images + author + categories.
@@ -94,43 +145,28 @@ window.BotEngine = (function () {
                     }
                 } catch (e) { }
 
-                // Extract body images from content HTML
-                const contentHtml = post.content?.rendered || '';
-                const imgParser = document.createElement('div');
-                imgParser.innerHTML = contentHtml;
+                const parser = document.createElement('div');
+                parser.innerHTML = post.content?.rendered || '';
                 const bodyImages = [];
-                imgParser.querySelectorAll('img').forEach(img => {
-                    const src = img.getAttribute('src') || img.getAttribute('data-src') || '';
-                    if (src && src.startsWith('http') && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon') && !src.includes('1x1') && !src.includes('gravatar')) {
-                        bodyImages.push(src);
+                parser.querySelectorAll('img').forEach(img => {
+                    if (isValidImage(img)) {
+                        const src = img.getAttribute('src') || img.getAttribute('data-src');
+                        if (src) bodyImages.push(src);
                     }
                 });
 
-                // Extract author name
-                let authorName = 'Editör';
-                try {
-                    authorName = post._embedded?.author?.[0]?.name || 'Editör';
-                } catch (e) { }
-
-                // Extract categories
-                let categories = [];
-                try {
-                    const terms = post._embedded?.['wp:term']?.[0] || [];
-                    categories = terms.map(t => t.name);
-                } catch (e) { }
-
-                // Extract plain text content
-                const textContent = imgParser.textContent || imgParser.innerText || '';
+                const videos = extractVideos(parser);
 
                 return {
                     title: (post.title?.rendered || '').replace(/<[^>]*>/g, ''),
-                    content: textContent,
-                    contentHtml: contentHtml,
+                    content: parser.textContent || parser.innerText || '',
+                    contentHtml: post.content?.rendered || '',
                     url: post.link,
                     image: coverImage,
                     bodyImages: [...new Set(bodyImages)].slice(0, 5),
-                    author: authorName,
-                    categories: categories,
+                    videos: videos,
+                    author: post._embedded?.author?.[0]?.name || 'Editör',
+                    categories: post._embedded?.['wp:term']?.[0]?.map(t => t.name) || [],
                     source: 'wpapi'
                 };
             });
@@ -161,19 +197,24 @@ window.BotEngine = (function () {
                         const htmlContent = item.content || item.description || '';
                         const extractor = document.createElement('div');
                         extractor.innerHTML = htmlContent;
+
                         const imgs = [];
                         extractor.querySelectorAll('img').forEach(img => {
-                            const src = img.getAttribute('src') || img.getAttribute('data-src') || '';
-                            if (src && src.startsWith('http') && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon')) {
-                                imgs.push(src);
+                            if (isValidImage(img)) {
+                                const src = img.getAttribute('src') || img.getAttribute('data-src');
+                                if (src) imgs.push(src);
                             }
                         });
+
+                        const videos = extractVideos(extractor);
+
                         return {
                             title: item.title,
                             content: extractor.textContent || extractor.innerText || '',
                             url: item.link,
                             image: item.thumbnail || item.enclosure?.link || imgs[0] || '',
                             bodyImages: [...new Set(imgs)].slice(0, 5),
+                            videos: videos,
                             author: item.author || 'Editör',
                             categories: item.categories || [],
                             source: 'rss'
@@ -280,32 +321,29 @@ window.BotEngine = (function () {
         let content = "";
 
         if (articleTag) {
-            // Extract images before stripping tags
-            const imgs = Array.from(articleTag.querySelectorAll('img'));
-            imgs.forEach(img => {
-                const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
-                if (src && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon')) {
-                    // Resolve relative if needed
-                    if (src.startsWith('/')) bodyImages.push(baseObj.origin + src);
-                    else if (src.startsWith('http')) bodyImages.push(src);
+            articleTag.querySelectorAll('img').forEach(img => {
+                if (isValidImage(img)) {
+                    let src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+                    if (src) {
+                        if (src.startsWith('/')) src = baseObj.origin + src;
+                        else if (src.startsWith('//')) src = 'https:' + src;
+                        bodyImages.push(src);
+                    }
                 }
             });
 
-            // Strip out scripts and styles before extracting text length
+            const vids = extractVideos(articleTag);
+
             const clone = articleTag.cloneNode(true);
-            const useless = clone.querySelectorAll('script, style, iframe, nav, header, footer, .ads, .social-share');
+            const useless = clone.querySelectorAll('script, style, iframe, nav, header, footer, .ads, .sidebar, .social-share');
             useless.forEach(s => s.remove());
-            content = clone.innerText;
+            const content = clone.innerText;
+            return { title, image, content, url, bodyImages: [...new Set(bodyImages)].slice(0, 3), videos: vids };
         } else {
-            // Fallback: Just grab large paragraphs
             const paragraphs = Array.from(doc.querySelectorAll('p')).map(p => p.innerText);
-            content = paragraphs.filter(p => p.length > 50).join('\n\n');
+            const content = paragraphs.filter(p => p.length > 50).join('\n\n');
+            return { title, image, content, url, bodyImages: [], videos: [] };
         }
-
-        // Limit images to max 3
-        bodyImages = [...new Set(bodyImages)].slice(0, 3); // Unique images
-
-        return { title, image, content, url, bodyImages };
     }
 
     function publishArticle(aiHtmlCode, originalData, category) {
@@ -331,14 +369,40 @@ window.BotEngine = (function () {
             for (let i = 0; i < paragraphs.length; i++) {
                 finalHtml += paragraphs[i] + (i < paragraphs.length - 1 ? '</p>' : '');
 
-                // If it's time to insert an image and we have images left
+                // Insert Images
                 if (imgIdx < images.length && (i + 1) % interval === 0 && i < paragraphs.length - 2) {
                     finalHtml += `<div class="article-body-img" style="margin: 2rem 0;"><img src="${images[imgIdx]}" style="width:100%; border-radius:12px; border:1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></div>`;
                     imgIdx++;
                 }
+
+                // Insert Videos (one at a time, spaced out)
+                if (originalData.videos && originalData.videos[i]) {
+                    const videoSrc = originalData.videos[i];
+                    let vidEmbed = '';
+                    if (videoSrc.includes('youtube.com') || videoSrc.includes('youtu.be')) {
+                        let vidId = '';
+                        if (videoSrc.includes('v=')) vidId = videoSrc.split('v=')[1].split('&')[0];
+                        else if (videoSrc.includes('embed/')) vidId = videoSrc.split('embed/')[1].split('?')[0];
+                        else if (videoSrc.includes('youtu.be/')) vidId = videoSrc.split('youtu.be/')[1].split('?')[0];
+                        if (vidId) vidEmbed = `https://www.youtube.com/embed/${vidId}`;
+                    } else if (videoSrc.includes('vimeo.com')) {
+                        const vidId = videoSrc.split('/').pop();
+                        if (vidId) vidEmbed = `https://player.vimeo.com/video/${vidId}`;
+                    } else {
+                        vidEmbed = videoSrc;
+                    }
+
+                    if (vidEmbed) {
+                        finalHtml += `
+                            <div class="video-container" style="margin: 2rem 0; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; background:#000; border:1px solid var(--border);">
+                                <iframe src="${vidEmbed}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>
+                            </div>
+                        `;
+                    }
+                }
             }
 
-            // If any images left, add at bottom
+            // If any images left
             while (imgIdx < images.length) {
                 finalHtml += `<div class="article-body-img" style="margin: 2rem 0;"><img src="${images[imgIdx]}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`;
                 imgIdx++;

@@ -80,21 +80,32 @@ window.BotEngine = (function () {
         // 3. Class Name Blacklist
         if (blacklist.some(word => className.includes(word))) return false;
 
-        // 4. Dimension Checks
-        const width = parseInt(img.getAttribute('width') || '1000', 10);
-        const height = parseInt(img.getAttribute('height') || '1000', 10);
-        if (width < 150 || height < 150) return false;
+        // 3. Dimension & Ratio Heuristics
+        const width = parseInt(img.getAttribute('width') || img.naturalWidth || '1000', 10);
+        const height = parseInt(img.getAttribute('height') || img.naturalHeight || '1000', 10);
 
-        // 5. Parent Checks
+        if (width < 200 || height < 150) return false;
+
+        const ratio = width / height;
+        if (ratio > 4 || ratio < 0.25) return false;
+
+        const commonAds = ['300x250', '728x90', '160x600', '300x600', '970x250', '320x50', '320x100'];
+        if (commonAds.some(size => src.includes(size))) return false;
+
+        // 4. Deep Parent Checks (Traverse up 5 levels)
         let parent = img.parentElement;
-        for (let i = 0; i < 3 && parent; i++) {
+        for (let i = 0; i < 5 && parent; i++) {
             const pClass = (parent.className || '').toLowerCase();
             const pId = (parent.id || '').toLowerCase();
+            const pTag = parent.tagName.toLowerCase();
+
+            if (['aside', 'footer', 'nav', 'header'].includes(pTag)) return false;
             if (blacklist.some(word => pClass.includes(word) || pId.includes(word))) return false;
+
             parent = parent.parentElement;
         }
 
-        return src.startsWith('http') || src.startsWith('//');
+        return src.startsWith('http') || src.startsWith('//') || src.startsWith('/');
     }
 
     function extractVideos(container) {

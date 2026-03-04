@@ -118,20 +118,26 @@
     <script src="js/ai-assistant.js?v=4.1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const articles = (DB.get('articles') || []).filter(a => a.category === 'oyun');
-
+            const ITEMS_PER_PAGE = 15;
+            let currentPage = 1;
             const grid = document.getElementById('articleGrid');
 
-            function render(list) {
+            function getArticles() {
+                return (DB.get('articles') || []).filter(a => a.category === 'oyun');
+            }
+
+            function renderPage(list, page) {
+                currentPage = page;
+                const totalPages = Math.ceil(list.length / ITEMS_PER_PAGE);
+                const start = (page - 1) * ITEMS_PER_PAGE;
+                const pageItems = list.slice(start, start + ITEMS_PER_PAGE);
+
                 if (list.length === 0) {
                     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🎮</div><h3>İçerik bulunamadı</h3><p>Yeni haberler yakında eklenecek.</p></div>';
                     return;
                 }
 
-                let html = '';
-
-                // Render Articles
-                html += list.map(a => {
+                let html = pageItems.map(a => {
                     const coverBg = a.cover ? `url(${a.cover})` : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
                     const coverStyle = a.cover ? `background:${coverBg}; background-size:cover; background-position:center;` : `background:${coverBg};`;
                     return `
@@ -149,29 +155,41 @@
           </div>
           <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
         </div>
-      </a>
-    `;
+      </a>`;
                 }).join('');
 
+                if (totalPages > 1) {
+                    html += `<div class="pagination">`;
+                    if (page > 1) html += `<button class="page-btn" onclick="goToPage(${page - 1})">← Önceki</button>`;
+                    for (let i = 1; i <= totalPages; i++) {
+                        html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                    }
+                    if (page < totalPages) html += `<button class="page-btn" onclick="goToPage(${page + 1})">Sonraki →</button>`;
+                    html += `</div>`;
+                }
+
                 grid.innerHTML = html;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            render(articles);
+            window.goToPage = (page) => {
+                const q = document.getElementById('searchInput').value.toLowerCase();
+                let arts = getArticles();
+                if (q) arts = arts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q));
+                renderPage(arts, page);
+            };
 
-            // REAL-TIME SYNC: Listen for database updates
+            renderPage(getArticles(), 1);
+
             document.addEventListener('dbUpdated', (e) => {
-                const key = e.detail?.key;
-                if (key === 'articles' || key === 'users' || key === 'profiles') {
-                    console.log(`[Sync] ${key} updated`);
-                    const newArticles = (DB.get('articles') || []).filter(a => a.category === 'oyun');
-                    render(newArticles);
-                }
+                if (e.detail?.key === 'articles') renderPage(getArticles(), currentPage);
             });
 
             document.getElementById('searchInput').addEventListener('input', e => {
                 const q = e.target.value.toLowerCase();
-                const currentArts = (DB.get('articles') || []).filter(a => a.category === 'oyun');
-                render(currentArts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q)));
+                let arts = getArticles();
+                if (q) arts = arts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q));
+                renderPage(arts, 1);
             });
         });
     </script>

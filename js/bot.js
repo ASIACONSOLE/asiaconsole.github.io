@@ -543,6 +543,22 @@ window.BotEngine = (function () {
         // 5. CLEANUP: Remove any remaining [ViDEO-X] placeholders
         enrichedHtml = enrichedHtml.replace(/\[ViDEO-\d+\]/g, '');
 
+        // 6. ENGAGEMENT CTA: Add call-to-action at the end of article
+        const ctaTexts = [
+            'Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!',
+            'Bu gelişme hakkında siz ne düşünüyorsunuz? Fikirlerinizi aşağıdaki yorumlarda bekleriz!',
+            'Peki siz bu haberi nasıl değerlendiriyorsunuz? Düşüncelerinizi bizimle paylaşmayı unutmayın!',
+            'Bu konuyla ilgili görüşleriniz neler? Yorumlarınızı bekliyoruz!',
+            'Sizin bu konudaki düşünceleriniz nedir? Aşağıda bizimle paylaşın!'
+        ];
+        const ctaText = ctaTexts[Math.floor(Math.random() * ctaTexts.length)];
+        enrichedHtml += `
+            <div class="article-cta" style="margin-top: 3rem; padding: 2rem; background: rgba(79, 142, 247, 0.08); border: 1px solid rgba(79, 142, 247, 0.2); border-radius: 16px; text-align: center;">
+                <p style="font-size: 1.1rem; font-weight: 600; color: var(--accent-blue); margin-bottom: 0.5rem;">💬 ${ctaText}</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Siz de topluluğumuza katılın ve teknoloji dünyasını birlikte keşfedelim.</p>
+            </div>
+        `;
+
         // Use a short text snippet for description
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = aiHtmlCode;

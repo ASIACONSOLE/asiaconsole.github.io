@@ -43,13 +43,86 @@ window.BotEngine = (function () {
         terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
     }
 
-    // ==================== RSS-FIRST APPROACH ====================
-    // Many sites (like shiftdelete.net) have Cloudflare bot protection
-    // that blocks ALL CORS proxies. RSS feeds bypass this entirely.
+    // ==================== WP REST API + RSS APPROACH ====================
+    // WordPress sites expose a REST API that bypasses Cloudflare entirely.
+    // This gives us: full content + cover image + body images + author + categories.
+    // RSS is used as fallback for non-WordPress sites.
 
-    // Try to fetch articles via RSS feed (primary method)
+    // PRIMARY: Fetch articles via WordPress REST API (best quality)
+    async function fetchViaWPAPI(baseUrl) {
+        const baseObj = new URL(baseUrl);
+        const origin = baseObj.origin;
+        const apiUrl = `${origin}/wp-json/wp/v2/posts?per_page=10&_embed&_fields=title,link,content,featured_media,_links,_embedded`;
+
+        try {
+            logTerminal(`🔌 WordPress REST API deneniyor: ${origin}`);
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`WP API ${response.status}`);
+            const posts = await response.json();
+
+            if (!posts || posts.length === 0) return null;
+
+            logTerminal(`✅ WP API başarılı! ${posts.length} makale bulundu.`, 'success');
+
+            // Transform WP API response to standard article format
+            return posts.map(post => {
+                // Extract cover image from embedded featured media
+                let coverImage = '';
+                try {
+                    const media = post._embedded?.['wp:featuredmedia']?.[0];
+                    if (media) {
+                        coverImage = media.source_url || '';
+                    }
+                } catch (e) { }
+
+                // Extract body images from content HTML
+                const contentHtml = post.content?.rendered || '';
+                const imgParser = document.createElement('div');
+                imgParser.innerHTML = contentHtml;
+                const bodyImages = [];
+                imgParser.querySelectorAll('img').forEach(img => {
+                    const src = img.getAttribute('src') || img.getAttribute('data-src') || '';
+                    if (src && src.startsWith('http') && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon') && !src.includes('1x1') && !src.includes('gravatar')) {
+                        bodyImages.push(src);
+                    }
+                });
+
+                // Extract author name
+                let authorName = 'Editör';
+                try {
+                    authorName = post._embedded?.author?.[0]?.name || 'Editör';
+                } catch (e) { }
+
+                // Extract categories
+                let categories = [];
+                try {
+                    const terms = post._embedded?.['wp:term']?.[0] || [];
+                    categories = terms.map(t => t.name);
+                } catch (e) { }
+
+                // Extract plain text content
+                const textContent = imgParser.textContent || imgParser.innerText || '';
+
+                return {
+                    title: (post.title?.rendered || '').replace(/<[^>]*>/g, ''),
+                    content: textContent,
+                    contentHtml: contentHtml,
+                    url: post.link,
+                    image: coverImage,
+                    bodyImages: [...new Set(bodyImages)].slice(0, 5),
+                    author: authorName,
+                    categories: categories,
+                    source: 'wpapi'
+                };
+            });
+        } catch (e) {
+            logTerminal(`WP API başarısız: ${e.message}`, 'warning');
+            return null;
+        }
+    }
+
+    // FALLBACK: Fetch articles via RSS feed
     async function fetchViaRSS(baseUrl) {
-        // Common RSS feed URL patterns to try
         const feedPaths = ['/feed', '/rss', '/feed.xml', '/rss.xml', '/atom.xml'];
         const baseObj = new URL(baseUrl);
         const origin = baseObj.origin;
@@ -64,7 +137,29 @@ window.BotEngine = (function () {
 
                 if (data.status === 'ok' && data.items && data.items.length > 0) {
                     logTerminal(`✅ RSS başarılı! ${data.items.length} makale bulundu.`, 'success');
-                    return data.items;
+                    // Extract images from RSS HTML content
+                    return data.items.map(item => {
+                        const htmlContent = item.content || item.description || '';
+                        const extractor = document.createElement('div');
+                        extractor.innerHTML = htmlContent;
+                        const imgs = [];
+                        extractor.querySelectorAll('img').forEach(img => {
+                            const src = img.getAttribute('src') || img.getAttribute('data-src') || '';
+                            if (src && src.startsWith('http') && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon')) {
+                                imgs.push(src);
+                            }
+                        });
+                        return {
+                            title: item.title,
+                            content: extractor.textContent || extractor.innerText || '',
+                            url: item.link,
+                            image: item.thumbnail || item.enclosure?.link || imgs[0] || '',
+                            bodyImages: [...new Set(imgs)].slice(0, 5),
+                            author: item.author || 'Editör',
+                            categories: item.categories || [],
+                            source: 'rss'
+                        };
+                    });
                 }
             } catch (e) {
                 logTerminal(`RSS denemesi başarısız: ${feedUrl}`, 'warning');
@@ -73,30 +168,19 @@ window.BotEngine = (function () {
         return null;
     }
 
-    // Proxy-based fetch (fallback for non-RSS sites)
+    // LAST RESORT: Proxy-based fetch (for non-WP, non-RSS sites)
     async function fetchViaProxy(url) {
         const proxies = [
             async (u) => {
-                // Jina Reader (Best for bypassing bot-blocking)
                 const res = await fetch(`https://r.jina.ai/${u}`, {
-                    headers: {
-                        'Accept': 'text/html',
-                        'X-Return-Format': 'html'
-                    }
+                    headers: { 'Accept': 'text/html', 'X-Return-Format': 'html' }
                 });
-                if (!res.ok) throw new Error(`Jina Error ${res.status}`);
+                if (!res.ok) throw new Error(`Jina ${res.status}`);
                 return await res.text();
             },
             async (u) => {
-                // Corsfix
-                const res = await fetch(`https://proxy.corsfix.com/?${u}`);
-                if (!res.ok) throw new Error(`Corsfix Error ${res.status}`);
-                return await res.text();
-            },
-            async (u) => {
-                // AllOrigins
                 const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
-                if (!res.ok) throw new Error("AllOrigins failed");
+                if (!res.ok) throw new Error('AllOrigins failed');
                 return await res.text();
             }
         ];
@@ -106,55 +190,12 @@ window.BotEngine = (function () {
                 const html = await proxyFn(url);
                 if (html && html.length > 300) {
                     const lower = html.toLowerCase();
-                    if (lower.includes('sorry, you have been blocked') || lower.includes('attention required! | cloudflare') || lower.includes('just a moment...')) {
-                        continue;
-                    }
-                    return html;
-                }
-            } catch (err) { }
-        }
-
-        logTerminal(`⚠️ '${url}' kaynağı proxy ile okunamıyor.`, 'warning');
-        return null;
-    }
-
-    // Try to fetch full article page via cache services (bypasses Cloudflare)
-    async function fetchFullArticle(articleUrl) {
-        const cacheStrategies = [
-            async (u) => {
-                // Google Cache
-                const cacheUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(u)}`;
-                const res = await fetch(cacheUrl);
-                if (!res.ok) throw new Error('Google Cache failed');
-                return await res.text();
-            },
-            async (u) => {
-                // Wayback Machine (latest snapshot)
-                const checkUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(u)}`;
-                const checkRes = await fetch(checkUrl);
-                const checkData = await checkRes.json();
-                if (checkData.archived_snapshots?.closest?.url) {
-                    const snapUrl = checkData.archived_snapshots.closest.url;
-                    const res = await fetch(snapUrl);
-                    if (!res.ok) throw new Error('Wayback failed');
-                    return await res.text();
-                }
-                throw new Error('No Wayback snapshot');
-            },
-            // Also try regular proxies as last resort
-            async (u) => { return await fetchViaProxy(u); }
-        ];
-
-        for (const strategy of cacheStrategies) {
-            try {
-                const html = await strategy(articleUrl);
-                if (html && html.length > 500) {
-                    const lower = html.toLowerCase();
                     if (lower.includes('sorry, you have been blocked') || lower.includes('just a moment...')) continue;
                     return html;
                 }
             } catch (err) { }
         }
+        logTerminal(`⚠️ '${url}' proxy ile okunamıyor.`, 'warning');
         return null;
     }
 
@@ -326,14 +367,21 @@ window.BotEngine = (function () {
         logTerminal('---------------------------------------');
         logTerminal(`🎯 Taramaya başlanıyor: ${config.baseUrl}`);
 
-        // ========== STRATEGY 1: RSS Feed (Primary - Cloudflare-proof) ==========
-        const rssItems = await fetchViaRSS(config.baseUrl);
+        // ========== STRATEGY 1: WP REST API (Best - full content + images) ==========
+        // ========== STRATEGY 2: RSS Feed (Fallback - partial content) ==========
+        let articles = await fetchViaWPAPI(config.baseUrl);
+        let sourceLabel = 'WP API';
 
-        if (rssItems && rssItems.length > 0) {
-            logTerminal(`📰 RSS ile ${rssItems.length} makale bulundu. RSS modu kullanılıyor.`, 'success');
+        if (!articles || articles.length === 0) {
+            articles = await fetchViaRSS(config.baseUrl);
+            sourceLabel = 'RSS';
+        }
+
+        if (articles && articles.length > 0) {
+            logTerminal(`📰 ${sourceLabel} ile ${articles.length} makale bulundu.`, 'success');
 
             // Filter out already scraped URLs
-            const newItems = rssItems.filter(item => !scrapedUrls.includes(item.link));
+            const newItems = articles.filter(item => !scrapedUrls.includes(item.url));
 
             if (newItems.length === 0) {
                 logTerminal("Bu döngüde eklenecek yeni haber bulunamadı.", "warning");
@@ -345,58 +393,19 @@ window.BotEngine = (function () {
             // Process max 2 per cycle
             const itemsToProcess = newItems.slice(0, 2);
 
-            for (const item of itemsToProcess) {
-                logTerminal(`📝 RSS Makale: ${item.title}`);
+            for (const articleData of itemsToProcess) {
+                // Clean title
+                articleData.title = articleData.title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
 
-                // 1. Extract images from RSS HTML content before stripping
-                const rssHtmlContent = item.content || item.description || '';
-                const imgExtractor = document.createElement('div');
-                imgExtractor.innerHTML = rssHtmlContent;
-                const rssImages = [];
-                imgExtractor.querySelectorAll('img').forEach(img => {
-                    const src = img.getAttribute('src') || img.getAttribute('data-src');
-                    if (src && src.startsWith('http') && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon') && !src.includes('1x1')) {
-                        rssImages.push(src);
-                    }
-                });
-
-                // 2. Build articleData from RSS
-                const articleData = {
-                    title: item.title.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim(),
-                    content: imgExtractor.textContent || imgExtractor.innerText || '',
-                    url: item.link,
-                    image: item.thumbnail || item.enclosure?.link || rssImages[0] || '',
-                    bodyImages: [...new Set(rssImages)].slice(0, 5),
-                    author: item.author || 'Editör',
-                    categories: item.categories || []
-                };
-
-                // 3. Try to fetch full article page for richer content + images
-                logTerminal(`🔍 Tam makale sayfası aranıyor...`);
-                const fullHtml = await fetchFullArticle(item.link);
-                if (fullHtml) {
-                    logTerminal(`✅ Tam makale sayfası bulundu!`, 'success');
-                    const fullData = await extractArticleData(fullHtml, item.link);
-                    // Merge: prefer full page data if richer
-                    if (fullData.content && fullData.content.length > articleData.content.length) {
-                        articleData.content = fullData.content;
-                    }
-                    if (fullData.image) articleData.image = fullData.image;
-                    if (fullData.bodyImages && fullData.bodyImages.length > 0) {
-                        articleData.bodyImages = [...new Set([...fullData.bodyImages, ...articleData.bodyImages])].slice(0, 5);
-                    }
-                } else {
-                    logTerminal(`ℹ️ Tam sayfa erişilemiyor, RSS içeriği kullanılıyor.`, 'info');
-                }
+                logTerminal(`📝 [${sourceLabel}] ${articleData.title}`);
+                logTerminal(`📸 Kapak: ${articleData.image ? '✓' : '✗'} | Gövde resimleri: ${articleData.bodyImages.length}`);
 
                 if (articleData.content.length < 100) {
-                    logTerminal(`⚠️ İçerik kısa, atlanıyor: ${item.link}`, 'warning');
-                    scrapedUrls.push(item.link);
+                    logTerminal(`⚠️ İçerik kısa, atlanıyor: ${articleData.url}`, 'warning');
+                    scrapedUrls.push(articleData.url);
                     DB.set('scraped_urls', scrapedUrls);
                     continue;
                 }
-
-                logTerminal(`📸 Kapak: ${articleData.image ? '✓' : '✗'} | Gövde resimleri: ${articleData.bodyImages.length}`);
 
                 try {
                     logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
@@ -411,7 +420,7 @@ window.BotEngine = (function () {
 
                     publishArticle(finalHtml, articleData, config.category);
 
-                    scrapedUrls.push(item.link);
+                    scrapedUrls.push(articleData.url);
                     DB.set('scraped_urls', scrapedUrls);
 
                 } catch (err) {

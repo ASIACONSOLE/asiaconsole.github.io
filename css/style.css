@@ -698,12 +698,6 @@ h6 {
   align-items: center;
 }
 
-.ticker-content {
-  display: flex;
-  white-space: nowrap;
-  padding-left: 2rem;
-  animation: ticker-scroll 40s linear infinite;
-}
 
 .ticker-content:hover {
   animation-play-state: paused;

@@ -88,23 +88,26 @@ window.BotEngine = (function () {
         if (blacklist.some(word => className.includes(word))) return false;
 
         // 3. Dimension & Ratio Heuristics
-        const width = parseInt(img.getAttribute('width') || img.naturalWidth || '1000', 10);
-        const height = parseInt(img.getAttribute('height') || img.naturalHeight || '1000', 10);
+        // Softened: If it's a lazy image, we don't know dimensions yet, so we assume it might be valid
+        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset', 'data-lazy', 'data-src-webp', 'srcset'];
+        const hasLazy = lazyAttrs.some(attr => img.hasAttribute(attr));
 
-        if (width < 200 || height < 150) return false;
+        const widthAttr = img.getAttribute('width');
+        const heightAttr = img.getAttribute('height');
+        const width = parseInt(widthAttr || img.naturalWidth || (hasLazy ? '1000' : '0'), 10);
+        const height = parseInt(heightAttr || img.naturalHeight || (hasLazy ? '1000' : '0'), 10);
+
+        // If explicitly small (e.g. 1x1 placeholder), but has lazy, we allow it for now
+        if (!hasLazy && (width < 50 || height < 50)) return false;
+        if (!hasLazy && (width < 150 && height < 150)) return false;
 
         const ratio = width / height;
-        if (ratio > 4 || ratio < 0.25) return false;
+        if (!hasLazy && (ratio > 5 || ratio < 0.2)) return false;
 
         const commonAds = ['300x250', '728x90', '160x600', '300x600', '970x250', '320x50', '320x100'];
         if (commonAds.some(size => src.includes(size))) return false;
 
-        // 4. Lazy-load specific attribute check (Ensure we haven't missed it)
-        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset'];
-        const hasLazy = lazyAttrs.some(attr => img.hasAttribute(attr));
-        if (hasLazy && !src) return true; // It's likely a valid lazy image
-
-        // 5. Deep Parent Checks (Traverse up 5 levels)
+        // 4. Deep Parent Checks (Traverse up 5 levels)
         let parent = img.parentElement;
         for (let i = 0; i < 5 && parent; i++) {
             const pClass = (parent.className || '').toLowerCase();
@@ -112,7 +115,11 @@ window.BotEngine = (function () {
             const pTag = parent.tagName.toLowerCase();
 
             if (['aside', 'footer', 'nav', 'header'].includes(pTag)) return false;
-            if (blacklist.some(word => pClass.includes(word) || pId.includes(word))) return false;
+            if (blacklist.some(word => pClass.includes(word) || pId.includes(word))) {
+                // Exceptional case: if it's a known article container, don't reject
+                const articleContainers = ['article', 'post-content', 'entry-content', 'article-content', 'td-post-content'];
+                if (!articleContainers.some(c => pClass.includes(c))) return false;
+            }
 
             parent = parent.parentElement;
         }
@@ -343,25 +350,48 @@ window.BotEngine = (function () {
             doc.querySelector('main');
 
         let bodyImages = [];
-        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset'];
+        const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-actual-src', 'data-srcset', 'data-lazy', 'data-src-webp', 'srcset'];
 
         if (articleTag) {
             articleTag.querySelectorAll('img').forEach(img => {
                 if (isValidImage(img)) {
-                    let src = img.getAttribute('src');
-                    for (const attr of lazyAttrs) {
-                        if (!src || src.startsWith('data:image')) {
-                            src = img.getAttribute(attr);
+                    let src = '';
+
+                    // 1. Check if it's inside a <picture> tag
+                    const picture = img.closest('picture');
+                    if (picture) {
+                        const source = picture.querySelector('source');
+                        if (source) {
+                            const srcset = source.getAttribute('srcset');
+                            if (srcset) {
+                                src = srcset.split(' ')[0].split(',')[0]; // Get first real URL
+                            }
                         }
                     }
 
-                    if (src) {
+                    // 2. Try lazy attributes
+                    if (!src) {
+                        for (const attr of lazyAttrs) {
+                            const val = img.getAttribute(attr);
+                            if (val && !val.startsWith('data:image')) {
+                                src = val;
+                                break;
+                            }
+                        }
+                    }
+
+                    // 3. Fallback to src
+                    if (!src) src = img.getAttribute('src');
+
+                    if (src && !src.startsWith('data:image')) {
+                        if (src.includes(' ')) src = src.trim().split(' ')[0]; // Handle srcset formats
                         if (src.startsWith('/')) src = baseObj.origin + src;
                         else if (src.startsWith('//')) src = 'https:' + src;
                         bodyImages.push(src);
                     }
                 }
             });
+            logTerminal(`Makale gövdesinde ${bodyImages.length} adet geçerli resim bulundu.`, bodyImages.length > 0 ? 'success' : 'warning');
 
             const vids = extractVideos(articleTag);
 

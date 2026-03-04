@@ -667,28 +667,6 @@ h6 {
   }
 }
 
-.ticker-label {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  /* Emergency Red for Breaking News */
-  color: white;
-  padding: 0 1.5rem;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  font-weight: 900;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  white-space: nowrap;
-  position: relative;
-  z-index: 2;
-  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.ticker-label::after {
-  display: none;
-  /* Removed arrow for cleaner full bar look */
-}
 
 .ticker-content-wrapper {
   flex: 1;
@@ -696,6 +674,12 @@ h6 {
   height: 100%;
   display: flex;
   align-items: center;
+}
+
+.ticker-content {
+  display: flex;
+  white-space: nowrap;
+  animation: ticker-scroll 60s linear infinite;
 }
 
 

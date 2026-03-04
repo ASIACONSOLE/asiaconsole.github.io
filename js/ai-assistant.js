@@ -462,6 +462,20 @@ const AIAssistant = (() => {
     const rewriteArticle = async (articleData, onProgress) => {
         const s = DB.get('settings') || {};
 
+        // Prepare media cues for the AI
+        const hasImages = articleData.bodyImages && articleData.bodyImages.length > 0;
+        const hasVideos = articleData.videos && articleData.videos.length > 0;
+
+        let mediaContext = "";
+        if (hasImages) {
+            mediaContext += `\nMEVCUT RESİMLER (${articleData.bodyImages.length} adet):\n`;
+            articleData.bodyImages.forEach((_, i) => mediaContext += `- [RESiM-${i + 1}]\n`);
+        }
+        if (hasVideos) {
+            mediaContext += `\nMEVCUT VİDEOLAR (${articleData.videos.length} adet):\n`;
+            articleData.videos.forEach((_, i) => mediaContext += `- [ViDEO-${i + 1}]\n`);
+        }
+
         const systemPrompt = `Sen Türkiye'nin en prestijli teknoloji platformlarından biri olan AsiaConsole'un baş editörüsün. 
 Deneyimli, profesyonel, derinlikli ve akıcı bir üslupla teknoloji haberleri yazıyorsun.
 Sana verilen haberi SIFIRDAN, tamamen ÖZGÜN ve SEO uyumlu olarak yeniden yazmalısın.
@@ -470,38 +484,31 @@ YAZIM KURALLARI:
 1. ÇIKTI SADECE HTML FORMATINDA OLMALIDIR. Markdown kullanma. \`\`\`html gibi blok etiketleri KULLANMA.
 2. Sadece yazının gövde HTML'ini ver (<html>, <body>, <head> gibi kapsayıcı etiketler KULLANMA).
 3. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul>/<li> kullan.
-4. Yazı içine ASLA <img> resim etiketi EKLEME. Resimler sistem tarafından otomatik yerleştirilecek.
-5. ÖNEMLİ: Haberin içindeki video linklerini, ürün satın alma linklerini veya önemli kaynak bağlantılarını (<a> etiketlerini) mutlaka yazı içinde uygun yerlerde koru ve yeniden kullan.
+4. ÖNEMLİ (MEDYA): Sana bir medya listesi verilecek. Yazı içine bu medyaları yerleştirmek için SADECE [RESiM-1], [ViDEO-1] gibi yer tutucuları kullan.
+5. <img> veya <iframe> etiketlerini ASLA kendin yazma. Sadece köşeli parantez içindeki yer tutucuları paragraf aralarına yerleştir.
+6. Haberin içindeki önemli kaynak bağlantılarını (<a> etiketlerini) mutlaka yazı içinde uygun yerlerde koru.
 
 EDİTÖRYEL KALİTE:
 - İlk paragrafta okuyucuyu hemen yakalayan, merak uyandıran güçlü bir giriş yaz.
-- Haberin teknik detaylarını analiz et, sektörel bağlamı açıkla. Sadece "ne oldu" değil, "neden önemli" sorusunu yanıtla.
-- Alt başlıklar (<h2>) kullanarak haberi bölümlere ayır. Her bölüm kendi içinde tutarlı ve bilgi dolu olsun.
-- Teknik terimleri okuyucunun anlayacağı şekilde, ama kibirli olmadan açıkla.
-- Orijinal içerik HTML formatında olabilir, bu yapı içindeki önemli bilgileri ve bağlantıları yakala ve metni derinleştir.
-- Minimum 4-5 paragraf, ideal olarak 6-8 paragraf yaz. Haber kısa bile olsa detaylı analiz ekle.
+- Haberi bölümlere ayır, alt başlıklar kullan.
+- Teknik terimleri açıkla, habere derinlik kat.
+- Minimum 5-6 paragraf yaz.
 
 KRİTİK KURALLAR:
 - Kaynak sitenin ismini (ShiftDelete, Webtekno vb.) ASLA yazıya dahil etme.
-- Haberin teknik bilgileri (isimler, tarihler, özellikler, rakamlar) mutlaka DOĞRU kalmalı.
-- Başlığı <h1> olarak YAZMA, başlık ayrıca ayarlanır.
+- Başlığı <h1> olarak YAZMA.
 
-KAPANIŞ (ZORUNLU):
-Yazının en son paragrafında MUTLAKA samimi, sıcak ve etkileşimi teşvik eden bir editör notu yaz. Örnek tonlar:
-- "Siz bu konuda ne düşünüyorsunuz? Görüşlerinizi yorumlarda bizimle paylaşın!"
-- "Bu gelişme sizi heyecanlandırdı mı? Düşüncelerinizi aşağıdaki yorumlarda okumak isteriz!"
-- "Sizce bu hamle doğru bir adım mı? Fikirlerinizi yorumlarda bekliyoruz!"
-Bu kapanış cümlesi <p><strong>...</strong></p> formatında ve italik veya kalın yazılmalı.`;
+KAPANIŞ:
+Yazının sonuna kalın ve italik bir editör notu ekle: <p><strong>...</strong></p>`;
 
         const userPrompt = `HABER BAŞLIĞI: ${articleData.title}
+
+${mediaContext}
 
 HABER İÇERİĞİ:
 ${articleData.content}
 
-${articleData.categories && articleData.categories.length > 0 ? 'KATEGORİLER: ' + articleData.categories.join(', ') : ''}
-${articleData.author ? 'YAZAR: ' + articleData.author : ''}
-
-Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı bir şekilde yeniden yaz.`;
+Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı bir şekilde yeniden yaz. Verilen medyaları [RESiM-X] formatında yazı içine uygun dağıt.`;
 
         const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
 

@@ -147,6 +147,18 @@ h6 {
   transition: transform 0.3s ease;
 }
 
+.brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent !important;
+}
+
+.brand-icon img {
+  filter: drop-shadow(0 0 8px rgba(79, 142, 247, 0.3));
+}
+
 .site-name {
   display: inline-block;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));

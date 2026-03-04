@@ -447,61 +447,76 @@ window.BotEngine = (function () {
         let finalTitle = originalData.title;
         finalTitle = finalTitle.split(' - ')[0].split(' | ')[0].split(' – ')[0].trim();
 
-        // Inject images into the AI HTML code if they exist
+        // SMART MEDIA INJECTION: Replace AI placeholders with real media
         let enrichedHtml = aiHtmlCode;
+
+        // 1. Process Photos
         if (originalData.bodyImages && originalData.bodyImages.length > 0) {
-            const paragraphs = enrichedHtml.split('</p>');
-            const totalParas = paragraphs.length - 1; // Last split is usually empty
-            const images = originalData.bodyImages;
+            originalData.bodyImages.forEach((imgUrl, index) => {
+                const placeholder = `[RESiM-${index + 1}]`;
+                const imgHtml = `
+                    <div class="article-body-img" style="margin: 2.5rem 0; text-align: center;">
+                        <img src="${imgUrl}" style="max-width:100%; height:auto; border-radius:16px; border:1px solid var(--border); box-shadow: 0 15px 45px rgba(0,0,0,0.3); transition: transform 0.3s ease;" 
+                             onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    </div>
+                `;
+                if (enrichedHtml.includes(placeholder)) {
+                    enrichedHtml = enrichedHtml.split(placeholder).join(imgHtml);
+                }
+            });
+        }
 
-            let finalHtml = "";
-            let imgIdx = 0;
-
-            // Distribute images every few paragraphs
-            const interval = Math.max(1, Math.floor(totalParas / (images.length + 1)));
-
-            for (let i = 0; i < paragraphs.length; i++) {
-                finalHtml += paragraphs[i] + (i < paragraphs.length - 1 ? '</p>' : '');
-
-                // Insert Images
-                if (imgIdx < images.length && (i + 1) % interval === 0 && i < paragraphs.length - 2) {
-                    finalHtml += `<div class="article-body-img" style="margin: 2rem 0;"><img src="${images[imgIdx]}" style="width:100%; border-radius:12px; border:1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></div>`;
-                    imgIdx++;
+        // 2. Process Videos
+        if (originalData.videos && originalData.videos.length > 0) {
+            originalData.videos.forEach((videoUrl, index) => {
+                const placeholder = `[ViDEO-${index + 1}]`;
+                let vidEmbed = '';
+                if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                    let vidId = '';
+                    if (videoUrl.includes('v=')) vidId = videoUrl.split('v=')[1].split('&')[0];
+                    else if (videoUrl.includes('embed/')) vidId = videoUrl.split('embed/')[1].split('?')[0];
+                    else if (videoUrl.includes('youtu.be/')) vidId = videoUrl.split('youtu.be/')[1].split('?')[0];
+                    if (vidId) vidEmbed = `https://www.youtube.com/embed/${vidId}`;
+                } else if (videoUrl.includes('vimeo.com')) {
+                    const vidId = videoUrl.split('/').pop();
+                    if (vidId) vidEmbed = `https://player.vimeo.com/video/${vidId}`;
                 }
 
-                // Insert Videos (one at a time, spaced out)
-                if (originalData.videos && originalData.videos[i]) {
-                    const videoSrc = originalData.videos[i];
-                    let vidEmbed = '';
-                    if (videoSrc.includes('youtube.com') || videoSrc.includes('youtu.be')) {
-                        let vidId = '';
-                        if (videoSrc.includes('v=')) vidId = videoSrc.split('v=')[1].split('&')[0];
-                        else if (videoSrc.includes('embed/')) vidId = videoSrc.split('embed/')[1].split('?')[0];
-                        else if (videoSrc.includes('youtu.be/')) vidId = videoSrc.split('youtu.be/')[1].split('?')[0];
-                        if (vidId) vidEmbed = `https://www.youtube.com/embed/${vidId}`;
-                    } else if (videoSrc.includes('vimeo.com')) {
-                        const vidId = videoSrc.split('/').pop();
-                        if (vidId) vidEmbed = `https://player.vimeo.com/video/${vidId}`;
-                    } else {
-                        vidEmbed = videoSrc;
+                if (vidEmbed) {
+                    const vidHtml = `
+                        <div class="video-container" style="margin: 2.5rem 0; border-radius: 16px; overflow: hidden; aspect-ratio: 16/9; background:#000; border:1px solid var(--border); box-shadow: 0 15px 45px rgba(0,0,0,0.4);">
+                            <iframe src="${vidEmbed}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>
+                        </div>
+                    `;
+                    if (enrichedHtml.includes(placeholder)) {
+                        enrichedHtml = enrichedHtml.split(placeholder).join(vidHtml);
                     }
+                }
+            });
+        }
 
-                    if (vidEmbed) {
+        // 3. Fallback: If AI didn't use placeholders, use the old interval logic for remaining media
+        if (originalData.bodyImages && originalData.bodyImages.length > 0) {
+            const unusedImages = originalData.bodyImages.filter((_, i) => !aiHtmlCode.includes(`[RESiM-${i + 1}]`));
+            if (unusedImages.length > 0) {
+                const paragraphs = enrichedHtml.split('</p>');
+                let finalHtml = "";
+                let imgIdx = 0;
+                const interval = Math.max(2, Math.floor(paragraphs.length / (unusedImages.length + 1)));
+
+                for (let i = 0; i < paragraphs.length; i++) {
+                    finalHtml += paragraphs[i] + (i < paragraphs.length - 1 ? '</p>' : '');
+                    if (imgIdx < unusedImages.length && (i + 1) % interval === 0 && i < paragraphs.length - 2) {
                         finalHtml += `
-                            <div class="video-container" style="margin: 2rem 0; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; background:#000; border:1px solid var(--border);">
-                                <iframe src="${vidEmbed}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>
+                            <div class="article-body-img" style="margin: 2.5rem 0;">
+                                <img src="${unusedImages[imgIdx]}" style="max-width:100%; border-radius:16px; border:1px solid var(--border);">
                             </div>
                         `;
+                        imgIdx++;
                     }
                 }
+                enrichedHtml = finalHtml;
             }
-
-            // If any images left
-            while (imgIdx < images.length) {
-                finalHtml += `<div class="article-body-img" style="margin: 2rem 0;"><img src="${images[imgIdx]}" style="width:100%; border-radius:12px; border:1px solid var(--border);"></div>`;
-                imgIdx++;
-            }
-            enrichedHtml = finalHtml;
         }
 
         // Use a short text snippet for description

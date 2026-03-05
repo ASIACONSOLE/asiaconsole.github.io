@@ -1,0 +1,577 @@
+/* ===================================================
+   TECH COMMUNITY - 15 YENİ SAYFA ŞABLONU (Önizleme)
+   HTML yapılarına dokunulmadan CSS ile DOM manipülasyonu
+   =================================================== */
+
+/* 1. Varsayılan (Klasik Portal) 
+   Zaten style.css'te varsayılan yapı
+*/
+
+/* ========================================
+   2. Modern Dergi (Masonry & Devasa Hero)
+   ======================================== */
+body[data-layout="magazine"] .hero {
+    min-height: 100vh !important;
+    align-items: flex-end;
+    padding-bottom: 5rem;
+}
+
+body[data-layout="magazine"] .hero .container {
+    grid-template-columns: 1fr;
+    text-align: left;
+}
+
+body[data-layout="magazine"] .hero-content h1 {
+    font-size: clamp(4rem, 10vw, 8rem);
+    text-transform: uppercase;
+    line-height: 0.9;
+}
+
+body[data-layout="magazine"] .cards-grid {
+    column-count: 3;
+    column-gap: 1.5rem;
+    display: block;
+}
+
+body[data-layout="magazine"] .card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    break-inside: avoid;
+}
+
+/* ========================================
+   3. Sol Yan Menü (Dashboard Stili)
+   ======================================== */
+@media (min-width: 992px) {
+    body[data-layout="sidebar-left"] {
+        display: flex;
+        flex-direction: row;
+    }
+
+    body[data-layout="sidebar-left"] .navbar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding: 2rem;
+        border-right: 1px solid var(--border);
+        border-bottom: none;
+    }
+
+    body[data-layout="sidebar-left"] .navbar-brand {
+        margin-bottom: 3rem;
+    }
+
+    body[data-layout="sidebar-left"] .navbar-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 1rem;
+    }
+
+    body[data-layout="sidebar-left"] .navbar-nav a {
+        width: 100%;
+        padding: 1rem;
+    }
+
+    body[data-layout="sidebar-left"] .navbar-actions {
+        flex-direction: column;
+        margin-top: auto;
+        width: 100%;
+    }
+
+    body[data-layout="sidebar-left"] .navbar-actions a {
+        width: 100%;
+        text-align: center;
+    }
+
+    body[data-layout="sidebar-left"] .page-wrapper {
+        margin-left: 280px;
+        width: calc(100% - 280px);
+        padding-top: 0;
+    }
+}
+
+/* ========================================
+   4. Yatay Liste (List View)
+   ======================================== */
+body[data-layout="list-view"] .cards-grid {
+    grid-template-columns: 1fr;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+body[data-layout="list-view"] .card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+    overflow: hidden;
+}
+
+body[data-layout="list-view"] .card-img {
+    width: 300px;
+    height: 100%;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+body[data-layout="list-view"] .card-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+/* ========================================
+   5. Ekranı İkiye Bölen (Split Screen)
+   ======================================== */
+@media (min-width: 992px) {
+    body[data-layout="split-screen"] .hero {
+        min-height: 100vh;
+        padding: 0;
+    }
+
+    body[data-layout="split-screen"] .hero::before {
+        width: 50%;
+    }
+
+    body[data-layout="split-screen"] .hero .container {
+        grid-template-columns: 1fr 1fr;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        height: 100vh;
+    }
+
+    body[data-layout="split-screen"] .hero-content {
+        grid-column: 1;
+        padding: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: left;
+    }
+
+    body[data-layout="split-screen"] .hero-content .hero-badge,
+    body[data-layout="split-screen"] .hero-content h1,
+    body[data-layout="split-screen"] .hero-content p {
+        margin-left: 0;
+        margin-right: auto;
+    }
+
+    body[data-layout="split-screen"] .hero-buttons {
+        justify-content: flex-start;
+    }
+
+    body[data-layout="split-screen"] .snippet-hero-wrapper {
+        grid-column: 2;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        border-left: 1px solid var(--border);
+    }
+
+    body[data-layout="split-screen"] .snippet-card.is-square {
+        width: 80%;
+        max-width: 500px;
+    }
+}
+
+/* ========================================
+   6. Yüzen Navigasyon (Floating Island)
+   ======================================== */
+@media (min-width: 992px) {
+    body[data-layout="floating-nav"] .navbar {
+        top: auto;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        border-radius: 50px;
+        padding: 0.5rem 2rem;
+        background: rgba(13, 17, 23, 0.95);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    body[data-layout="floating-nav"] .page-wrapper {
+        padding-top: 0;
+        padding-bottom: 100px;
+    }
+
+    body[data-layout="floating-nav"] .navbar-brand .site-name {
+        display: none;
+    }
+}
+
+/* ========================================
+   7. Blog Formatı (Dar ve Ortalanmış)
+   ======================================== */
+body[data-layout="minimal-blog"] .container {
+    max-width: 800px;
+}
+
+body[data-layout="minimal-blog"] .navbar {
+    flex-direction: column;
+    height: auto;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+body[data-layout="minimal-blog"] .navbar-brand {
+    font-size: 2rem;
+}
+
+body[data-layout="minimal-blog"] .navbar-nav {
+    justify-content: center;
+}
+
+body[data-layout="minimal-blog"] .cards-grid {
+    grid-template-columns: 1fr;
+}
+
+body[data-layout="minimal-blog"] .hero {
+    min-height: 50vh;
+    text-align: center;
+}
+
+body[data-layout="minimal-blog"] .hero-content {
+    align-items: center;
+}
+
+/* ========================================
+   8. Bento Grid (Kutucuklu Tasarım)
+   ======================================== */
+@media (min-width: 992px) {
+    body[data-layout="bento-grid"] .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-auto-rows: 250px;
+        gap: 1.5rem;
+    }
+
+    body[data-layout="bento-grid"] .card:nth-child(1) {
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+
+    body[data-layout="bento-grid"] .card:nth-child(2) {
+        grid-column: span 2;
+    }
+
+    body[data-layout="bento-grid"] .card:nth-child(3) {
+        grid-column: span 1;
+        grid-row: span 2;
+    }
+
+    body[data-layout="bento-grid"] .card:nth-child(4) {
+        grid-column: span 1;
+    }
+
+    body[data-layout="bento-grid"] .card:nth-child(5) {
+        grid-column: span 3;
+    }
+
+    body[data-layout="bento-grid"] .card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body[data-layout="bento-grid"] .card-img {
+        flex: 1;
+        height: auto;
+    }
+}
+
+/* ========================================
+   9. Gazete Stili (Multi-Column Brutalist)
+   ======================================== */
+body[data-layout="newspaper"] {
+    background: #fdfdfd;
+    color: #111;
+}
+
+body[data-layout="newspaper"] .navbar {
+    background: #fff;
+    border-bottom: 4px solid #000;
+}
+
+body[data-layout="newspaper"] .navbar-nav a {
+    color: #000;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+body[data-layout="newspaper"] .hero {
+    background: #fff;
+    border-bottom: 2px solid #000;
+    color: #000;
+}
+
+body[data-layout="newspaper"] .site-name {
+    -webkit-text-fill-color: initial;
+    color: #000;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 2.8rem;
+    letter-spacing: -1px;
+}
+
+body[data-layout="newspaper"] .card {
+    background: transparent;
+    border: none;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    box-shadow: none;
+    color: #111;
+}
+
+body[data-layout="newspaper"] .card-img {
+    filter: grayscale(100%);
+    border-radius: 0;
+}
+
+body[data-layout="newspaper"] h1,
+body[data-layout="newspaper"] h2,
+body[data-layout="newspaper"] h3,
+body[data-layout="newspaper"] .card-title {
+    font-family: 'Times New Roman', Times, serif;
+    color: #000;
+}
+
+body[data-layout="newspaper"] .card-desc {
+    color: #333;
+    font-family: Georgia, serif;
+}
+
+/* ========================================
+   10. Diagonal (Kesik/Eğimli Borderlar)
+   ======================================== */
+body[data-layout="diagonal"] .hero {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+    padding-bottom: 10vh;
+}
+
+body[data-layout="diagonal"] .section:nth-child(even) {
+    background: var(--bg-secondary);
+    clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%);
+    padding: 8rem 0;
+    margin-top: -5rem;
+}
+
+/* ========================================
+   11. Yatay Scroll (Horizontal Carousel)
+   ======================================== */
+body[data-layout="horizontal-scroll"] .cards-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+body[data-layout="horizontal-scroll"] .card {
+    min-width: 350px;
+    max-width: 400px;
+    scroll-snap-align: center;
+    flex-shrink: 0;
+}
+
+body[data-layout="horizontal-scroll"] ::-webkit-scrollbar {
+    height: 12px;
+}
+
+body[data-layout="horizontal-scroll"] ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+body[data-layout="horizontal-scroll"] ::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: 10px;
+}
+
+/* ========================================
+   12. Koyu Sinematik (Full Focus)
+   ======================================== */
+body[data-layout="cinematic"] {
+    background: #000;
+    --bg-primary: #000;
+    --bg-secondary: #0a0a0a;
+}
+
+body[data-layout="cinematic"] .container {
+    max-width: 1400px;
+}
+
+body[data-layout="cinematic"] .card {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+}
+
+body[data-layout="cinematic"] .card-img {
+    aspect-ratio: 21/9;
+    border-radius: 0;
+    filter: brightness(0.6);
+    transition: filter 0.5s, transform 0.5s;
+}
+
+body[data-layout="cinematic"] .card:hover .card-img {
+    filter: brightness(1);
+    transform: scale(1.02);
+}
+
+body[data-layout="cinematic"] .card-body {
+    padding: 1.5rem 0;
+}
+
+/* ========================================
+   13. Brutalizm
+   ======================================== */
+body[data-layout="brutalism"] {
+    background: #fff;
+    color: #000;
+    --border-width: 4px;
+    --radius: 0px;
+}
+
+body[data-layout="brutalism"] .navbar {
+    background: #ffe600;
+    border-bottom: 4px solid #000;
+}
+
+body[data-layout="brutalism"] .btn-primary {
+    background: #ff003c;
+    color: #fff;
+    border: 4px solid #000;
+    box-shadow: 6px 6px 0 #000;
+    border-radius: 0;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+body[data-layout="brutalism"] .btn-primary:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0 0 0 #000;
+}
+
+body[data-layout="brutalism"] .card {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 #000;
+    color: #000;
+}
+
+body[data-layout="brutalism"] .card-title,
+body[data-layout="brutalism"] h1,
+body[data-layout="brutalism"] h2 {
+    color: #000;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+body[data-layout="brutalism"] .hero {
+    background: #00f0ff;
+    color: #000;
+    border-bottom: 4px solid #000;
+}
+
+body[data-layout="brutalism"] .site-name {
+    -webkit-text-fill-color: initial;
+    color: #000;
+    font-weight: 900;
+}
+
+/* ========================================
+   14. Zikzak Düzen (Alternating)
+   ======================================== */
+@media (min-width: 768px) {
+    body[data-layout="zigzag"] .cards-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4rem;
+    }
+
+    body[data-layout="zigzag"] .card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    body[data-layout="zigzag"] .card:nth-child(even) {
+        flex-direction: row-reverse;
+        text-align: right;
+    }
+
+    body[data-layout="zigzag"] .card-img {
+        width: 50%;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+    }
+
+    body[data-layout="zigzag"] .card-content {
+        width: 50%;
+        padding: 3rem;
+    }
+}
+
+/* ========================================
+   15. Mobil UI (App Stili Tümü Ortada)
+   ======================================== */
+@media (min-width: 768px) {
+    body[data-layout="mobile-app"] {
+        background: #000;
+        /* Dış taraf siyah */
+    }
+
+    body[data-layout="mobile-app"] .page-wrapper {
+        max-width: 450px;
+        margin: 0 auto;
+        background: var(--bg-primary);
+        box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+        min-height: 100vh;
+        border-right: 1px solid var(--border);
+        border-left: 1px solid var(--border);
+    }
+
+    body[data-layout="mobile-app"] .navbar {
+        max-width: 450px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    body[data-layout="mobile-app"] .hero {
+        padding-top: 5rem;
+        min-height: auto;
+        padding-bottom: 2rem;
+    }
+
+    body[data-layout="mobile-app"] .hero .container {
+        grid-template-columns: 1fr;
+    }
+
+    body[data-layout="mobile-app"] .snippet-hero-wrapper {
+        display: none;
+    }
+
+    body[data-layout="mobile-app"] .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body[data-layout="mobile-app"] .card-img {
+        aspect-ratio: 16/9;
+    }
+}

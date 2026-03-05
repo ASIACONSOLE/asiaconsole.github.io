@@ -102,31 +102,130 @@ window.BotEngine = (function () {
     function isValidImage(img) {
         if (!img) return false;
         const src = getBestImageSrc(img);
+        const srcLower = (src || '').toLowerCase();
         const className = (img.className || '').toLowerCase();
         const id = (img.id || '').toLowerCase();
+        const alt = (img.getAttribute('alt') || '').toLowerCase();
 
         if (!src || src.length < 10) return false;
 
-        // 1. URL Blacklist
-        const blacklist = [
-            'ads', 'advert', 'banner', 'reklam', 'coupon', 'gift', 'pixel', 'tracking',
-            'social', 'button', 'icon', 'sponsor', 'click', 'redirect', 'taboola', 'outbrain', 'doubleclick',
-            'amazon', 'adnxs', 'openx', 'pubmatic', 'criteo', 'smartadserver', 'zemanta', 'triplelift',
-            'nativo', 'revcontent', 'sharethrough', 'affiliate', 'widget', 'popup', 'modal'
+        // 1. URL Blacklist (expanded — global + Turkish ad networks & trackers)
+        const urlBlacklist = [
+            // Generic ad/tracking terms
+            'ads', 'advert', 'advertisement', 'banner', 'reklam', 'ilan',
+            'coupon', 'gift', 'pixel', 'tracking', 'tracker', 'beacon',
+            'social', 'button', 'icon', 'sponsor', 'click', 'redirect',
+            'affiliate', 'widget', 'popup', 'modal', 'promo', 'commercial',
+            // Major ad networks
+            'taboola', 'outbrain', 'doubleclick', 'googlesyndication',
+            'googleadservices', 'googleads', 'pagead2', 'gstatic.com/adsense',
+            'adsense', 'adnxs', 'amazon-adsystem', 'openx', 'pubmatic',
+            'criteo', 'smartadserver', 'zemanta', 'triplelift', 'nativo',
+            'revcontent', 'sharethrough', 'moatads', 'serving-sys',
+            'rubiconproject', 'casalemedia', '2mdn.net', 'adform',
+            'adtech', 'admob', 'mgid', 'propellerads', 'popads',
+            // Analytics / tracking pixels
+            'facebook.com/tr', 'connect.facebook', 'hotjar', 'clarity.ms',
+            'adobedtm', 'demdex', 'omtrdc', 'scorecardresearch',
+            'quantserve', 'chartbeat', 'newrelic', 'segment.io',
+            // Turkish ad networks
+            'reklamstore', 'admatic', 'reklam.com', 'adgear',
+            // Common tracking image patterns
+            'spacer', 'blank.gif', 'transparent', '1x1', '/pixel',
+            'shim.gif', 'clear.gif'
         ];
-        if (blacklist.some(word => src.toLowerCase().includes(word))) return false;
+        if (urlBlacklist.some(word => srcLower.includes(word))) return false;
 
-        // 2. Class Name & ID Blacklist (more specific)
-        const containerLabels = ['ad-', 'sidebar', 'footer', 'nav-', 'widget', 'social-', 'popup'];
-        if (containerLabels.some(word => className.includes(word) || id.includes(word))) return false;
+        // 2. File extension check — reject non-image URLs
+        const hasQueryOrHash = srcLower.includes('?') || srcLower.includes('#');
+        const cleanUrl = srcLower.split('?')[0].split('#')[0];
+        const nonImageExts = ['.js', '.css', '.json', '.xml', '.html', '.php'];
+        if (nonImageExts.some(ext => cleanUrl.endsWith(ext))) return false;
 
-        // 3. Dimension Heuristics
+        // 3. Class Name & ID Blacklist (expanded)
+        const classIdBlacklist = [
+            'ad-', 'ad_', 'ads-', 'ads_', 'adbox', 'adslot', 'advert',
+            'sidebar', 'footer', 'nav-', 'widget', 'social-', 'popup',
+            'reklam', 'ilan', 'sponsor', 'promo', 'commercial',
+            'banner-ad', 'promoted', 'native-ad', 'dfp', 'google_ads',
+            'adsbox', 'advertisement', 'related-', 'sharing', 'share-',
+            'author-avatar', 'gravatar', 'emoji', 'smil'
+        ];
+        if (classIdBlacklist.some(word => className.includes(word) || id.includes(word))) return false;
+
+        // 4. Alt text blacklist (ads often have promotional alt texts)
+        const altBlacklist = ['reklam', 'sponsor', 'advertisement', 'banner', 'kampanya', 'indirim', 'fırsat'];
+        if (altBlacklist.some(word => alt.includes(word))) return false;
+
+        // 5. Dimension Heuristics (enhanced)
         const width = parseInt(img.getAttribute('width') || '0', 10);
         const height = parseInt(img.getAttribute('height') || '0', 10);
-        if (width > 0 && width < 50) return false;
-        if (height > 0 && height < 50) return false;
+        // Reject tiny images (tracking pixels, icons)
+        if (width > 0 && width < 80) return false;
+        if (height > 0 && height < 80) return false;
+        // Reject extreme aspect ratios (horizontal banner ads like 728x90)
+        if (width > 0 && height > 0) {
+            const ratio = width / height;
+            if (ratio > 5 || ratio < 0.15) return false;
+        }
+
+        // 6. External link wrapper check — ads are usually wrapped in <a> linking to external domains
+        const parentLink = img.closest('a');
+        if (parentLink) {
+            const href = (parentLink.getAttribute('href') || '').toLowerCase();
+            const adLinkPatterns = [
+                'doubleclick', 'googleads', 'googlesyndication', 'taboola',
+                'outbrain', 'adnxs', 'criteo', 'amazon-adsystem', 'affiliate',
+                'sponsor', 'reklam', 'click.', 'redirect', 'track.',
+                'mgid', 'propellerads', 'adform', 'serving-sys'
+            ];
+            if (adLinkPatterns.some(p => href.includes(p))) return false;
+        }
+
+        // 7. Parent container ad detection
+        if (isAdContainer(img)) return false;
 
         return true;
+    }
+
+    // Helper: Check if an image's parent containers indicate it's an ad
+    function isAdContainer(img) {
+        const adIndicators = [
+            'ad-', 'ad_', 'ads-', 'ads_', 'advert', 'advertisement', 'adbox',
+            'adslot', 'dfp', 'google-ad', 'google_ad', 'native-ad',
+            'sponsor', 'reklam', 'ilan', 'promo', 'commercial', 'promoted',
+            'banner', 'taboola', 'outbrain', 'mgid', 'related-posts',
+            'sidebar', 'widget-area'
+        ];
+        const adDataAttrs = ['data-ad', 'data-advertisement', 'data-sponsored', 'data-native-ad'];
+        const adRoles = ['complementary', 'banner'];
+        const adTags = ['ASIDE'];
+
+        let el = img.parentElement;
+        let depth = 0;
+
+        while (el && depth < 5) {
+            const elClass = (el.className || '').toLowerCase();
+            const elId = (el.id || '').toLowerCase();
+            const elTag = el.tagName;
+            const elRole = (el.getAttribute('role') || '').toLowerCase();
+
+            // Check class and id
+            if (adIndicators.some(word => elClass.includes(word) || elId.includes(word))) return true;
+
+            // Check data attributes
+            if (adDataAttrs.some(attr => el.hasAttribute(attr))) return true;
+
+            // Check semantic roles
+            if (adRoles.includes(elRole)) return true;
+
+            // Check tag names
+            if (adTags.includes(elTag)) return true;
+
+            el = el.parentElement;
+            depth++;
+        }
+        return false;
     }
 
     function extractVideos(container) {
@@ -382,7 +481,28 @@ window.BotEngine = (function () {
             const vids = extractVideos(articleTag);
 
             const clone = articleTag.cloneNode(true);
-            const adSelectors = '.ads, .sharing, .related, .author-box, .social-share, .comments, .sidebar, .banner, .promo, .widget, [class*="ad-"], [id*="ad-"], .taboola, .outbrain';
+            const adSelectors = [
+                // Original selectors
+                '.ads', '.sharing', '.related', '.author-box', '.social-share',
+                '.comments', '.sidebar', '.banner', '.promo', '.widget',
+                '[class*="ad-"]', '[id*="ad-"]', '.taboola', '.outbrain',
+                // Extended: Turkish ad terms
+                '[class*="reklam"]', '[id*="reklam"]', '[class*="ilan"]',
+                '[class*="sponsor"]', '[id*="sponsor"]',
+                // Extended: Ad networks & generic ad containers
+                '[class*="advert"]', '[id*="advert"]', '[class*="native-ad"]',
+                '.mgid', '.mgbox', '.gemini-ad', '.dfp-ad', '.google-ad',
+                '[class*="ad_"]', '[id*="ad_"]', '[class*="adslot"]',
+                '[class*="commercial"]', '[class*="promoted"]',
+                // Semantic / structural ad containers
+                'aside', '[role="complementary"]', '[role="banner"]',
+                '[data-ad]', '[data-advertisement]', '[data-sponsored]',
+                // Social / share widgets
+                '[class*="share"]', '[class*="social"]',
+                // Related content widgets (often ad-like)
+                '[class*="related-post"]', '[class*="recommended"]',
+                '[class*="you-may-like"]', '[class*="more-from"]'
+            ].join(', ');
             const useless = clone.querySelectorAll(`script, style, iframe, nav, header, footer, ${adSelectors}`);
             useless.forEach(s => s.remove());
 
@@ -726,8 +846,8 @@ window.BotEngine = (function () {
         }
 
         const settings = DB.get('settings') || {};
-        if (!settings.geminiApiKey && !settings.groqApiKey) {
-            showAdminToast("API Anahtarı eksik! Bot çalışamaz. Site Ayarlarından API Anahtarı girin.", "error");
+        if (!settings.geminiApiKey && !settings.groqApiKey && !settings.openrouterApiKey && !settings.mistralApiKey) {
+            showAdminToast("API Anahtarı eksik! Bot çalışamaz. Site Ayarlarından en az 1 AI API Anahtarı girin.", "error");
             return;
         }
 

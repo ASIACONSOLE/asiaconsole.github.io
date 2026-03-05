@@ -366,6 +366,34 @@
                                     <a href="https://console.groq.com" target="_blank"
                                         style="color:#a855f7;">console.groq.com</a>'dan ücretsiz anahtar alın.
                                 </div>
+                                <div class="form-group" style="margin-top:0.75rem;">
+                                    <label>OpenRouter API Anahtarı <span
+                                            style="font-size:0.75rem; color:var(--text-muted);">(3. Yedek
+                                            AI)</span></label>
+                                    <input type="password" id="openrouterApiKey"
+                                        placeholder="OpenRouter'dan aldığınız anahtar" style="font-family:monospace;">
+                                </div>
+                                <div
+                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">
+                                    💡 Gemini ve Groq başarısız olursa <strong>OpenRouter (Llama 4 Ücretsiz)</strong>
+                                    devreye girer.<br>
+                                    <a href="https://openrouter.ai/keys" target="_blank"
+                                        style="color:#10b981;">openrouter.ai/keys</a>'den ücretsiz anahtar alın.
+                                </div>
+                                <div class="form-group" style="margin-top:0.75rem;">
+                                    <label>Mistral API Anahtarı <span
+                                            style="font-size:0.75rem; color:var(--text-muted);">(4. Yedek
+                                            AI)</span></label>
+                                    <input type="password" id="mistralApiKey"
+                                        placeholder="Mistral'den aldığınız anahtar" style="font-family:monospace;">
+                                </div>
+                                <div
+                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.2); border-radius:8px;">
+                                    💡 Diğer tüm AI'lar başarısız olursa <strong>Mistral</strong> son çare olarak
+                                    devreye girer.<br>
+                                    <a href="https://console.mistral.ai/api-keys" target="_blank"
+                                        style="color:#f97316;">console.mistral.ai</a>'den ücretsiz anahtar alın.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -865,6 +893,8 @@
             document.getElementById('aiGreeting').value = s.aiGreeting || 'Merhaba! Size nasıl yardımcı olabilirim?';
             document.getElementById('geminiApiKey').value = s.geminiApiKey || '';
             document.getElementById('groqApiKey').value = s.groqApiKey || '';
+            document.getElementById('openrouterApiKey').value = s.openrouterApiKey || '';
+            document.getElementById('mistralApiKey').value = s.mistralApiKey || '';
 
             document.getElementById('tickerEnabled').checked = !!s.tickerEnabled;
             document.getElementById('tickerText').value = s.tickerText || '';
@@ -997,6 +1027,8 @@
                     aiGreeting: document.getElementById('aiGreeting').value.trim(),
                     geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
                     groqApiKey: document.getElementById('groqApiKey').value.trim(),
+                    openrouterApiKey: document.getElementById('openrouterApiKey').value.trim(),
+                    mistralApiKey: document.getElementById('mistralApiKey').value.trim(),
                     bannerEnabled: document.getElementById('bannerEnabled').checked,
                     bannerTitle: document.getElementById('bannerTitle').value.trim(),
                     bannerSubtitle: document.getElementById('bannerSubtitle').value.trim(),

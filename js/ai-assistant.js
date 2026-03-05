@@ -462,6 +462,16 @@ const AIAssistant = (() => {
     const rewriteArticle = async (articleData, onProgress) => {
         const s = DB.get('settings') || {};
 
+        // Smart content truncation to prevent 413 errors
+        const truncateContent = (content, maxChars = 12000) => {
+            if (!content || content.length <= maxChars) return content;
+            // Try to cut at a paragraph boundary
+            const truncated = content.substring(0, maxChars);
+            const lastP = truncated.lastIndexOf('</p>');
+            if (lastP > maxChars * 0.5) return truncated.substring(0, lastP + 4);
+            return truncated + '...';
+        };
+
         // Prepare media cues for the AI
         const hasImages = articleData.bodyImages && articleData.bodyImages.length > 0;
         const hasVideos = articleData.videos && articleData.videos.length > 0;
@@ -501,12 +511,15 @@ KRİTİK KURALLAR:
 KAPANIŞ:
 Yazının sonuna kalın ve italik bir editör notu ekle: <p><strong>...</strong></p>`;
 
+        // Use truncated content for all APIs
+        const articleContent = truncateContent(articleData.content);
+
         const userPrompt = `HABER BAŞLIĞI: ${articleData.title}
 
 ${mediaContext}
 
 HABER İÇERİĞİ:
-${articleData.content}
+${articleContent}
 
 Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı bir şekilde yeniden yaz. Verilen medyaları [RESiM-X] formatında yazı içine uygun dağıt.`;
 
@@ -514,49 +527,87 @@ Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı b
 
         if (onProgress) onProgress('Yapay zekaya haber aktarılıyor...');
 
-        try {
-            // Try Gemini first
-            if (s.geminiApiKey && s.geminiApiKey.length > 20) {
-                if (onProgress) onProgress('Gemini API ile makale özgünleştiriliyor...');
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
-                });
+        // Helper: OpenAI-compatible API call (works with Groq, OpenRouter, Mistral)
+        const callOpenAICompatible = async (apiUrl, apiKey, model, sysPrompt, usrPrompt, maxTokens = 4000, extraHeaders = {}) => {
+            const resp = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, ...extraHeaders },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [
+                        { role: 'system', content: sysPrompt },
+                        { role: 'user', content: usrPrompt }
+                    ],
+                    temperature: 0.7, max_tokens: maxTokens
+                })
+            });
+            if (!resp.ok) throw new Error(`API ${resp.status}`);
+            const data = await resp.json();
+            if (data.choices && data.choices[0]) return data.choices[0].message.content;
+            throw new Error('No response');
+        };
 
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.candidates && data.candidates[0]) {
-                        return data.candidates[0].content.parts[0].text;
+        try {
+            // ===== 1. TRY GEMINI FIRST =====
+            if (s.geminiApiKey && s.geminiApiKey.length > 20) {
+                try {
+                    if (onProgress) onProgress('Gemini API ile makale özgünleştiriliyor...');
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data.candidates && data.candidates[0]) {
+                            return data.candidates[0].content.parts[0].text;
+                        }
                     }
-                } else if (resp.status !== 429) {
-                    throw new Error('GEMINI_FAILED');
-                }
-                console.warn('[AsiaBot] Gemini 429, Groq motoruna geçiliyor...');
+                    if (resp.status !== 429) console.warn('[AsiaBot] Gemini error:', resp.status);
+                    else console.warn('[AsiaBot] Gemini 429, sonraki motora geçiliyor...');
+                } catch (e) { console.warn('[AsiaBot] Gemini failed:', e.message); }
             }
 
-            // Try Groq as fallback
+            // ===== 2. TRY GROQ (with smaller content to avoid 413) =====
             if (s.groqApiKey) {
-                if (onProgress) onProgress('Groq API ile makale özgünleştiriliyor...');
-                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
-                    body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user', content: userPrompt }
-                        ],
-                        temperature: 0.7, max_tokens: 4000
-                    })
-                });
+                try {
+                    if (onProgress) onProgress('Groq API ile makale özgünleştiriliyor...');
+                    const groqContent = truncateContent(articleData.content, 6000); // Groq has smaller limits
+                    const groqUserPrompt = `HABER BAŞLIĞI: ${articleData.title}\n${mediaContext}\nHABER İÇERİĞİ:\n${groqContent}\n\nYukarıdaki haberi profesyonel bir editör olarak SIFIRDAN yeniden yaz. Medyaları [RESiM-X] formatında dağıt.`;
+                    const result = await callOpenAICompatible(
+                        'https://api.groq.com/openai/v1/chat/completions',
+                        s.groqApiKey, 'llama-3.3-70b-versatile',
+                        systemPrompt, groqUserPrompt, 4000
+                    );
+                    return result;
+                } catch (e) { console.warn('[AsiaBot] Groq failed:', e.message); }
+            }
 
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.choices && data.choices[0]) {
-                        return data.choices[0].message.content;
-                    }
-                }
+            // ===== 3. TRY OPENROUTER =====
+            if (s.openrouterApiKey) {
+                try {
+                    if (onProgress) onProgress('OpenRouter API ile makale özgünleştiriliyor...');
+                    const result = await callOpenAICompatible(
+                        'https://openrouter.ai/api/v1/chat/completions',
+                        s.openrouterApiKey, 'meta-llama/llama-4-maverick:free',
+                        systemPrompt, userPrompt, 4000,
+                        { 'HTTP-Referer': 'https://asiaconsole.com', 'X-Title': 'AsiaConsole Bot' }
+                    );
+                    return result;
+                } catch (e) { console.warn('[AsiaBot] OpenRouter failed:', e.message); }
+            }
+
+            // ===== 4. TRY MISTRAL =====
+            if (s.mistralApiKey) {
+                try {
+                    if (onProgress) onProgress('Mistral API ile makale özgünleştiriliyor...');
+                    const result = await callOpenAICompatible(
+                        'https://api.mistral.ai/v1/chat/completions',
+                        s.mistralApiKey, 'mistral-small-latest',
+                        systemPrompt, userPrompt, 4000
+                    );
+                    return result;
+                } catch (e) { console.warn('[AsiaBot] Mistral failed:', e.message); }
             }
 
             throw new Error('Tum API denemeleri basarisiz oldu.');

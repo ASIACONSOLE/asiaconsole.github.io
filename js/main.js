@@ -355,27 +355,65 @@ const DB = {
                 try {
                     // Final POJO cleaning
                     const finalData = JSON.parse(JSON.stringify(cleanVal));
+                    const jsonStr = JSON.stringify(finalData);
+                    const size = new Blob([jsonStr]).size;
 
-                    // Firestore Document Limit Check (Approx 1MB)
-                    const size = new Blob([JSON.stringify(finalData)]).size;
+                    // CHUNKED STORAGE: If articles exceed 500KB, split into chunks
+                    if (key === 'articles' && Array.isArray(finalData) && size > 500000) {
+                        const CHUNK_SIZE = 500000; // 500KB per chunk (safely under 1MB)
+                        const chunks = [];
+                        let currentChunk = [];
+                        let currentSize = 0;
+
+                        for (const article of finalData) {
+                            const articleSize = new Blob([JSON.stringify(article)]).size;
+                            if (currentSize + articleSize > CHUNK_SIZE && currentChunk.length > 0) {
+                                chunks.push(currentChunk);
+                                currentChunk = [];
+                                currentSize = 0;
+                            }
+                            currentChunk.push(article);
+                            currentSize += articleSize;
+                        }
+                        if (currentChunk.length > 0) chunks.push(currentChunk);
+
+                        // Write chunk metadata
+                        FirebaseDB.set('site_data', 'articles', {
+                            data: '__CHUNKED__',
+                            chunkCount: chunks.length,
+                            totalArticles: finalData.length,
+                            lastSync: Date.now()
+                        });
+
+                        // Write each chunk as separate document
+                        chunks.forEach((chunk, i) => {
+                            FirebaseDB.set('site_data', `articles_chunk_${i}`, { data: chunk, lastSync: Date.now() });
+                        });
+
+                        // Clean up old chunks beyond current count
+                        for (let i = chunks.length; i < 20; i++) {
+                            FirebaseDB.delete('site_data', `articles_chunk_${i}`);
+                        }
+
+                        console.log(`[Firebase] Articles synced in ${chunks.length} chunks (${(size / 1024).toFixed(0)}KB total) ✓`);
+                        if (DB._cloudStaleKeys) DB._cloudStaleKeys.delete(key);
+                        return;
+                    }
+
+                    // Standard single-document sync for non-article or small data
                     if (size > 1000000) {
                         console.error(`[Firebase] Data size too large for ${key}: ${(size / 1024 / 1024).toFixed(2)}MB (Limit: 1MB)`);
-                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük (${(size / 1024 / 1024).toFixed(2)}MB > 1MB limit), buluta yüklenemedi!`, 'error');
-                        // Mark this key as "cloud-stale" so the listener won't overwrite our fresh local copy
+                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük!`, 'error');
                         DB._cloudStaleKeys = DB._cloudStaleKeys || new Set();
                         DB._cloudStaleKeys.add(key);
                         return;
                     }
-                    // If we successfully reach here, remove from stale list
                     if (DB._cloudStaleKeys) DB._cloudStaleKeys.delete(key);
 
                     FirebaseDB.set('site_data', key, { data: finalData, lastSync: Date.now() })
                         .then(ok => {
-                            if (ok) {
-                                console.log(`[Firebase] ${key} synced successfully ✓`);
-                            } else {
-                                console.warn(`[Firebase] ${key} sync failed.`);
-                            }
+                            if (ok) console.log(`[Firebase] ${key} synced successfully ✓`);
+                            else console.warn(`[Firebase] ${key} sync failed.`);
                         });
                 } catch (e) {
                     console.error('[Firebase] Serialization failed for ' + key, e);
@@ -393,14 +431,27 @@ const DB = {
         }
         console.log('[Firebase] All data synced to cloud ✓');
     },
-    // NEW: Load from cloud to local
+    // NEW: Load from cloud to local (with chunked article support)
     async loadFromCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects'];
         for (const key of keys) {
             const remote = await FirebaseDB.get('site_data', key);
             if (remote && remote.data) {
-                localStorage.setItem('tc_' + key, JSON.stringify(remote.data));
+                // Handle chunked articles
+                if (key === 'articles' && remote.data === '__CHUNKED__' && remote.chunkCount) {
+                    let allArticles = [];
+                    for (let i = 0; i < remote.chunkCount; i++) {
+                        const chunk = await FirebaseDB.get('site_data', `articles_chunk_${i}`);
+                        if (chunk && Array.isArray(chunk.data)) {
+                            allArticles = allArticles.concat(chunk.data);
+                        }
+                    }
+                    localStorage.setItem('tc_articles', JSON.stringify(allArticles));
+                    console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} chunks`);
+                } else {
+                    localStorage.setItem('tc_' + key, JSON.stringify(remote.data));
+                }
             }
         }
     },
@@ -1153,7 +1204,31 @@ if (typeof FirebaseDB !== 'undefined') {
                 // GUARD: If this key's local data is NEWER than cloud (cloud write failed due to size),
                 // do NOT overwrite local with stale cloud data!
                 if (DB._cloudStaleKeys && DB._cloudStaleKeys.has(key)) {
-                    console.warn(`[Firebase] Skipping remote overwrite for '${key}' — local data is newer (cloud write failed due to size limit).`);
+                    console.warn(`[Firebase] Skipping remote overwrite for '${key}' — local data is newer.`);
+                    return;
+                }
+
+                // Handle CHUNKED articles: if cloud says '__CHUNKED__', fetch all chunks
+                if (key === 'articles' && remoteData === '__CHUNKED__' && remote.chunkCount) {
+                    (async () => {
+                        let allArticles = [];
+                        for (let i = 0; i < remote.chunkCount; i++) {
+                            const chunk = await FirebaseDB.get('site_data', `articles_chunk_${i}`);
+                            if (chunk && Array.isArray(chunk.data)) {
+                                allArticles = allArticles.concat(chunk.data);
+                            }
+                        }
+                        // Only apply if cloud has more or equal articles
+                        const localArticles = DB.get('articles');
+                        if (Array.isArray(localArticles) && localArticles.length > allArticles.length) {
+                            console.warn(`[Firebase] Skipping chunked remote — local has ${localArticles.length} vs cloud ${allArticles.length}`);
+                            return;
+                        }
+                        localStorage.setItem('tc_articles', JSON.stringify(allArticles));
+                        DB.set('articles', allArticles, false);
+                        console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} cloud chunks`);
+                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
+                    })();
                     return;
                 }
 

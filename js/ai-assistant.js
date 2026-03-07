@@ -589,7 +589,7 @@ Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı b
                     if (onProgress) onProgress('OpenRouter API ile makale özgünleştiriliyor...');
                     const result = await callOpenAICompatible(
                         'https://openrouter.ai/api/v1/chat/completions',
-                        s.openrouterApiKey, 'meta-llama/llama-4-maverick:free',
+                        s.openrouterApiKey, 'meta-llama/llama-3.3-70b-instruct:free',
                         systemPrompt, userPrompt, 4000,
                         { 'HTTP-Referer': 'https://asiaconsole.com', 'X-Title': 'AsiaConsole Bot' }
                     );

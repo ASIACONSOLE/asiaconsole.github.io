@@ -257,8 +257,18 @@ window.BotEngine = (function () {
 
         try {
             logTerminal(`🔌 WordPress REST API deneniyor: ${origin}`);
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error(`WP API ${response.status}`);
+
+            // Try direct first, then CORS proxy fallback
+            let response;
+            try {
+                response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`WP API ${response.status}`);
+            } catch (directErr) {
+                logTerminal(`WP API doğrudan erişim başarısız, CORS proxy deneniyor...`, 'warning');
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+                response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`WP API via proxy ${response.status}`);
+            }
             const posts = await response.json();
 
             if (!posts || posts.length === 0) return null;

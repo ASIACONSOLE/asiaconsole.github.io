@@ -343,6 +343,7 @@ const DB = {
                 if (typeof showToast === 'function') showToast(`⚠️ Hafıza dolu! ${key} kaydedilemedi.`, 'error');
                 if (typeof showAdminToast === 'function') showAdminToast(`⚠️ Depolama alanı doldu! ${key} kaydedilemedi.`, 'error');
             }
+            return; // Don't continue if localStorage itself failed
         }
 
         // Dispatch local event for instant UI update
@@ -358,10 +359,15 @@ const DB = {
                     // Firestore Document Limit Check (Approx 1MB)
                     const size = new Blob([JSON.stringify(finalData)]).size;
                     if (size > 1000000) {
-                        console.error(`[Firebase] Data size too large for ${key}: ${size} bytes. (Limit: 1MB)`);
-                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük (1MB limit), buluta yüklenemedi!`, 'error');
+                        console.error(`[Firebase] Data size too large for ${key}: ${(size / 1024 / 1024).toFixed(2)}MB (Limit: 1MB)`);
+                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük (${(size / 1024 / 1024).toFixed(2)}MB > 1MB limit), buluta yüklenemedi!`, 'error');
+                        // Mark this key as "cloud-stale" so the listener won't overwrite our fresh local copy
+                        DB._cloudStaleKeys = DB._cloudStaleKeys || new Set();
+                        DB._cloudStaleKeys.add(key);
                         return;
                     }
+                    // If we successfully reach here, remove from stale list
+                    if (DB._cloudStaleKeys) DB._cloudStaleKeys.delete(key);
 
                     FirebaseDB.set('site_data', key, { data: finalData, lastSync: Date.now() })
                         .then(ok => {
@@ -1144,6 +1150,22 @@ if (typeof FirebaseDB !== 'undefined') {
 
                 if (remoteData === undefined || remoteData === null) return;
 
+                // GUARD: If this key's local data is NEWER than cloud (cloud write failed due to size),
+                // do NOT overwrite local with stale cloud data!
+                if (DB._cloudStaleKeys && DB._cloudStaleKeys.has(key)) {
+                    console.warn(`[Firebase] Skipping remote overwrite for '${key}' — local data is newer (cloud write failed due to size limit).`);
+                    return;
+                }
+
+                // For articles: if local has MORE items, cloud data is stale — protect local
+                if (key === 'articles') {
+                    const localArticles = DB.get('articles');
+                    if (Array.isArray(localArticles) && Array.isArray(remoteData) && localArticles.length > remoteData.length) {
+                        console.warn(`[Firebase] Skipping remote overwrite for 'articles' — local has ${localArticles.length} items vs cloud ${remoteData.length}`);
+                        return;
+                    }
+                }
+
                 const local = localStorage.getItem('tc_' + key);
                 const remoteJSON = JSON.stringify(remoteData);
 
@@ -1152,8 +1174,9 @@ if (typeof FirebaseDB !== 'undefined') {
                     console.log(`[Firebase] Remote change for ${key}`);
                     localStorage.setItem('tc_' + key, remoteJSON);
 
-                    // Specific re-renders depending on what changed
-                    DB.set(key, remoteData);
+                    // CRITICAL FIX: Use syncToCloud=false to prevent infinite loop!
+                    // (old code: DB.set(key, remoteData) triggered cloud sync → listener → DB.set → ...)
+                    DB.set(key, remoteData, false);
 
                     // Specific reactions
                     if (key === 'settings' || key === 'site_logo_base64') {

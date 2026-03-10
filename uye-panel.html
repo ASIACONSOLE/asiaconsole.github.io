@@ -574,7 +574,8 @@
             document.getElementById('dashPostCount').textContent = myPostsCount;
 
             // Profile photo upload
-            const savedPhoto = DB.get('avatar_' + user.id);
+            const photoKey = 'tc_avatar_' + user.id;
+            const savedPhoto = localStorage.getItem(photoKey);
             const avatarEl = document.getElementById('dashAvatar');
             if (savedPhoto) {
                 avatarEl.style.backgroundImage = 'url(' + savedPhoto + ')';
@@ -595,7 +596,7 @@
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         const b64 = e.target.result;
-                        DB.set('avatar_' + user.id, b64, false);
+                        localStorage.setItem(photoKey, b64);
                         avatarEl.style.backgroundImage = 'url(' + b64 + ')';
                         avatarEl.style.backgroundSize = 'cover';
                         avatarEl.style.backgroundPosition = 'center';
@@ -681,7 +682,8 @@
             if (youtubeEl) youtubeEl.value = extra.socialYoutube || '';
 
             // Cover preview
-            const savedCover = DB.get('cover_' + u.id) || extra.coverPhoto;
+            const coverKey = 'tc_cover_' + u.id;
+            const savedCover = localStorage.getItem(coverKey) || extra.coverPhoto;
             const previewEl = document.getElementById('coverPreview');
             if (previewEl && savedCover) previewEl.style.backgroundImage = 'url(' + savedCover + ')';
 
@@ -695,7 +697,7 @@
                     const reader = new FileReader();
                     reader.onload = e => {
                         const b64 = e.target.result;
-                        DB.set('cover_' + u.id, b64, false);
+                        localStorage.setItem(coverKey, b64);
                         if (previewEl) previewEl.style.backgroundImage = 'url(' + b64 + ')';
                         ProfileData.save(u.id, { coverPhoto: b64 });
                         showToast('✅ Kapak fotoğrafı güncellendi!', 'success');

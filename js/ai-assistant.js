@@ -12,7 +12,9 @@ const AIAssistant = (() => {
         if (window._aiInited) return;
         window._aiInited = true;
 
-        settings = DB.get('settings') || {};
+        try {
+            settings = JSON.parse(localStorage.getItem('tc_settings') || '{}');
+        } catch (e) { settings = {}; }
 
         if (settings.aiEnabled !== true) return;
 
@@ -315,7 +317,7 @@ const AIAssistant = (() => {
     };
 
     const fetchGeminiResponse = async (userText) => {
-        const s = DB.get('settings') || {};
+        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
 
         const siteContext = `
             You are AsiaBot, the official AI assistant of AsiaConsole (formerly TechCom).
@@ -379,7 +381,7 @@ const AIAssistant = (() => {
     };
 
     const generateGame = async (userPrompt, onProgress) => {
-        const s = DB.get('settings') || {};
+        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
 
         const systemPrompt = `You are an expert game developer. 
         The user wants an HTML5 game based on their description. 

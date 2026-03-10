@@ -23,8 +23,8 @@ const GoogleAuth = (function () {
 
         // Override with the admin-configured Client ID if available
         try {
-            const settings = (typeof DB !== 'undefined') ? DB.get('settings') : JSON.parse(localStorage.getItem('tc_settings') || '{}');
-            if (settings && settings.googleClientId && settings.googleClientId.length > 10 &&
+            const settings = JSON.parse(localStorage.getItem('tc_settings') || '{}');
+            if (settings.googleClientId && settings.googleClientId.length > 10 &&
                 !settings.googleClientId.includes('YOUR_GOOGLE')) {
                 _clientId = settings.googleClientId;
             }
@@ -104,7 +104,7 @@ const GoogleAuth = (function () {
             console.log('[GoogleAuth] Credential parsed:', googleUser.email);
 
             // Register or find user
-            let users = (typeof DB !== 'undefined') ? (DB.get('users') || []) : JSON.parse(localStorage.getItem('tc_users') || '[]');
+            let users = JSON.parse(localStorage.getItem('tc_users') || '[]');
             let existing = users.find(u => u.email === googleUser.email);
             if (!existing) {
                 console.log('[GoogleAuth] Creating new user...');
@@ -118,16 +118,11 @@ const GoogleAuth = (function () {
             }
 
             // Set session
-            if (typeof DB !== 'undefined') {
-                DB.set('user_session', { id: existing.id, username: existing.username, email: existing.email }, false);
-                if (payload.picture) {
-                    DB.set('avatar_' + existing.id, payload.picture, false);
-                }
-            } else {
-                localStorage.setItem('tc_user_session', JSON.stringify({ id: existing.id, username: existing.username, email: existing.email }));
-                if (payload.picture) {
-                    localStorage.setItem('tc_avatar_' + existing.id, payload.picture);
-                }
+            localStorage.setItem('tc_user_session', JSON.stringify({ id: existing.id, username: existing.username, email: existing.email }));
+
+            // Save Google avatar as profile photo
+            if (payload.picture) {
+                localStorage.setItem('tc_avatar_' + existing.id, payload.picture);
             }
 
             if (_onSuccess) {
@@ -191,12 +186,7 @@ const GoogleAuth = (function () {
         if (window.google && google.accounts) {
             google.accounts.id.disableAutoSelect();
         }
-        if (typeof DB !== 'undefined') {
-            localStorage.removeItem('tc_user_session'); // Standard removal
-            DB._memoryCache['user_session'] = null;
-        } else {
-            localStorage.removeItem('tc_user_session');
-        }
+        localStorage.removeItem('tc_user_session');
         if (typeof showToast === 'function') showToast('Oturum kapatıldı.', 'info');
         setTimeout(() => window.location.reload(), 500);
     }
@@ -205,8 +195,8 @@ const GoogleAuth = (function () {
         // Configured if we have a valid-looking Client ID (either default or from settings)
         if (_clientId && _clientId.length > 20 && !_clientId.includes('YOUR_GOOGLE')) return true;
         try {
-            const s = (typeof DB !== 'undefined') ? DB.get('settings') : JSON.parse(localStorage.getItem('tc_settings') || '{}');
-            return !!(s && s.googleClientId && s.googleClientId.length > 10);
+            const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
+            return !!(s.googleClientId && s.googleClientId.length > 10);
         } catch (e) { return false; }
     }
 

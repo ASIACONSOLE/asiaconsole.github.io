@@ -310,7 +310,6 @@ const MediaDB = {
 
 // ---- DATA MANAGEMENT ----
 const DB = {
-    _memoryCache: {},
     get(key) {
         try {
             let local = JSON.parse(localStorage.getItem('tc_' + key));
@@ -318,16 +317,8 @@ const DB = {
             while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
                 local = local.data;
             }
-            // Fallback to memory cache if localStorage is empty but we have data in memory
-            if (!local && this._memoryCache[key]) {
-                return this._memoryCache[key];
-            }
             return local || null;
-        } catch {
-            // Fallback to memory cache on error
-            if (this._memoryCache && this._memoryCache[key]) return this._memoryCache[key];
-            return null;
-        }
+        } catch { return null; }
     },
     set(key, val, syncToCloud = true) {
         // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped
@@ -337,41 +328,22 @@ const DB = {
         }
 
         // Prepare data for comparison
+        const oldVal = localStorage.getItem('tc_' + key);
         const newVal = JSON.stringify(cleanVal);
 
+        // Skip if data hasn't changed (save performance)
+        if (oldVal === newVal) return;
+
         // Save to local for instant access
-        let localSaved = false;
         try {
-            const oldVal = localStorage.getItem('tc_' + key);
-            // Skip if data hasn't changed (save performance)
-            if (oldVal === newVal) return;
             localStorage.setItem('tc_' + key, newVal);
-            localSaved = true;
         } catch (e) {
-            console.warn(`[DB] LocalStorage save failed for ${key}:`, e.name);
+            console.error(`[DB] LocalStorage save failed for ${key}:`, e);
             if (e.name === 'QuotaExceededError') {
-                // Try to free space by removing large keys that are already in Firebase
-                try {
-                    const largeKeys = ['tc_articles', 'tc_user_projects', 'tc_forum_posts'];
-                    for (const lk of largeKeys) {
-                        if (lk !== 'tc_' + key && localStorage.getItem(lk)) {
-                            const lkSize = (localStorage.getItem(lk) || '').length;
-                            if (lkSize > 50000) { // Only remove if > 50KB
-                                localStorage.removeItem(lk);
-                                console.log(`[DB] Freed localStorage space by removing ${lk} (${(lkSize / 1024).toFixed(0)}KB) — data is safe in Firebase`);
-                            }
-                        }
-                    }
-                    // Retry after freeing space
-                    localStorage.setItem('tc_' + key, newVal);
-                    localSaved = true;
-                    console.log(`[DB] Retry successful for ${key} after freeing space`);
-                } catch (retryErr) {
-                    console.warn(`[DB] LocalStorage still full for ${key}, will sync to Firebase only`);
-                    if (typeof showAdminToast === 'function') showAdminToast(`⚠️ Yerel depolama dolu — veriler buluta kaydediliyor...`, 'warning');
-                }
+                if (typeof showToast === 'function') showToast(`⚠️ Hafıza dolu! ${key} kaydedilemedi.`, 'error');
+                if (typeof showAdminToast === 'function') showAdminToast(`⚠️ Depolama alanı doldu! ${key} kaydedilemedi.`, 'error');
             }
-            // DO NOT RETURN — continue to Firebase sync!
+            return; // Don't continue if localStorage itself failed
         }
 
         // Dispatch local event for instant UI update
@@ -475,23 +447,10 @@ const DB = {
                             allArticles = allArticles.concat(chunk.data);
                         }
                     }
-                    try {
-                        localStorage.setItem('tc_articles', JSON.stringify(allArticles));
-                    } catch (e) {
-                        console.warn(`[Firebase] Cannot cache articles to localStorage (quota), keeping in memory`);
-                        // Store in a global variable so DB.get can still access them
-                        DB._memoryCache = DB._memoryCache || {};
-                        DB._memoryCache['articles'] = allArticles;
-                    }
-                    console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} cloud chunks`);
+                    localStorage.setItem('tc_articles', JSON.stringify(allArticles));
+                    console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} chunks`);
                 } else {
-                    try {
-                        localStorage.setItem('tc_' + key, JSON.stringify(remote.data));
-                    } catch (e) {
-                        console.warn(`[Firebase] Cannot cache ${key} to localStorage (quota), keeping in memory`);
-                        DB._memoryCache = DB._memoryCache || {};
-                        DB._memoryCache[key] = remote.data;
-                    }
+                    localStorage.setItem('tc_' + key, JSON.stringify(remote.data));
                 }
             }
         }
@@ -1265,13 +1224,7 @@ if (typeof FirebaseDB !== 'undefined') {
                             console.warn(`[Firebase] Skipping chunked remote — local has ${localArticles.length} vs cloud ${allArticles.length}`);
                             return;
                         }
-                        try {
-                            localStorage.setItem('tc_articles', JSON.stringify(allArticles));
-                        } catch (e) {
-                            console.warn('[Firebase] Cannot cache chunked articles to localStorage (quota), using memory cache');
-                            DB._memoryCache = DB._memoryCache || {};
-                            DB._memoryCache['articles'] = allArticles;
-                        }
+                        localStorage.setItem('tc_articles', JSON.stringify(allArticles));
                         DB.set('articles', allArticles, false);
                         console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} cloud chunks`);
                         document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
@@ -1294,13 +1247,11 @@ if (typeof FirebaseDB !== 'undefined') {
                 // Only update if data is actually different
                 if (local !== remoteJSON) {
                     console.log(`[Firebase] Remote change for ${key}`);
-                    try {
-                        localStorage.setItem('tc_' + key, remoteJSON);
-                    } catch (e) {
-                        console.warn(`[Firebase] Cannot cache ${key} to localStorage (quota), using memory cache`);
-                        DB._memoryCache = DB._memoryCache || {};
-                        DB._memoryCache[key] = remoteData;
-                    }
+                    localStorage.setItem('tc_' + key, remoteJSON);
+
+                    // CRITICAL FIX: Use syncToCloud=false to prevent infinite loop!
+                    // (old code: DB.set(key, remoteData) triggered cloud sync → listener → DB.set → ...)
+                    DB.set(key, remoteData, false);
 
                     // Specific reactions
                     if (key === 'settings' || key === 'site_logo_base64') {

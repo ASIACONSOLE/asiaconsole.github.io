@@ -484,7 +484,7 @@
             const users = DB.get('users') || [];
             const u = users.find(x => x.username === username);
             if (u) {
-                const photo = DB.get('avatar_' + u.id);
+                const photo = localStorage.getItem('tc_avatar_' + u.id);
                 if (photo) return { img: photo };
             }
             return { letter: username ? username[0].toUpperCase() : '?' };
@@ -507,7 +507,7 @@
 
         function renderOP(topic) {
             const currentUser = Auth.currentUser();
-            const likedSet = DB.get('liked_posts') || [];
+            const likedSet = JSON.parse(localStorage.getItem('tc_liked_posts') || '[]');
             const isLiked = likedSet.includes('topic_' + topic.id);
 
             document.getElementById('opCard').innerHTML = `
@@ -544,7 +544,7 @@
         function likePost(key, btn) {
             const currentUser = Auth.currentUser();
             if (!currentUser) { showToast('Beğenmek için giriş yapmalısınız.', 'error'); return; }
-            let liked = DB.get('liked_posts') || [];
+            let liked = JSON.parse(localStorage.getItem('tc_liked_posts') || '[]');
             const span = btn.querySelector('span');
             if (liked.includes(key)) {
                 liked = liked.filter(l => l !== key);
@@ -555,7 +555,7 @@
                 btn.classList.add('liked');
                 span.textContent = parseInt(span.textContent) + 1;
             }
-            DB.set('liked_posts', liked, false);
+            localStorage.setItem('tc_liked_posts', JSON.stringify(liked));
 
             // Update data source
             if (key.startsWith('topic_')) {
@@ -571,16 +571,16 @@
             }
         }
 
-        function getCommentKey(topicId) { return 'comments_' + topicId; }
-        function getComments() { return DB.get(getCommentKey(topicData.id)) || []; }
-        function saveComments(c) { DB.set(getCommentKey(topicData.id), c, false); }
+        function getCommentKey(topicId) { return 'tc_comments_' + topicId; }
+        function getComments() { return JSON.parse(localStorage.getItem(getCommentKey(topicData.id)) || '[]'); }
+        function saveComments(c) { localStorage.setItem(getCommentKey(topicData.id), JSON.stringify(c)); }
 
         function renderComments(page) {
             currentPage = page;
             const start = (page - 1) * COMMENTS_PER_PAGE;
             const pageComments = allComments.slice(start, start + COMMENTS_PER_PAGE);
             const currentUser = Auth.currentUser();
-            const likedSet = DB.get('liked_posts') || [];
+            const likedSet = JSON.parse(localStorage.getItem('tc_liked_posts') || '[]');
 
             const list = document.getElementById('commentsList');
             if (!allComments.length) {

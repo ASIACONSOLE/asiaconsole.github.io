@@ -7,22 +7,26 @@ const ADMIN_SESSION_KEY = 'tc_admin_session';
 
 const Admin = {
     login(user, pass) {
-        const savedPass = localStorage.getItem('tc_admin_password');
+        const savedPass = DB.get('admin_password');
         // If no password set yet, first login uses admin123 but forces change
         const targetPass = savedPass || 'admin123';
 
         if (user === 'admin' && pass === targetPass) {
-            localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user: 'admin', time: Date.now() }));
+            DB.set('admin_session', { user: 'admin', time: Date.now() }, false);
             return true;
         }
         return false;
     },
     logout() {
-        localStorage.removeItem(ADMIN_SESSION_KEY);
+        if (typeof DB !== 'undefined') {
+            DB.set('admin_session', null, false);
+        } else {
+            localStorage.removeItem('tc_admin_session');
+        }
         window.location.href = 'index.html';
     },
     check() {
-        const s = localStorage.getItem(ADMIN_SESSION_KEY);
+        const s = DB.get('admin_session');
         if (!s) { window.location.href = 'index.html'; return false; }
         return true;
     },

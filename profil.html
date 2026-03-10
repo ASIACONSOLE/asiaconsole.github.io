@@ -519,8 +519,7 @@
             }
 
             // COVER PHOTO
-            const coverKey = 'tc_cover_' + user.id;
-            const savedCover = localStorage.getItem(coverKey) || extra.coverPhoto;
+            const savedCover = DB.get('cover_' + user.id) || extra.coverPhoto;
             if (savedCover) {
                 document.getElementById('profileCover').style.backgroundImage = 'url(' + savedCover + ')';
             }
@@ -539,7 +538,7 @@
                     const reader = new FileReader();
                     reader.onload = e => {
                         const b64 = e.target.result;
-                        localStorage.setItem(coverKey, b64);
+                        DB.set('cover_' + user.id, b64, false); // Local only but with safety
                         document.getElementById('profileCover').style.backgroundImage = 'url(' + b64 + ')';
                         ProfileData.save(user.id, { coverPhoto: b64 });
                         showToast('✅ Kapak fotoğrafı güncellendi!', 'success');
@@ -549,8 +548,7 @@
             }
 
             // AVATAR
-            const avatarKey = 'tc_avatar_' + user.id;
-            const savedAvatar = localStorage.getItem(avatarKey) || extra.avatar;
+            const savedAvatar = DB.get('avatar_' + user.id) || extra.avatar;
             const avatarEl = document.getElementById('profileAvatar');
             if (savedAvatar) {
                 avatarEl.style.backgroundImage = 'url(' + savedAvatar + ')';
@@ -683,8 +681,7 @@
 
         function renderEditForm(user, extra) {
             const avatarPreview = document.getElementById('editAvatarPreview');
-            const avatarKey = 'tc_avatar_' + user.id;
-            const savedAvatar = localStorage.getItem(avatarKey) || extra.avatar;
+            const savedAvatar = DB.get('avatar_' + user.id) || extra.avatar;
             if (savedAvatar) {
                 avatarPreview.style.backgroundImage = 'url(' + savedAvatar + ')';
                 avatarPreview.style.backgroundSize = 'cover';
@@ -707,7 +704,7 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     const b64 = e.target.result;
-                    localStorage.setItem(avatarKey, b64);
+                    DB.set('avatar_' + user.id, b64, false);
                     avatarPreview.style.backgroundImage = 'url(' + b64 + ')';
                     avatarPreview.textContent = '';
                     ProfileData.save(user.id, { avatar: b64 });

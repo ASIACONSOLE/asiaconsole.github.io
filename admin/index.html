@@ -17,6 +17,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Girişi - AsiaConsole</title>
     <link rel="stylesheet" href="../css/admin.css">
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
 </head>
 
 <body>
@@ -59,8 +61,12 @@
     </div>
 
     <script>
+        // Init DB to ensure memory cache and cleanup logic is ready
+        if (typeof DB !== 'undefined') DB.init();
+
         // If already logged in, go to dashboard
-        if (localStorage.getItem('tc_admin_session')) {
+        const session = (typeof DB !== 'undefined') ? DB.get('admin_session') : localStorage.getItem('tc_admin_session');
+        if (session) {
             window.location.href = 'dashboard.html';
         }
 
@@ -69,17 +75,25 @@
             const pass = document.getElementById('adminPass').value;
             const errEl = document.getElementById('loginError');
 
-            const savedPass = localStorage.getItem('tc_admin_password');
+            const savedPass = (typeof DB !== 'undefined') ? DB.get('admin_password') : localStorage.getItem('tc_admin_password');
             const isInitial = !savedPass;
             const targetPass = savedPass || 'admin123';
 
             if (user === 'admin' && pass === targetPass) {
-                localStorage.setItem('tc_admin_session', JSON.stringify({ user: 'admin', time: Date.now() }));
+                if (typeof DB !== 'undefined') {
+                    DB.set('admin_session', { user: 'admin', time: Date.now() }, false);
+                } else {
+                    localStorage.setItem('tc_admin_session', JSON.stringify({ user: 'admin', time: Date.now() }));
+                }
 
                 if (isInitial) {
                     const newPass = prompt('⚠️ GÜVENLİK UYARISI: Henüz bir admin şifresi belirlemediniz. Lütfen yeni bir şifre giriniz:');
                     if (newPass && newPass.length >= 6) {
-                        localStorage.setItem('tc_admin_password', newPass);
+                        if (typeof DB !== 'undefined') {
+                            DB.set('admin_password', newPass, false);
+                        } else {
+                            localStorage.setItem('tc_admin_password', newPass);
+                        }
                         alert('✅ Şifreniz kaydedildi. Artık bu şifre ile giriş yapacaksınız.');
                     } else {
                         alert('❌ Şifre çok kısa veya iptal edildi. Varsayılan şifre aktif kalmaya devam edecek.');

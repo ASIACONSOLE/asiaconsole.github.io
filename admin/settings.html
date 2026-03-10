@@ -1075,7 +1075,7 @@
                 const msgEl = document.getElementById('passMsg');
 
                 // Get current admin password (default: admin123)
-                const currentPass = localStorage.getItem('tc_admin_password') || 'admin123';
+                const currentPass = DB.get('admin_password') || 'admin123';
 
                 if (!oldPass || !newPass || !newPass2) {
                     msgEl.style.color = '#ef4444';
@@ -1097,7 +1097,7 @@
                     msgEl.textContent = '❌ Şifreler eşleşmiyor!';
                     return;
                 }
-                localStorage.setItem('tc_admin_password', newPass);
+                DB.set('admin_password', newPass, false);
                 msgEl.style.color = '#10b981';
                 msgEl.textContent = '✅ Şifre başarıyla değiştirildi!';
                 document.getElementById('oldAdminPass').value = '';

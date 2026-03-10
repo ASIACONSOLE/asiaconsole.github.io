@@ -398,6 +398,15 @@ const DB = {
                 try {
                     // Final POJO cleaning
                     const finalData = JSON.parse(JSON.stringify(cleanVal));
+                    if (syncToCloud) {
+                    // COLLECTION SAFETY: Never sync an array to cloud if we haven't confirmed current cloud state
+                    // This prevents overwriting a large remote list with a partial local one during initial load.
+                    const collectionKeys = ['articles', 'user_projects', 'forum_posts', 'article_comments', 'messages', 'profiles'];
+                    if (collectionKeys.includes(key) && !this.isLoaded(key)) {
+                        console.warn(`[DB] Blocking cloud sync for '${key}' — not yet loaded from Firebase. Data remains local-only for now.`);
+                        return;
+                    }
+
                     const jsonStr = JSON.stringify(finalData);
                     const size = new Blob([jsonStr]).size;
 
@@ -845,10 +854,13 @@ function renderDynamicNav() {
     });
 }
 
-// ---- HERO PROJECTS SHOOCASE ----
+// ---- HERO PROJECTS SHOWCASE ----
+
 function renderHeroProjects() {
     const grid = document.getElementById('heroProjectGrid');
     if (!grid) return;
+    
+    if (!DB.isLoaded('user_projects')) return; // Wait for cloud
 
     const allProjects = DB.get('user_projects') || [];
     const approved = allProjects.filter(p => p.status === 'approved' || !p.status); // Fallback for old data

@@ -311,9 +311,11 @@ const MediaDB = {
 // ---- DATA MANAGEMENT ----
 const DB = {
     _memoryCache: {},
+    _loadedKeys: new Set(),
+    isLoaded(key) { return this._loadedKeys.has(key); },
     get(key) {
         // 1. Check memory cache first
-        if (this._memoryCache && this._memoryCache[key]) {
+        if (this._memoryCache && (key in this._memoryCache)) {
             return this._memoryCache[key];
         }
 
@@ -537,59 +539,20 @@ const DB = {
             heroTitleSize: 5.5,
             googleClientId: '367594063152-0kagipiibbmh7t8ti3c8chjufe335l0j.apps.googleusercontent.com'
         };
-        const currentSettings = this.get('settings') || {};
-        // If current key is empty but default has a key, use the default
-        if (!currentSettings.geminiApiKey && defaultSettings.geminiApiKey) {
-            currentSettings.geminiApiKey = defaultSettings.geminiApiKey;
+        // REMOVED: All aggressive initializations of cloud-synced keys (articles, users, projects, etc.)
+        // These will be populated by the Firebase listener.
+        
+        // Ensure settings at least has defaults if totally missing
+        const currentSettings = this.get('settings');
+        if (!currentSettings) {
+            this.set('settings', defaultSettings, false);
+        } else {
+            this.set('settings', { ...defaultSettings, ...currentSettings }, false);
         }
-        if (!currentSettings.googleClientId && defaultSettings.googleClientId) {
-            currentSettings.googleClientId = defaultSettings.googleClientId;
-        }
-        this.set('settings', { ...defaultSettings, ...currentSettings }, false);
-        // Default articles...
-        if (!this.get('articles')) {
-            this.set('articles', [
-                { id: 1, title: 'Yapay Zeka 2025: Geleceğin Teknolojileri', category: 'teknoloji', desc: 'ChatGPT, Gemini ve yeni nesil AI araçlarının iş dünyasını nasıl değiştireceğini keşfediyoruz.', author: 'Editör', date: '24 Şub 2025', views: 1240, image: '🤖', featured: true },
-                { id: 2, title: 'GTA VI Çıkış Tarihi Açıklandı!', category: 'oyun', desc: 'Rockstar Games\'in uzun süredir beklenen GTA VI oyununun resmi çıkış tarihi ve yeni detayları paylaşıldı.', author: 'Editör', date: '23 Şub 2025', views: 5620, image: '🎮', featured: true },
-                { id: 3, title: 'Flutter 4.0 ile Mobil Uygulama Geliştirme', category: 'uygulama', desc: 'Flutter\'ın yeni sürümüyle tek kod tabanından iOS ve Android uygulamaları nasıl oluşturulur?', author: 'Editör', date: '22 Şub 2025', views: 890, image: '📱', featured: false },
-                { id: 4, title: 'Kuantum Bilgisayarlar Artık Gerçek', category: 'teknoloji', desc: 'IBM ve Google\'ın kuantum bilgisayar yarışı hız kazanıyor. Günlük hayatımızı nasıl etkileyecek?', author: 'Editör', date: '21 Şub 2025', views: 2100, image: '⚡', featured: false },
-                { id: 5, title: 'Baldur\'s Gate 3 GOTY Ödülü Aldı', category: 'oyun', desc: 'Larian Studios\'un masterpiece oyunu bu yılın en iyi oyunu ödülünü kazandı. İnceleme ve detaylar.', author: 'Editör', date: '20 Şub 2025', views: 3400, image: '🏆', featured: false },
-                { id: 6, title: 'React Native vs Flutter 2025 Karşılaştırması', category: 'uygulama', desc: 'Hangi framework daha iyi? Performans, ekosistem ve geliştirici deneyimi açısından kapsamlı karşılaştırma.', author: 'Editör', date: '19 Şub 2025', views: 1560, image: '⚖️', featured: false },
-                { id: 7, title: 'Cyberpunk 2077 Phantom Liberty Genişlemesi', category: 'oyun', desc: 'CD Projekt RED\'in beklenen genişleme paketi incelemesi. Yeni hikaye, karakterler ve Night City.', author: 'Editör', date: '18 Şub 2025', views: 2890, image: '🌆', featured: false },
-                { id: 8, title: 'Apple Vision Pro Kullanıcı Deneyimi', category: 'teknoloji', desc: 'Spatial computing çağını başlatan Vision Pro ile bir ay geçirdikten sonra gerçek düşüncelerimiz.', author: 'Editör', date: '17 Şub 2025', views: 4200, image: '👓', featured: false },
-            ], false);
-        }
-        // Default forum posts
-        if (!this.get('forum_posts')) {
-            this.set('forum_posts', [], false);
-        }
-        // Default users
-        if (!this.get('users')) {
-            this.set('users', [
-                { id: 1, username: 'CodeMaster', email: 'codemaster@asiaconsole.com', password: '123456', joined: '01 Oca 2025', posts: 47, active: true },
-                { id: 2, username: 'GamerPro', email: 'gamerpro@asiaconsole.com', password: '123456', joined: '15 Oca 2025', posts: 31, active: true },
-                { id: 3, username: 'AppDev', email: 'appdev@asiaconsole.com', password: '123456', joined: '10 Şub 2025', posts: 12, active: true },
-                { id: 4, username: 'Admin', email: 'admin@asiaconsole.com', password: '123456', joined: '01 Oca 2024', active: true, role: 'admin' },
-                { id: 5, username: 'GameEditor', email: 'editor@asiaconsole.com', password: '123456', joined: '05 Oca 2025', active: true },
-                { id: 6, username: 'DevTeam', email: 'dev@asiaconsole.com', password: '123456', joined: '12 Oca 2025', active: true },
-                { id: 7, username: 'TechWriter', email: 'writer@asiaconsole.com', password: '123456', joined: '20 Oca 2025', active: true },
-                { id: 8, username: 'TechFan', email: 'fan@asiaconsole.com', password: '123456', joined: '22 Oca 2025', active: true },
-                { id: 9, username: 'DevGuru', email: 'guru@asiaconsole.com', password: '123456', joined: '25 Oca 2025', active: true },
-                { id: 10, username: 'SteamUser', email: 'steam@asiaconsole.com', password: '123456', joined: '30 Oca 2025', active: true }
-            ], false);
-        }
-        // User projects init
-        const existingProjects = this.get('user_projects');
-        if (existingProjects === null || (Array.isArray(existingProjects) && existingProjects.length === 0)) {
-            // Only set if truly null/missed, and wait a bit for cloud
-            console.log('[DB] user_projects empty, waiting for cloud sync...');
-            if (!existingProjects) this.set('user_projects', [], false);
-        }
-        // Default project reviews init
-        if (!this.get('project_reviews')) {
-            this.set('project_reviews', [], false);
-        }
-        // Default membership tiers
+        // REMOVED: Aggressive initializations of user_projects, forum_posts etc.
+        // These should flow from cloud or remain null until a user explicitly adds something.
+        
+        // Default membership tiers (static-ish)
         if (!this.get('user_tiers')) {
             this.set('user_tiers', {
                 standart: { name: 'Standart', color: 'var(--text-secondary)', bg: 'rgba(255,255,255,0.05)', icon: '👤', perks: ['Sınırsız proje izleme', 'Topluluk forumu erişimi', 'Haftalık haber bülteni'] },
@@ -1316,6 +1279,7 @@ if (typeof FirebaseDB !== 'undefined') {
                     // CRITICAL: Always update memory cache so DB.get() picks it up immediately
                     DB._memoryCache = DB._memoryCache || {};
                     DB._memoryCache[key] = remoteData;
+                    DB._loadedKeys.add(key); // Mark as loaded from cloud
 
                     // Specific reactions
                     if (key === 'settings' || key === 'site_logo_base64') {

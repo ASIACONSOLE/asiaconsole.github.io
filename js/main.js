@@ -312,20 +312,29 @@ const MediaDB = {
 const DB = {
     _memoryCache: {},
     get(key) {
+        // 1. Check memory cache first
+        if (this._memoryCache && this._memoryCache[key]) {
+            return this._memoryCache[key];
+        }
+
+        // 2. Fallback to localStorage
         try {
-            let local = JSON.parse(localStorage.getItem('tc_' + key));
+            let val = localStorage.getItem('tc_' + key);
+            if (!val) return null;
+
+            let local = JSON.parse(val);
             // TRIPLE-GUARD: Always unwrap local data if it's corrupted with wrappers
             while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
                 local = local.data;
             }
-            // Fallback to memory cache if localStorage is empty but we have data in memory
-            if (!local && this._memoryCache[key]) {
-                return this._memoryCache[key];
-            }
-            return local || null;
-        } catch {
-            // Fallback to memory cache on error
-            if (this._memoryCache && this._memoryCache[key]) return this._memoryCache[key];
+            
+            // Populate memory cache for next time
+            this._memoryCache = this._memoryCache || {};
+            this._memoryCache[key] = local;
+            
+            return local;
+        } catch (e) {
+            console.warn(`[DB] Read error for ${key}:`, e);
             return null;
         }
     },
@@ -347,6 +356,10 @@ const DB = {
             if (oldVal === newVal) return;
             localStorage.setItem('tc_' + key, newVal);
             localSaved = true;
+            
+            // Also update memory cache for consistency with DB.get()
+            this._memoryCache = this._memoryCache || {};
+            this._memoryCache[key] = cleanVal;
         } catch (e) {
             console.warn(`[DB] LocalStorage save failed for ${key}:`, e.name);
             if (e.name === 'QuotaExceededError') {
@@ -386,49 +399,50 @@ const DB = {
                     const jsonStr = JSON.stringify(finalData);
                     const size = new Blob([jsonStr]).size;
 
-                    // CHUNKED STORAGE: If articles exceed 500KB, split into chunks
-                    if (key === 'articles' && Array.isArray(finalData) && size > 500000) {
-                        const CHUNK_SIZE = 500000; // 500KB per chunk (safely under 1MB)
+                    // CHUNKED STORAGE: If data exceeds 500KB, split into chunks (works for articles, user_projects etc)
+                    const chunkableKeys = ['articles', 'user_projects', 'forum_posts'];
+                    if (chunkableKeys.includes(key) && Array.isArray(finalData) && size > 500000) {
+                        const CHUNK_SIZE = 500000; // 500KB per chunk
                         const chunks = [];
                         let currentChunk = [];
                         let currentSize = 0;
 
-                        for (const article of finalData) {
-                            const articleSize = new Blob([JSON.stringify(article)]).size;
-                            if (currentSize + articleSize > CHUNK_SIZE && currentChunk.length > 0) {
+                        for (const item of finalData) {
+                            const itemSize = new Blob([JSON.stringify(item)]).size;
+                            if (currentSize + itemSize > CHUNK_SIZE && currentChunk.length > 0) {
                                 chunks.push(currentChunk);
                                 currentChunk = [];
                                 currentSize = 0;
                             }
-                            currentChunk.push(article);
-                            currentSize += articleSize;
+                            currentChunk.push(item);
+                            currentSize += itemSize;
                         }
                         if (currentChunk.length > 0) chunks.push(currentChunk);
 
                         // Write chunk metadata
-                        FirebaseDB.set('site_data', 'articles', {
+                        FirebaseDB.set('site_data', key, {
                             data: '__CHUNKED__',
                             chunkCount: chunks.length,
-                            totalArticles: finalData.length,
+                            totalItems: finalData.length,
                             lastSync: Date.now()
                         });
 
                         // Write each chunk as separate document
                         chunks.forEach((chunk, i) => {
-                            FirebaseDB.set('site_data', `articles_chunk_${i}`, { data: chunk, lastSync: Date.now() });
+                            FirebaseDB.set('site_data', `${key}_chunk_${i}`, { data: chunk, lastSync: Date.now() });
                         });
 
-                        // Clean up old chunks beyond current count
+                        // Clean up old chunks
                         for (let i = chunks.length; i < 20; i++) {
-                            FirebaseDB.delete('site_data', `articles_chunk_${i}`);
+                            FirebaseDB.delete('site_data', `${key}_chunk_${i}`);
                         }
 
-                        console.log(`[Firebase] Articles synced in ${chunks.length} chunks (${(size / 1024).toFixed(0)}KB total) ✓`);
+                        console.log(`[Firebase] ${key} synced in ${chunks.length} chunks (${(size / 1024).toFixed(0)}KB total) ✓`);
                         if (DB._cloudStaleKeys) DB._cloudStaleKeys.delete(key);
                         return;
                     }
 
-                    // Standard single-document sync for non-article or small data
+                    // Standard single-document sync
                     if (size > 1000000) {
                         console.error(`[Firebase] Data size too large for ${key}: ${(size / 1024 / 1024).toFixed(2)}MB (Limit: 1MB)`);
                         if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük!`, 'error');
@@ -565,8 +579,11 @@ const DB = {
             ], false);
         }
         // User projects init
-        if (!this.get('user_projects')) {
-            this.set('user_projects', [], false);
+        const existingProjects = this.get('user_projects');
+        if (existingProjects === null || (Array.isArray(existingProjects) && existingProjects.length === 0)) {
+            // Only set if truly null/missed, and wait a bit for cloud
+            console.log('[DB] user_projects empty, waiting for cloud sync...');
+            if (!existingProjects) this.set('user_projects', [], false);
         }
         // Default project reviews init
         if (!this.get('project_reviews')) {
@@ -1249,41 +1266,37 @@ if (typeof FirebaseDB !== 'undefined') {
                     return;
                 }
 
-                // Handle CHUNKED articles: if cloud says '__CHUNKED__', fetch all chunks
-                if (key === 'articles' && remoteData === '__CHUNKED__' && remote.chunkCount) {
+                // Handle ANY chunked data
+                if (remoteData === '__CHUNKED__' && remote.chunkCount) {
                     (async () => {
-                        let allArticles = [];
+                        let allItems = [];
                         for (let i = 0; i < remote.chunkCount; i++) {
-                            const chunk = await FirebaseDB.get('site_data', `articles_chunk_${i}`);
+                            const chunk = await FirebaseDB.get('site_data', `${key}_chunk_${i}`);
                             if (chunk && Array.isArray(chunk.data)) {
-                                allArticles = allArticles.concat(chunk.data);
+                                allItems = allItems.concat(chunk.data);
                             }
                         }
-                        // Only apply if cloud has more or equal articles
-                        const localArticles = DB.get('articles');
-                        if (Array.isArray(localArticles) && localArticles.length > allArticles.length) {
-                            console.warn(`[Firebase] Skipping chunked remote — local has ${localArticles.length} vs cloud ${allArticles.length}`);
-                            return;
+                        
+                        // Guard: Compare counts to avoid accidental emptying
+                        const local = DB.get(key) || [];
+                        if (Array.isArray(local) && local.length > allItems.length) {
+                             console.warn(`[Firebase] Skipping chunked remote for ${key} — local has ${local.length} vs cloud ${allItems.length}`);
+                             return;
                         }
-                        try {
-                            localStorage.setItem('tc_articles', JSON.stringify(allArticles));
-                        } catch (e) {
-                            console.warn('[Firebase] Cannot cache chunked articles to localStorage (quota), using memory cache');
-                            DB._memoryCache = DB._memoryCache || {};
-                            DB._memoryCache['articles'] = allArticles;
-                        }
-                        DB.set('articles', allArticles, false);
-                        console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} cloud chunks`);
-                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
+
+                        console.log(`[Firebase] Loaded ${allItems.length} items from ${remote.chunkCount} chunks for ${key}`);
+                        DB.set(key, allItems, false); // Update locally and in memory
+                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key } }));
                     })();
                     return;
                 }
 
-                // For articles: if local has MORE items, cloud data is stale — protect local
-                if (key === 'articles') {
-                    const localArticles = DB.get('articles');
-                    if (Array.isArray(localArticles) && Array.isArray(remoteData) && localArticles.length > remoteData.length) {
-                        console.warn(`[Firebase] Skipping remote overwrite for 'articles' — local has ${localArticles.length} items vs cloud ${remoteData.length}`);
+                // For collections: if local has MORE items, cloud data might be stale — protect local
+                const collectionKeys = ['articles', 'user_projects', 'forum_posts', 'article_comments'];
+                if (collectionKeys.includes(key)) {
+                    const localData = DB.get(key);
+                    if (Array.isArray(localData) && Array.isArray(remoteData) && localData.length > remoteData.length) {
+                        console.warn(`[Firebase] Skipping remote overwrite for '${key}' — local has ${localData.length} items vs cloud ${remoteData.length}`);
                         return;
                     }
                 }
@@ -1298,9 +1311,11 @@ if (typeof FirebaseDB !== 'undefined') {
                         localStorage.setItem('tc_' + key, remoteJSON);
                     } catch (e) {
                         console.warn(`[Firebase] Cannot cache ${key} to localStorage (quota), using memory cache`);
-                        DB._memoryCache = DB._memoryCache || {};
-                        DB._memoryCache[key] = remoteData;
                     }
+                    
+                    // CRITICAL: Always update memory cache so DB.get() picks it up immediately
+                    DB._memoryCache = DB._memoryCache || {};
+                    DB._memoryCache[key] = remoteData;
 
                     // Specific reactions
                     if (key === 'settings' || key === 'site_logo_base64') {

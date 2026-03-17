@@ -36,6 +36,8 @@
   --border-width: 1px;
   --nav-blur: 20px;
   --card-padding: 1.5rem;
+  --skeleton-bg: rgba(255, 255, 255, 0.05);
+  --skeleton-highlight: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -61,6 +63,10 @@ body {
 img {
   max-width: 100%;
   height: auto;
+  font-style: italic;
+  vertical-align: middle;
+  shape-margin: 0.75rem;
+  content-visibility: auto;
 }
 
 h1,
@@ -2936,4 +2942,52 @@ h6 {
     font-size: 0.8rem;
     min-width: 36px;
   }
+}
+
+/* ===== SKELETON LOADER & LAYOUT STABILITY ===== */
+.skeleton {
+  background: var(--skeleton-bg);
+  background: linear-gradient(90deg,
+      var(--skeleton-bg) 25%,
+      var(--skeleton-highlight) 50%,
+      var(--skeleton-bg) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+#featuredArticles {
+  min-height: 400px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+#homeForumList {
+  min-height: 300px;
+}
+
+.skeleton-card {
+  height: 380px;
+  width: 100%;
+}
+
+.skeleton-link {
+  height: 60px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.news-ticker-container {
+  min-height: 40px;
 }

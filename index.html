@@ -23,7 +23,8 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         #matrixCanvas {
@@ -50,7 +51,8 @@
     <nav class="navbar nav-style-neon">
         <a href="index.html" class="navbar-brand">
             <div class="brand-icon">
-                <img src="img/logo.png" alt="AsiaConsole Logo" width="40" height="40" style="height: 40px; width: auto; display: block;">
+                <img src="img/logo.png" alt="AsiaConsole Logo" width="40" height="40" fetchpriority="high"
+                    style="height: 40px; width: auto; display: block;">
             </div>
             <span class="site-name">AsiaConsole</span>
         </a>
@@ -142,7 +144,9 @@
                     <p>Teknoloji, oyun ve uygulama dünyasındaki en güncel gelişmeleri takip edin</p>
                 </div>
                 <div class="cards-grid" id="featuredArticles">
-                    <!-- Loaded by JS -->
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
                 </div>
             </div>
         </section>
@@ -192,7 +196,11 @@
                     <h2>Son Tartışmalar</h2>
                     <p>Topluluğumuzun güncel forum konuları</p>
                 </div>
-                <div id="homeForumList"></div>
+                <div id="homeForumList">
+                    <div class="skeleton skeleton-link"></div>
+                    <div class="skeleton skeleton-link"></div>
+                    <div class="skeleton skeleton-link"></div>
+                </div>
                 <div style="text-align:center; margin-top:2rem;">
                     <a href="forum.html" class="btn-secondary">Tüm Konuları Gör →</a>
                 </div>

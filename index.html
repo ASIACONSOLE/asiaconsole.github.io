@@ -2,7 +2,7 @@
 <html lang="tr">
 
 <head>
-    <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
+    <script defer type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
     <script>
         (self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
             basicSubscriptions.init({
@@ -21,9 +21,14 @@
         content="Teknoloji, oyun ve uygulama haberlerini, forum tartışmalarını ve topluluğu keşfedin.">
     <meta name="google-site-verification" content="I_qweKYaYLK_fOBfli-rP0ppSIT4Diu6KtoMQMpvhVQ" />
     <link rel="icon" href="favicon.png" type="image/png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -40,9 +45,7 @@
         }
     </style>
     <!-- Google Fonts for Branding -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
-        rel="stylesheet">
+
 </head>
 
 <body>
@@ -133,7 +136,6 @@
         </section>
 
         <!-- (Stats bar moved to bottom) -->
-
 
         <!-- FEATURED ARTICLES -->
         <section class="section">
@@ -288,7 +290,6 @@
     <script>
         function renderHome() {
             const articles = (DB.get('articles') || []).map(a => ({ ...a, type: 'article' }));
-
 
             const forumPosts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
             const users = DB.get('users') || [];

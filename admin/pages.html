@@ -1237,7 +1237,6 @@
             }
         });
 
-
         // === PROFESSIONAL URL FETCH SYSTEM ===
         function resetFetchSteps() {
             [1, 2, 3].forEach(i => {
@@ -1395,7 +1394,6 @@
             return { error: 'NO_KEY', message: 'API anahtarı gerekli! Site Ayarlarından Gemini veya Groq ekleyin.' };
         }
 
-
         function cleanAIJson(raw) {
             if (!raw) return "";
             let clean = raw.trim();
@@ -1542,7 +1540,6 @@
                 document.getElementById('startFetchBtn').textContent = '🚀 Haberi Getir';
             }
         }
-
 
         async function generateAiNews() {
             const settings = DB.get('settings') || {};

@@ -318,7 +318,7 @@ const DB = {
                 local = local.data;
             }
             return local || null;
-        } catch { return null; }
+        } catch (e) { return null; }
     },
     set(key, val, syncToCloud = true) {
         // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped
@@ -468,7 +468,7 @@ const DB = {
             socialYoutube: '#',
             socialDiscord: '#',
             aiEnabled: true,
-            aiName: 'Editör',
+            aiName: 'Editor',
             aiGreeting: 'Merhaba! Ben Editör, size nasıl yardımcı olabilirim?',
             geminiApiKey: '', // Yönetici panelinden ayarlanmalı
             siteFont: "'Inter', sans-serif",
@@ -547,7 +547,7 @@ const DB = {
             currentArticles.forEach(a => {
                 const oldAuthors = ['Admin', 'asiadmin', 'asiabot', 'AsiaBot', 'GameEditor', 'DevTeam', 'TechWriter'];
                 if (oldAuthors.some(old => a.author && a.author.includes(old))) {
-                    a.author = 'Editör';
+                    a.author = 'Editor';
                     changed = true;
                 }
             });

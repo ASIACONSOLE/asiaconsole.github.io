@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
+    <script>
+        (self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
+            basicSubscriptions.init({
+                type: "NewsArticle",
+                isPartOfType: ["Product"],
+                isPartOfProductId: "CAowocrFDA:openaccess",
+                clientOptions: { theme: "light", lang: "tr" },
+            });
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üyeler - AsiaConsole</title>
+    <meta name="description"
+        content="AsiaConsole topluluğunun üyelerini keşfedin. Toplulukta aktif olan üyeleri görüntüleyin.">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+    <style>
+        .members-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .member-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .member-stat-card:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .member-stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .member-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .member-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .member-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .member-card:hover::before {
+            opacity: 1;
+        }
+
+        .member-card.admin-card {
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .member-card.admin-card::before {
+            background: linear-gradient(90deg, var(--accent-orange), var(--accent-pink));
+            opacity: 1;
+        }
+
+        .member-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+            color: white;
+            position: relative;
+        }
+
+        .member-avatar.admin-avatar {
+            background: linear-gradient(135deg, var(--accent-orange), var(--accent-pink));
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+        }
+
+        .member-avatar.user-avatar {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        }
+
+        .member-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .member-role {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            margin-bottom: 0.75rem;
+        }
+
+        .role-admin {
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--accent-orange);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .role-user {
+            background: rgba(79, 142, 247, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(79, 142, 247, 0.3);
+        }
+
+        .member-join-date {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .members-empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .members-empty .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar nav-style-neon">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon">
+                <img src="img/logo.png" alt="AsiaConsole Logo" style="height: 40px; width: auto; display: block;">
+            </div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="projeler.html">🚀 Projeler</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <div class="mobile-nav nav-style-neon" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="projeler.html">🚀 Projeler</a>
+    </div>
+
+    <div class="page-wrapper">
+
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <div class="page-hero-icon">👥</div>
+                    <h1>Topluluk Üyeleri</h1>
+                    <p>AsiaConsole topluluğundaki üyeleri keşfedin</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+
+                <!-- Stats -->
+                <div class="members-stats" id="memberStats">
+                    <div class="member-stat-card">
+                        <div class="member-stat-number" id="totalMembers">0</div>
+                        <div class="member-stat-label">Toplam Üye</div>
+                    </div>
+                    <div class="member-stat-card">
+                        <div class="member-stat-number" id="adminCount">0</div>
+                        <div class="member-stat-label">Yönetici</div>
+                    </div>
+                    <div class="member-stat-card">
+                        <div class="member-stat-number" id="recentMembers">0</div>
+                        <div class="member-stat-label">Yeni Üye (30 gün)</div>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="memberSearch" placeholder="Üyelerde ara...">
+                </div>
+
+                <!-- Filter -->
+                <div class="filter-tabs" style="margin-bottom:1.5rem;">
+                    <button class="filter-tab active" data-filter="all">Tümü</button>
+                    <button class="filter-tab" data-filter="admin">👑 Yöneticiler</button>
+                    <button class="filter-tab" data-filter="user">👤 Üyeler</button>
+                </div>
+
+                <!-- Members Grid -->
+                <div class="members-grid" id="membersGrid">
+                    <!-- Populated by JS -->
+                </div>
+
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js?v=4.9.8"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let users = DB.get('users') || [];
+            const grid = document.getElementById('membersGrid');
+            const searchInput = document.getElementById('memberSearch');
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            let currentFilter = 'all';
+
+            function updateStats() {
+                const totalEl = document.getElementById('totalMembers');
+                const adminEl = document.getElementById('adminCount');
+                const recentEl = document.getElementById('recentMembers');
+
+                if (totalEl) totalEl.textContent = users.length.toLocaleString('tr-TR');
+                if (adminEl) adminEl.textContent = users.filter(u => u.role === 'admin').length;
+
+                // Recent: joined within last 30 days
+                const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                const recentCount = users.filter(u => {
+                    const joinDate = u.id || u.joinDate || 0;
+                    return joinDate > thirtyDaysAgo;
+                }).length;
+                if (recentEl) recentEl.textContent = recentCount;
+            }
+
+            function render() {
+                let filtered = [...users];
+
+                // Filter by role
+                if (currentFilter === 'admin') {
+                    filtered = filtered.filter(u => u.role === 'admin');
+                } else if (currentFilter === 'user') {
+                    filtered = filtered.filter(u => u.role !== 'admin');
+                }
+
+                // Search filter
+                const q = searchInput.value.toLowerCase().trim();
+                if (q) {
+                    filtered = filtered.filter(u =>
+                        (u.username || '').toLowerCase().includes(q) ||
+                        (u.email || '').toLowerCase().includes(q)
+                    );
+                }
+
+                // Sort: admins first, then by join date (newest first)
+                filtered.sort((a, b) => {
+                    if (a.role === 'admin' && b.role !== 'admin') return -1;
+                    if (a.role !== 'admin' && b.role === 'admin') return 1;
+                    return (b.id || 0) - (a.id || 0);
+                });
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = '<div class="members-empty"><div class="empty-icon">👥</div><h3>Üye bulunamadı</h3><p>Arama kriterlerinize uygun üye yok.</p></div>';
+                    return;
+                }
+
+                grid.innerHTML = filtered.map(u => {
+                    const isAdmin = u.role === 'admin';
+                    const initial = (u.username || '?')[0].toUpperCase();
+                    const joinDate = u.joinDate || (u.id ? new Date(u.id).toLocaleDateString('tr-TR') : 'Bilinmiyor');
+
+                    return `
+                        <div class="member-card ${isAdmin ? 'admin-card' : ''}">
+                            <div class="member-avatar ${isAdmin ? 'admin-avatar' : 'user-avatar'}">${initial}</div>
+                            <div class="member-name">${u.username || 'Anonim'}</div>
+                            <div class="member-role ${isAdmin ? 'role-admin' : 'role-user'}">
+                                ${isAdmin ? '👑 Yönetici' : '👤 Üye'}
+                            </div>
+                            <div class="member-join-date">📅 Katılma: ${typeof joinDate === 'string' ? joinDate : new Date(joinDate).toLocaleDateString('tr-TR')}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Bind events
+            searchInput.addEventListener('input', render);
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.getAttribute('data-filter');
+                    render();
+                });
+            });
+
+            updateStats();
+            render();
+
+            // Listen for DB updates
+            document.addEventListener('dbUpdated', (e) => {
+                if (e.detail?.key === 'users') {
+                    users = DB.get('users') || [];
+                    updateStats();
+                    render();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

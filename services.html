@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
+    <script>
+        (self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
+            basicSubscriptions.init({
+                type: "NewsArticle",
+                isPartOfType: ["Product"],
+                isPartOfProductId: "CAowocrFDA:openaccess",
+                clientOptions: { theme: "light", lang: "tr" },
+            });
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hizmetlerimiz - AsiaConsole</title>
+    <meta name="description"
+        content="AsiaConsole'un sunduğu hizmetler: Teknoloji haberleri, forum, topluluk projeleri, AI asistanı ve daha fazlası.">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
+    <style>
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gradient-card);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .service-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .service-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .service-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .service-card .service-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: gap 0.3s ease;
+        }
+
+        .service-card .service-link:hover {
+            gap: 0.8rem;
+        }
+
+        .services-cta {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 3rem 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+        }
+
+        .services-cta h2 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .services-cta p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar nav-style-neon">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon">
+                <img src="img/logo.png" alt="AsiaConsole Logo" style="height: 40px; width: auto; display: block;">
+            </div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="forum.html">💬 Forum</a></li>
+            <li><a href="projeler.html">🚀 Projeler</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <div class="mobile-nav nav-style-neon" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="forum.html">💬 Forum</a>
+        <a href="projeler.html">🚀 Projeler</a>
+    </div>
+
+    <div class="page-wrapper">
+
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <div class="page-hero-icon">⚡</div>
+                    <h1>Hizmetlerimiz</h1>
+                    <p>AsiaConsole olarak sunduğumuz tüm hizmetleri keşfedin</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="services-grid">
+
+                    <div class="service-card animate-fadeInUp">
+                        <div class="service-card-content">
+                            <div class="service-icon">📰</div>
+                            <h3>Teknoloji Haberleri</h3>
+                            <p>Güncel teknoloji, oyun ve uygulama haberlerini AI destekli bot-editörümüz ile 7/24 takip
+                                edin.</p>
+                            <a href="teknoloji.html" class="service-link">Haberlere Git →</a>
+                        </div>
+                    </div>
+
+                    <div class="service-card animate-fadeInUp">
+                        <div class="service-card-content">
+                            <div class="service-icon">💬</div>
+                            <h3>Forum & Tartışmalar</h3>
+                            <p>Teknoloji meraklılarıyla fikirlerinizi paylaşın, sorularınıza yanıt bulun ve toplulukla
+                                etkileşimde kalın.</p>
+                            <a href="forum.html" class="service-link">Foruma Git →</a>
+                        </div>
+                    </div>
+
+                    <div class="service-card animate-fadeInUp">
+                        <div class="service-card-content">
+                            <div class="service-icon">🚀</div>
+                            <h3>Topluluk Projeleri</h3>
+                            <p>Üyelerimizin geliştirdiği oyun ve uygulamaları keşfedin veya kendi projenizi topluluğa
+                                sunun.</p>
+                            <a href="projeler.html" class="service-link">Projeleri Keşfet →</a>
+                        </div>
+                    </div>
+
+                    <div class="service-card animate-fadeInUp">
+                        <div class="service-card-content">
+                            <div class="service-icon">🤖</div>
+                            <h3>AI Asistan</h3>
+                            <p>Yapay zeka destekli asistanımız ile kodlama sorunlarınıza çözüm bulun ve teknik ipuçları
+                                alın.</p>
+                            <a href="index.html" class="service-link">Ana Sayfaya Git →</a>
+                        </div>
+                    </div>
+
+                    <div class="service-card animate-fadeInUp">
+                        <div class="service-card-content">
+                            <div class="service-icon">🎮</div>
+                            <h3>Oyun İncelemeleri</h3>
+                            <p>En yeni oyunların detaylı incelemeleri, puanlamaları ve topluluk yorumları ile doğru
+                                seçimi yapın.</p>
+                            <a href="oyun.html" class="service-link">Oyun Haberlerine Git →</a>
+                        </div>
+                    </div>
+
+                    <div class="service-card animate-fadeInUp">
+                        <div class="service-card-content">
+                            <div class="service-icon">📱</div>
+                            <h3>Uygulama Rehberi</h3>
+                            <p>Mobil ve masaüstü uygulamaları hakkında güncel haberler, ipuçları ve karşılaştırmalı
+                                incelemeler.</p>
+                            <a href="uygulama.html" class="service-link">Uygulama Haberlerine Git →</a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="services-cta">
+                    <h2>Topluluğa Katılın 🎉</h2>
+                    <p>Ücretsiz hesap oluşturun, forum tartışmalarına katılın ve projelerinizi paylaşın.</p>
+                    <a href="uye-panel.html" class="btn-primary"
+                        style="padding:0.8rem 2rem; font-size:1rem; border-radius:50px; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;">
+                        🚀 Hemen Üye Ol
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p class="footer-text">© 2025 AsiaConsole. Tüm hakları saklıdır.</p>
+                    <a href="index.html" style="color:var(--accent-blue); font-size:0.875rem; text-decoration:none;">←
+                        Ana Sayfaya Dön</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js?v=4.9.8"></script>
+</body>
+
+</html>

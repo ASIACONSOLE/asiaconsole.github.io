@@ -20,6 +20,9 @@
     <meta name="description"
         content="AsiaConsole ile iletişime geçin. Soru, öneri ve geri bildirimleriniz için bize ulaşın.">
     <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
@@ -234,7 +237,7 @@
     <nav class="navbar nav-style-neon">
         <a href="index.html" class="navbar-brand">
             <div class="brand-icon">
-                <img src="img/logo.png" alt="AsiaConsole Logo" style="height: 40px; width: auto; display: block;">
+                <img src="img/logo.png" alt="AsiaConsole Logo" width="40" height="40" style="height: 40px; width: auto; display: block;">
             </div>
             <span class="site-name">AsiaConsole</span>
         </a>
@@ -376,9 +379,9 @@
         </footer>
     </div>
 
-    <script src="js/matrix.js"></script>
-    <script src="js/firebase.js"></script>
-    <script src="js/main.js?v=4.9.8"></script>
+    <script src="js/matrix.js" defer></script>
+    <script src="js/firebase.js" defer></script>
+    <script src="js/main.js" defer></script>
     <script>
         document.getElementById('contactForm').addEventListener('submit', function (e) {
             e.preventDefault();

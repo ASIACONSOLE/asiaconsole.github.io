@@ -470,7 +470,9 @@ const DB = {
             aiEnabled: true,
             aiName: 'Editor',
             aiGreeting: 'Merhaba! Ben Editör, size nasıl yardımcı olabilirim?',
-            geminiApiKey: '', // Yönetici panelinden ayarlanmalı
+            geminiApiKey: '', // Admin panelinden ayarlanmalı
+            groqApiKey: '',
+            openrouterApiKey: '',
             siteFont: "'Inter', sans-serif",
             brandAnim: 'none',
             brandAnimSpeed: 2.0,
@@ -486,6 +488,12 @@ const DB = {
         // If current key is empty but default has a key, use the default
         if (!currentSettings.geminiApiKey && defaultSettings.geminiApiKey) {
             currentSettings.geminiApiKey = defaultSettings.geminiApiKey;
+        }
+        if (!currentSettings.groqApiKey && defaultSettings.groqApiKey) {
+            currentSettings.groqApiKey = defaultSettings.groqApiKey;
+        }
+        if (!currentSettings.openrouterApiKey && defaultSettings.openrouterApiKey) {
+            currentSettings.openrouterApiKey = defaultSettings.openrouterApiKey;
         }
         if (!currentSettings.googleClientId && defaultSettings.googleClientId) {
             currentSettings.googleClientId = defaultSettings.googleClientId;

@@ -20,7 +20,9 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         .article-hero {
@@ -534,15 +536,15 @@
         function generateBody(article) {
             // Build rich body from description + auto-generated sections
             const sections = [
-                `<p>${article.desc}</p>`,
+                `<p>${Comments.escapeHTML(article.desc)}</p>`,
                 `<h2>📌 Konuya Genel Bakış</h2>`,
-                `<p>Bu makale, ${article.title.toLowerCase()} konusunu ele almaktadır. ${article.category === 'teknoloji' ? 'Teknoloji dünyasındaki' : article.category === 'oyun' ? 'Oyun sektöründeki' : 'Uygulama geliştirme'} en güncel gelişmeleri ve önemli detayları aşağıda bulabilirsiniz.</p>`,
-                `<blockquote>💡 ${article.desc}</blockquote>`,
+                `<p>Bu makale, ${Comments.escapeHTML(article.title).toLowerCase()} konusunu ele almaktadır. ${article.category === 'teknoloji' ? 'Teknoloji dünyasındaki' : article.category === 'oyun' ? 'Oyun sektöründeki' : 'Uygulama geliştirme'} en güncel gelişmeleri ve önemli detayları aşağıda bulabilirsiniz.</p>`,
+                `<blockquote>💡 ${Comments.escapeHTML(article.desc)}</blockquote>`,
                 `<h2>🔍 Detaylı İnceleme</h2>`,
                 `<p>Konu hakkındaki detaylı incelememizde, sektörün önde gelen uzmanlarının görüşleri ve kapsamlı analizler yer almaktadır. Bu içerik, hem başlangıç seviyesindeki okuyucular hem de deneyimliler için hazırlanmıştır.</p>`,
                 `<ul><li>Güncel veriler ve istatistikler</li><li>Uzman yorumları ve analizler</li><li>Pratik öneriler ve ipuçları</li><li>Gelecek trendleri ve tahminler</li></ul>`,
                 `<h2>📊 Sonuç</h2>`,
-                `<p>${article.title} konusu, sektörün geleceği açısından büyük önem taşımaktadır. Topluluğumuzda bu konuyu tartışmaya devam edeceğiz. Düşüncelerinizi forum sayfamızda paylaşabilirsiniz.</p>`,
+                `<p>${Comments.escapeHTML(article.title)} konusu, sektörün geleceği açısından büyük önem taşımaktadır. Topluluğumuzda bu konuyu tartışmaya devam edeceğiz. Düşüncelerinizi forum sayfamızda paylaşabilirsiniz.</p>`,
             ];
             // Use stored body if exists
             return article.body || sections.join('\n');
@@ -573,9 +575,9 @@
             document.getElementById('artEmoji').textContent = article.image || '📄';
             document.getElementById('artCategoryBadge').className = 'badge ' + cls;
             document.getElementById('artCategoryBadge').textContent = label;
-            document.getElementById('artTitle').textContent = article.title;
-            document.getElementById('artDesc').textContent = article.desc || '';
-            document.getElementById('artAuthor').textContent = '@' + article.author;
+            document.getElementById('artTitle').textContent = Comments.escapeHTML(article.title);
+            document.getElementById('artDesc').textContent = Comments.escapeHTML(article.desc || '');
+            document.getElementById('artAuthor').textContent = '@' + Comments.escapeHTML(article.author);
             const authorInitial = (article.author && article.author[0]) ? article.author[0].toUpperCase() : '?';
             document.getElementById('artAuthorAvatar').textContent = authorInitial;
             document.getElementById('artDate').textContent = article.date;

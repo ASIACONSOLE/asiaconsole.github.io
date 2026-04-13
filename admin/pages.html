@@ -724,12 +724,12 @@
                     </div>
                     ${cover ? `<img src="${cover}" style="width:100%; max-height:350px; object-fit:cover; border-radius:16px; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.1);">` : `<div style="width:100%; height:200px; border-radius:16px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; font-size:3rem; background:linear-gradient(135deg, ${catColors[category] || '#667eea'}, #764ba2);">📰</div>`}
                     <div style="display:inline-block; padding:0.2rem 0.7rem; border-radius:50px; font-size:0.75rem; font-weight:600; margin-bottom:1rem; background:rgba(79,142,247,0.15); color:${catColors[category] || '#4f8ef7'};">${catLabels[category] || category}</div>
-                    <h1 style="font-size:2rem; font-weight:800; line-height:1.2; margin-bottom:1rem;">${title}</h1>
+                    <h1 style="font-size:2rem; font-weight:800; line-height:1.2; margin-bottom:1rem;">${Comments.escapeHTML(title)}</h1>
                     <div style="display:flex; gap:1rem; color:#8b949e; font-size:0.8rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.08);">
-                        <span>👤 ${author}</span>
-                        <span>📅 ${date}</span>
+                        <span>👤 ${Comments.escapeHTML(author)}</span>
+                        <span>📅 ${Comments.escapeHTML(date)}</span>
                     </div>
-                    ${desc ? `<p style="font-size:1rem; color:#8b949e; margin-bottom:2rem; line-height:1.6; font-style:italic;">${desc}</p>` : ''}
+                    ${desc ? `<p style="font-size:1rem; color:#8b949e; margin-bottom:2rem; line-height:1.6; font-style:italic;">${Comments.escapeHTML(desc)}</p>` : ''}
                     <div class="preview-body-content" style="font-size:1rem; line-height:1.8; color:#c9d1d9;">
                         ${interactiveBody || '<p style="color:#6b7280;">İçerik henüz eklenmedi...</p>'}
                     </div>
@@ -903,11 +903,11 @@
     <tr>
       <td style="font-size:1.4rem;">${a.image || '📄'}</td>
       <td>
-        <div style="font-weight:600; font-size:0.875rem; max-width:280px;">${a.title}</div>
-        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${desc.slice(0, 60)}${desc.length > 60 ? '...' : ''}</div>
+        <div style="font-weight:600; font-size:0.875rem; max-width:280px;">${Comments.escapeHTML(a.title)}</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${Comments.escapeHTML(desc.slice(0, 60))}${desc.length > 60 ? '...' : ''}</div>
       </td>
       <td>${catBadge[a.category] || a.category}</td>
-      <td style="color:var(--text-secondary); font-size:0.85rem;">@${a.author}</td>
+      <td style="color:var(--text-secondary); font-size:0.85rem;">@${Comments.escapeHTML(a.author)}</td>
       <td style="color:var(--text-muted); font-size:0.8rem;">${a.date}</td>
       <td style="color:var(--text-secondary); font-size:0.85rem;">👁️ ${views.toLocaleString('tr-TR')}</td>
       <td>

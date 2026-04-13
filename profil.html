@@ -21,9 +21,11 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    
+
     <style>
         #matrixCanvas {
             position: fixed !important;
@@ -515,7 +517,7 @@
             if (!user) {
                 if (allUsers.length < 5) return;
                 document.querySelector('.profile-main').innerHTML =
-                    '<div class="empty-state" style="margin:4rem auto;"><div class="empty-icon">😕</div><h3>Kullanıcı Bulunamadı</h3><p>' + targetUsername + ' adlı bir üye bulunamadı.</p><a href="index.html" class="btn-primary" style="margin-top:1rem; display:inline-flex;">← Ana Sayfaya Dön</a></div>';
+                    '<div class="empty-state" style="margin:4rem auto;"><div class="empty-icon">😕</div><h3>Kullanıcı Bulunamadı</h3><p>' + Comments.escapeHTML(targetUsername) + ' adlı bir üye bulunamadı.</p><a href="index.html" class="btn-primary" style="margin-top:1rem; display:inline-flex;">← Ana Sayfaya Dön</a></div>';
                 document.getElementById('profileCover').style.display = 'none';
                 return;
             }

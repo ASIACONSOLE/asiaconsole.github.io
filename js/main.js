@@ -621,7 +621,11 @@ function applySettings() {
         } else {
             hero.style.display = 'flex';
             const bannerH1 = hero.querySelector('h1');
-            if (bannerH1 && s.bannerTitle) bannerH1.innerHTML = s.bannerTitle.replace('\n', '<br>');
+            if (bannerH1 && s.bannerTitle) {
+                // SECURITY: Allow only <br> for newline, escape everything else
+                const safeTitle = Comments.escapeHTML(s.bannerTitle).replace(/&lt;br&gt;/g, '<br>').replace(/\n/g, '<br>');
+                bannerH1.innerHTML = safeTitle;
+            }
             const bannerSub = document.querySelector('.site-slogan');
             if (bannerSub && s.bannerSubtitle) bannerSub.textContent = s.bannerSubtitle;
             const btn1 = hero.querySelector('.btn-primary');
@@ -643,7 +647,9 @@ function applySettings() {
             el.style.width = sz;
             el.style.height = sz;
             if (src) {
-                el.innerHTML = `<img src="${src}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
+                // SECURITY: Sanitize src to avoid XSS in img tag
+                const safeSrc = Comments.escapeHTML(src);
+                el.innerHTML = `<img src="${safeSrc}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
             }
         });
     };
@@ -895,7 +901,14 @@ const Auth = {
     login(email, password) {
         const users = DB.get('users') || [];
         const user = users.find(u => (u.email === email || u.username === email) && u.password === password && u.active);
-        if (user) { DB.set('user_session', { id: user.id, username: user.username, email: user.email }); return true; }
+        if (user) {
+            DB.set('user_session', { id: user.id, username: user.username, email: user.email });
+            // Trigger cloud load to get synced data on new device
+            DB.loadFromCloud().then(() => {
+                console.log('[Auth] Cloud data restored after login');
+            });
+            return true;
+        }
         return false;
     },
     register(username, email, password) {
@@ -915,6 +928,8 @@ const Auth = {
         users.push(newUser);
         DB.set('users', users);
         DB.set('user_session', { id: newUser.id, username, email });
+        // Initial cloud sync setup
+        DB.loadFromCloud();
         return { ok: true };
     },
     logout() {

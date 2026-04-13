@@ -317,9 +317,27 @@ const DB = {
             while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
                 local = local.data;
             }
+            // Fallback for large keys that might be in IDB (articles are cached in _cache)
+            if (!local && (key === 'articles' || key === 'messages' || key === 'profiles')) {
+                return this._cache && this._cache[key] ? this._cache[key] : null;
+            }
             return local || null;
         } catch (e) { return null; }
     },
+    // NEW: Async getter for large values
+    async getAsync(key) {
+        let local = this.get(key);
+        if (local) return local;
+        // Check MediaDB
+        const idbVal = await MediaDB.get(key);
+        if (idbVal) {
+            this._cache = this._cache || {};
+            this._cache[key] = idbVal;
+            return idbVal;
+        }
+        return null;
+    },
+    _cache: {},
     set(key, val, syncToCloud = true) {
         // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped
         let cleanVal = val;
@@ -340,10 +358,16 @@ const DB = {
         } catch (e) {
             console.error(`[DB] LocalStorage save failed for ${key}:`, e);
             if (e.name === 'QuotaExceededError') {
-                if (typeof showToast === 'function') showToast(`⚠️ Hafıza dolu! ${key} kaydedilemedi.`, 'error');
-                if (typeof showAdminToast === 'function') showAdminToast(`⚠️ Depolama alanı doldu! ${key} kaydedilemedi.`, 'error');
+                // If articles are too big, try saving them to MediaDB (IndexedDB) instead
+                if (key === 'articles') {
+                    console.warn('[DB] QuotaExceeded for articles, falling back to MediaDB');
+                    MediaDB.set('articles', cleanVal);
+                    // Clear from localStorage to free up space
+                    localStorage.removeItem('tc_articles');
+                } else {
+                    if (typeof showToast === 'function') showToast(`⚠️ Hafıza dolu! ${key} kaydedilemedi.`, 'error');
+                }
             }
-            return; // Don't continue if localStorage itself failed
         }
 
         // Dispatch local event for instant UI update

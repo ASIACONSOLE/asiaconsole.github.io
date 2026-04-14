@@ -312,14 +312,22 @@ const MediaDB = {
 const DB = {
     get(key) {
         try {
+            // 1. PRIORITIZE CACHE (IndexedDB/Pre-loaded data) for specific large keys
+            if (this._cache && this._cache[key] && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config')) {
+                return this._cache[key];
+            }
+
+            // 2. FALLBACK TO LOCAL STORAGE
             let local = JSON.parse(localStorage.getItem('tc_' + key));
+
             // TRIPLE-GUARD: Always unwrap local data if it's corrupted with wrappers
             while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
                 local = local.data;
             }
-            // Fallback for large keys that might be in IDB (cached in _cache)
-            if (!local && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config')) {
-                return this._cache && this._cache[key] ? this._cache[key] : null;
+
+            // 3. FINAL FALLBACK FOR OTHER KEYS (Messages, etc.)
+            if (!local && this._cache && this._cache[key]) {
+                return this._cache[key];
             }
             return local || null;
         } catch (e) { return null; }
@@ -533,7 +541,7 @@ const DB = {
             aiEnabled: true,
             aiName: 'Editor',
             aiGreeting: 'Merhaba! Ben Editör, size nasıl yardımcı olabilirim?',
-            geminiApiKey: '', // Admin panelinden ayarlanmalı
+            geminiApiKey: '',
             groqApiKey: '',
             openrouterApiKey: '',
             siteFont: "'Inter', sans-serif",
@@ -562,8 +570,12 @@ const DB = {
             currentSettings.googleClientId = defaultSettings.googleClientId;
         }
         this.set('settings', { ...defaultSettings, ...currentSettings }, false);
-        // Default articles...
-        if (!this.get('articles')) {
+
+        // --- SEED PROTECTION ---
+        // Only seed defaults if NOT in cache (IndexedDB) AND NOT in localStorage
+        const hasArticles = this.get('articles');
+        if (!hasArticles) {
+            console.log('[DB] Seeding default articles...');
             this.set('articles', [
                 { id: 1, title: 'Yapay Zeka 2025: Geleceğin Teknolojileri', category: 'teknoloji', desc: 'ChatGPT, Gemini ve yeni nesil AI araçlarının iş dünyasını nasıl değiştireceğini keşfediyoruz.', author: 'Editör', date: '24 Şub 2025', views: 1240, image: '🤖', featured: true },
                 { id: 2, title: 'GTA VI Çıkış Tarihi Açıklandı!', category: 'oyun', desc: 'Rockstar Games\'in uzun süredir beklenen GTA VI oyununun resmi çıkış tarihi ve yeni detayları paylaşıldı.', author: 'Editör', date: '23 Şub 2025', views: 5620, image: '🎮', featured: true },
@@ -575,11 +587,9 @@ const DB = {
                 { id: 8, title: 'Apple Vision Pro Kullanıcı Deneyimi', category: 'teknoloji', desc: 'Spatial computing çağını başlatan Vision Pro ile bir ay geçirdikten sonra gerçek düşüncelerimiz.', author: 'Editör', date: '17 Şub 2025', views: 4200, image: '👓', featured: false },
             ], false);
         }
-        // Default forum posts
-        if (!this.get('forum_posts')) {
-            this.set('forum_posts', [], false);
-        }
-        // Default users
+
+        if (!this.get('forum_posts')) this.set('forum_posts', [], false);
+
         if (!this.get('users')) {
             this.set('users', [
                 { id: 1, username: 'CodeMaster', email: 'codemaster@asiaconsole.com', password: '123456', joined: '01 Oca 2025', posts: 47, active: true },
@@ -594,10 +604,8 @@ const DB = {
                 { id: 10, username: 'SteamUser', email: 'steam@asiaconsole.com', password: '123456', joined: '30 Oca 2025', active: true }
             ], false);
         }
-        // User projects init
-        if (!this.get('user_projects')) {
-            this.set('user_projects', [], false);
-        }
+
+        if (!this.get('user_projects')) this.set('user_projects', [], false);
         // Default project reviews init
         if (!this.get('project_reviews')) {
             this.set('project_reviews', [], false);
@@ -1350,16 +1358,15 @@ if (typeof FirebaseDB !== 'undefined') {
                     }
                 }
 
-                const local = localStorage.getItem('tc_' + key);
+                const currentLocalData = DB.get(key);
                 const remoteJSON = JSON.stringify(remoteData);
+                const localJSON = JSON.stringify(currentLocalData);
 
-                // Only update if data is actually different
-                if (local !== remoteJSON) {
+                // Only update if data is actually different (compare against full DB data, not just raw LS)
+                if (localJSON !== remoteJSON) {
                     console.log(`[Firebase] Remote change for ${key}`);
-                    localStorage.setItem('tc_' + key, remoteJSON);
 
-                    // CRITICAL FIX: Use syncToCloud=false to prevent infinite loop!
-                    // (old code: DB.set(key, remoteData) triggered cloud sync → listener → DB.set → ...)
+                    // Use DB.set with syncToCloud=false to handle LS vs IDB logic automatically
                     DB.set(key, remoteData, false);
 
                     // Specific reactions

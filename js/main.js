@@ -1373,12 +1373,22 @@ if (typeof FirebaseDB !== 'undefined') {
                     }
                 }
 
+                // Clean any accidental nesting in remoteData before comparison
+                let cleanRemote = remoteData;
+                while (cleanRemote && typeof cleanRemote === 'object' && 'data' in cleanRemote && cleanRemote.data !== undefined) {
+                    cleanRemote = cleanRemote.data;
+                }
+
                 const currentLocalData = DB.get(key);
-                const remoteJSON = JSON.stringify(remoteData);
+                const remoteJSON = JSON.stringify(cleanRemote);
                 const localJSON = JSON.stringify(currentLocalData);
 
-                // Only update if data is actually different (compare against full DB data, not just raw LS)
+                // Only update if data is actually different
                 if (localJSON !== remoteJSON) {
+                    console.log(`[Firebase] Remote change for ${key} (verified difference)`);
+
+                    // Use DB.set with syncToCloud=false to handle LS vs IDB logic automatically
+                    DB.set(key, cleanRemote, false);
                     console.log(`[Firebase] Remote change for ${key}`);
 
                     // Use DB.set with syncToCloud=false to handle LS vs IDB logic automatically

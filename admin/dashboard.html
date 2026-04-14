@@ -302,8 +302,8 @@
   `}).join('');
 
             // Project stats (Async)
-            const projects = DB.get('user_projects') || [];
-            const pendingProjs = projects.filter(p => (p.status === 'pending')).length;
+            const projects = DB.get('user_projects');
+            const pendingProjs = (Array.isArray(projects)) ? projects.filter(p => p.status === 'pending').length : 0;
             document.getElementById('statProjPending').textContent = pendingProjs;
             if (pendingProjs > 0) {
                 document.getElementById('projPendingCard').style.background = 'rgba(6, 182, 212, 0.05)';

@@ -317,12 +317,27 @@ const DB = {
             while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
                 local = local.data;
             }
-            // Fallback for large keys that might be in IDB (articles are cached in _cache)
-            if (!local && (key === 'articles' || key === 'messages' || key === 'profiles')) {
+            // Fallback for large keys that might be in IDB (cached in _cache)
+            if (!local && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config')) {
                 return this._cache && this._cache[key] ? this._cache[key] : null;
             }
             return local || null;
         } catch (e) { return null; }
+    },
+    // NEW: Background pre-load for large keys
+    async preLoadLargeKeys() {
+        const largeKeys = ['articles', 'messages', 'profiles', 'bot_config', 'scraped_urls', 'pending_articles'];
+        for (const key of largeKeys) {
+            try {
+                const val = await MediaDB.get(key);
+                if (val) {
+                    this._cache[key] = val;
+                }
+            } catch (e) { console.warn(`[DB] Pre-load failed for ${key}`); }
+        }
+        console.log('[DB] Large keys pre-loaded from IDB ✓');
+        // Trigger UI update once pre-load is done
+        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { all: true } }));
     },
     // NEW: Async getter for large values
     async getAsync(key) {
@@ -495,10 +510,10 @@ const DB = {
                             allArticles = allArticles.concat(chunk.data);
                         }
                     }
-                    localStorage.setItem('tc_articles', JSON.stringify(allArticles));
+                    DB.set('articles', allArticles, false);
                     console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} chunks`);
                 } else {
-                    localStorage.setItem('tc_' + key, JSON.stringify(remote.data));
+                    DB.set(key, remote.data, false);
                 }
             }
         }
@@ -1311,7 +1326,7 @@ if (typeof FirebaseDB !== 'undefined') {
                             console.warn(`[Firebase] Skipping chunked remote — local has ${localArticles.length} vs cloud ${allArticles.length}`);
                             return;
                         }
-                        localStorage.setItem('tc_articles', JSON.stringify(allArticles));
+                        // Use DB.set with syncToCloud=false to leverage MediaDB fallback automatically
                         DB.set('articles', allArticles, false);
                         console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} cloud chunks`);
                         document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
@@ -1387,3 +1402,11 @@ if (typeof FirebaseDB !== 'undefined') {
         }
     });
 }
+
+// AUTO-START: Pre-load IndexedDB data then initialize DB
+(async function () {
+    if (typeof DB !== 'undefined') {
+        await DB.preLoadLargeKeys();
+        DB.init();
+    }
+})();

@@ -1,16 +1,38 @@
-# Local storage or sensitive data
+# === OS Files ===
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Brain / Logs (If any)
-brain/
-.system_generated/
+# === Dependencies ===
+node_modules/
+package-lock.json
 
-# API Keys (Prevent accidents)
-# Though stored in localStorage, we keep this as a reminder
+# === Environment & Secrets ===
+.env
+.env.local
+.env.production
 *.key
+*.pem
 
-# Common temporary files
+# === Firebase Admin Secrets ===
+service-account.json
+*-service-account.json
+firebase-adminsdk-*.json
+
+# === Build / Temp ===
 *.tmp
 *.log
-.env
+dist/
+build/
+
+# === IDE & System ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === Brain / Logs ===
+brain/
+.system_generated/
+.gemini/

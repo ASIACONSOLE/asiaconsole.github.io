@@ -1,21 +1,28 @@
-# Security Policy
-
-## Supported Versions
-
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+# Security Policy — AsiaConsole
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security vulnerability, please report it responsibly:
+- **Email:** admin@asiaconsole.com
+- **Do NOT** open a public GitHub issue for security vulnerabilities.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## Security Best Practices
+
+### API Keys
+- All API keys (Gemini, Groq, OpenRouter, Mistral) are stored in `localStorage` on the client side.
+- The Firebase config object contains **public** identifiers only (not secrets). This is by design.
+- Never commit `.env` files or `service-account.json` to the repository.
+
+### Firebase
+- Firestore Security Rules must be configured in the Firebase Console.
+- The `service-account.json` file must NEVER be committed to Git (blocked by `.gitignore`).
+
+### Authentication
+- Admin passwords are stored locally in `localStorage` (hashed recommended for future).
+- Google OAuth uses the standard GSI flow with a public Client ID.
+
+## Supported Versions
+
+| Version | Supported |
+| ------- | --------- |
+| Latest  | ✅         |

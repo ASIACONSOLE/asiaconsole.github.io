@@ -453,7 +453,7 @@ const DB = {
     // NEW: Sync all local data to cloud (Force Sync)
     async syncToCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
-        const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects'];
+        const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments', 'site_logo_base64'];
         for (const key of keys) {
             const val = this.get(key);
             if (val) await FirebaseDB.set('site_data', key, { data: val });
@@ -463,7 +463,7 @@ const DB = {
     // NEW: Load from cloud to local (with chunked article support)
     async loadFromCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
-        const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects'];
+        const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments', 'site_logo_base64'];
         for (const key of keys) {
             const remote = await FirebaseDB.get('site_data', key);
             if (remote && remote.data) {

@@ -111,7 +111,7 @@ FirebaseDB = {
                     resolve(doc.exists ? doc.data() : null);
                 } catch (e) {
                     console.warn('[Firebase] Read error:', e);
-                    this._triggerConnectionEvent('error');
+                    this._triggerConnectionEvent('error', `Okuma hatası: ${e.message}`);
                     resolve(null);
                 }
             });
@@ -128,7 +128,7 @@ FirebaseDB = {
                     resolve(snap.docs.map(d => ({ _id: d.id, ...d.data() })));
                 } catch (e) {
                     console.warn('[Firebase] GetAll error:', e);
-                    this._triggerConnectionEvent('error');
+                    this._triggerConnectionEvent('error', `Toplu okuma hatası: ${e.message}`);
                     resolve([]);
                 }
             });
@@ -181,7 +181,7 @@ FirebaseDB = {
                     resolve(true);
                 } catch (e) {
                     console.warn('[Firebase] Delete error:', e);
-                    this._triggerConnectionEvent('error');
+                    this._triggerConnectionEvent('error', `Silme hatası: ${e.message}`);
                     resolve(false);
                 }
             });

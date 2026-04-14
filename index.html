@@ -429,9 +429,13 @@
             renderHome();
             if (typeof renderDailySnippet === 'function') renderDailySnippet();
         });
-        document.addEventListener('dbUpdated', () => {
-            renderHome();
-            if (typeof renderDailySnippet === 'function') renderDailySnippet();
+        document.addEventListener('dbUpdated', (e) => {
+            const key = e.detail && e.detail.key;
+            // Only re-render if it's one of the keys shown on homepage, or if it's global update
+            if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings') {
+                renderHome();
+                if (typeof renderDailySnippet === 'function') renderDailySnippet();
+            }
         });
     </script>
     <script src="js/matrix.js" defer></script>

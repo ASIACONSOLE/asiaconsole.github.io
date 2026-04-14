@@ -1389,10 +1389,6 @@ if (typeof FirebaseDB !== 'undefined') {
 
                     // Use DB.set with syncToCloud=false to handle LS vs IDB logic automatically
                     DB.set(key, cleanRemote, false);
-                    console.log(`[Firebase] Remote change for ${key}`);
-
-                    // Use DB.set with syncToCloud=false to handle LS vs IDB logic automatically
-                    DB.set(key, remoteData, false);
 
                     // Specific reactions
                     if (key === 'settings' || key === 'site_logo_base64') {

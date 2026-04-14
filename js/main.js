@@ -388,12 +388,16 @@ const DB = {
             try {
                 localStorage.setItem('tc_' + key, newVal);
             } catch (e) {
-                console.error(`[DB] LocalStorage save failed for ${key}:`, e);
-                if (e.name === 'QuotaExceededError') {
-                    // Fallback for ANY key that fails due to quota
-                    console.warn(`[DB] QuotaExceeded for ${key}, falling back to MediaDB`);
+                // Only log QuotaExceeded as a warning if we don't have a cache fallback
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    if (!this._cache[key]) {
+                        console.warn(`[DB] LocalStorage full for ${key}, but no IDB fallback available yet!`);
+                    }
+                    // Fallback to MediaDB (IndexedDB) for large data
                     MediaDB.set(key, cleanVal);
                     localStorage.removeItem('tc_' + key);
+                } else {
+                    console.error(`[DB] Storage error for ${key}:`, e);
                 }
             }
         }
@@ -909,36 +913,47 @@ function renderDynamicNav() {
     });
 }
 
-// ---- HERO PROJECTS SHOOCASE ----
+// ---- HERO PROJECTS SHOWCASE ----
 function renderHeroProjects() {
     const grid = document.getElementById('heroProjectGrid');
     if (!grid) return;
 
-    const allProjects = DB.get('user_projects') || [];
-    const approved = allProjects.filter(p => p.status === 'approved' || !p.status); // Fallback for old data
+    const allProjects = DB.get('user_projects');
+    if (!Array.isArray(allProjects)) {
+        console.warn('[UI] user_projects is not an array, skipping hero render');
+        _renderHeroPlaceholders(grid);
+        return;
+    }
+
+    const approved = allProjects.filter(p => p && (p.status === 'approved' || !p.status));
     const latest = approved.sort((a, b) => {
-        const idA = String(a.id);
-        const idB = String(b.id);
+        const idA = String(a.id || 0);
+        const idB = String(b.id || 0);
         return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
     }).slice(0, 4);
 
     if (latest.length === 0) {
-        grid.innerHTML = `
-            <div class="hero-card-mini"><div class="mini-icon">💻</div><div class="mini-title">Haberler</div></div>
-            <div class="hero-card-mini"><div class="mini-icon">🎮</div><div class="mini-title">Oyunlar</div></div>
-            <div class="hero-card-mini"><div class="mini-icon">📱</div><div class="mini-title">Uygulama</div></div>
-            <div class="hero-card-mini"><div class="mini-icon">💬</div><div class="mini-title">Forum</div></div>
-        `;
+        _renderHeroPlaceholders(grid);
         return;
     }
 
     grid.innerHTML = latest.map((p, idx) => `
         <a href="proje-izle.html?id=${p.id}" class="hero-card-mini animate-stagger" style="--delay: ${idx * 0.1}s">
             <div class="mini-icon">${p.icon || '🚀'}</div>
-            <div class="mini-title">${p.title}</div>
+            <div class="mini-title">${Comments.escapeHTML(p.title || 'İsimsiz Proje')}</div>
             <div class="mini-tag">${p.category || 'PROJE'}</div>
         </a>
     `).join('');
+}
+
+function _renderHeroPlaceholders(grid) {
+    if (!grid) return;
+    grid.innerHTML = `
+        <div class="hero-card-mini"><div class="mini-icon">💻</div><div class="mini-title">Haberler</div></div>
+        <div class="hero-card-mini"><div class="mini-icon">🎮</div><div class="mini-title">Oyunlar</div></div>
+        <div class="hero-card-mini"><div class="mini-icon">📱</div><div class="mini-title">Uygulama</div></div>
+        <div class="hero-card-mini"><div class="mini-icon">💬</div><div class="mini-title">Forum</div></div>
+    `;
 }
 
 // Refresh hero projects only on data updates

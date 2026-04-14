@@ -1238,7 +1238,18 @@ const Comments = {
 
 // Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {
-    FirebaseDB.onReady(() => {
+    FirebaseDB.onReady(async () => {
+        // CRITICAL: Load cloud data FIRST before listeners to prevent defaults from overwriting
+        try {
+            await DB.loadFromCloud();
+            console.log('[Firebase] Initial cloud data loaded ✓');
+            // Re-apply settings after cloud load
+            if (typeof applySettings === 'function') applySettings();
+            document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
+        } catch (e) {
+            console.warn('[Firebase] Initial cloud load failed:', e);
+        }
+
         const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo_base64', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments'];
 
         syncKeys.forEach(key => {
@@ -1285,11 +1296,18 @@ if (typeof FirebaseDB !== 'undefined') {
                 }
 
                 // For articles: if local has MORE items, cloud data is stale — protect local
+                // BUT: don't protect if local only has default/seed articles (IDs 1-8)
                 if (key === 'articles') {
                     const localArticles = DB.get('articles');
                     if (Array.isArray(localArticles) && Array.isArray(remoteData) && localArticles.length > remoteData.length) {
-                        console.warn(`[Firebase] Skipping remote overwrite for 'articles' — local has ${localArticles.length} items vs cloud ${remoteData.length}`);
-                        return;
+                        // Check if local data is just the default seed (IDs 1-8)
+                        const isDefaultData = localArticles.length <= 8 && localArticles.every(a => a.id >= 1 && a.id <= 8);
+                        if (!isDefaultData) {
+                            console.warn(`[Firebase] Skipping remote overwrite for 'articles' — local has ${localArticles.length} items vs cloud ${remoteData.length}`);
+                            return;
+                        }
+                        // Default data — allow cloud to overwrite
+                        console.log(`[Firebase] Local has default articles, allowing cloud overwrite.`);
                     }
                 }
 

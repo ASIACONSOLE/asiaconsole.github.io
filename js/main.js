@@ -380,6 +380,15 @@ const DB = {
 
         // Sync to Firebase Cloud if initialized AND requested
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
+            // GUARD: Never sync seed/default articles to cloud (IDs 1-8 only)
+            if (key === 'articles' && Array.isArray(cleanVal) && cleanVal.length <= 8) {
+                const isDefaultSeed = cleanVal.every(a => typeof a.id === 'number' && a.id >= 1 && a.id <= 8);
+                if (isDefaultSeed) {
+                    console.log('[Firebase] Skipping cloud sync — detected default seed articles.');
+                    return;
+                }
+            }
+
             FirebaseDB.onReady(() => {
                 try {
                     // Final POJO cleaning
@@ -453,7 +462,12 @@ const DB = {
     // NEW: Sync all local data to cloud (Force Sync)
     async syncToCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
-        const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments', 'site_logo_base64'];
+        const keys = [
+            'settings', 'articles', 'users', 'forum_posts', 'user_projects',
+            'user_tiers', 'profiles', 'custom_pages', 'article_comments',
+            'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
+            'pending_articles', 'bot_queue', 'bot_drafts'
+        ];
         for (const key of keys) {
             const val = this.get(key);
             if (val) await FirebaseDB.set('site_data', key, { data: val });
@@ -463,7 +477,12 @@ const DB = {
     // NEW: Load from cloud to local (with chunked article support)
     async loadFromCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
-        const keys = ['settings', 'articles', 'users', 'forum_posts', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments', 'site_logo_base64'];
+        const keys = [
+            'settings', 'articles', 'users', 'forum_posts', 'user_projects',
+            'user_tiers', 'profiles', 'custom_pages', 'article_comments',
+            'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
+            'pending_articles', 'bot_queue', 'bot_drafts'
+        ];
         for (const key of keys) {
             const remote = await FirebaseDB.get('site_data', key);
             if (remote && remote.data) {
@@ -590,7 +609,7 @@ const DB = {
             });
             if (changed) {
                 console.log('[Migration] Article authors updated to Editör ✓');
-                this.set('articles', currentArticles);
+                this.set('articles', currentArticles, false); // NEVER sync migration to cloud
             }
         }
     }
@@ -1250,7 +1269,12 @@ if (typeof FirebaseDB !== 'undefined') {
             console.warn('[Firebase] Initial cloud load failed:', e);
         }
 
-        const syncKeys = ['settings', 'articles', 'users', 'forum_posts', 'site_logo_base64', 'user_projects', 'user_tiers', 'profiles', 'custom_pages', 'article_comments'];
+        const syncKeys = [
+            'settings', 'articles', 'users', 'forum_posts', 'user_projects',
+            'user_tiers', 'profiles', 'custom_pages', 'article_comments',
+            'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
+            'pending_articles', 'bot_queue', 'bot_drafts'
+        ];
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {

@@ -1,0 +1,13 @@
+{
+  "name": "asiaconsole-admin",
+  "version": "1.0.0",
+  "description": "Backend management scripts for AsiaConsole",
+  "main": "admin/firebase-admin-setup.js",
+  "scripts": {
+    "admin-setup": "node admin/firebase-admin-setup.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.10.1",
+    "dotenv": "^16.3.1"
+  }
+}

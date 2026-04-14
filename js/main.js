@@ -345,27 +345,32 @@ const DB = {
             cleanVal = cleanVal.data;
         }
 
-        // Prepare data for comparison
-        const oldVal = localStorage.getItem('tc_' + key);
+        // 1. Always update memory cache for instant sync access
+        this._cache[key] = cleanVal;
+
+        // 2. Prepare data for storage check
         const newVal = JSON.stringify(cleanVal);
+        const oldVal = localStorage.getItem('tc_' + key);
 
         // Skip if data hasn't changed (save performance)
         if (oldVal === newVal) return;
 
-        // Save to local for instant access
-        try {
-            localStorage.setItem('tc_' + key, newVal);
-        } catch (e) {
-            console.error(`[DB] LocalStorage save failed for ${key}:`, e);
-            if (e.name === 'QuotaExceededError') {
-                // If articles are too big, try saving them to MediaDB (IndexedDB) instead
-                if (key === 'articles') {
-                    console.warn('[DB] QuotaExceeded for articles, falling back to MediaDB');
-                    MediaDB.set('articles', cleanVal);
-                    // Clear from localStorage to free up space
-                    localStorage.removeItem('tc_articles');
-                } else {
-                    if (typeof showToast === 'function') showToast(`⚠️ Hafıza dolu! ${key} kaydedilemedi.`, 'error');
+        // 3. Size-based proactive offloading for known large keys
+        if (key === 'articles' && newVal.length > 2000000) { // > 2MB
+            console.warn(`[DB] ${key} size is large (${(newVal.length / 1024).toFixed(0)}KB), offloading to MediaDB...`);
+            MediaDB.set(key, cleanVal);
+            localStorage.removeItem('tc_' + key);
+        } else {
+            // Save to local for instant access if space permits
+            try {
+                localStorage.setItem('tc_' + key, newVal);
+            } catch (e) {
+                console.error(`[DB] LocalStorage save failed for ${key}:`, e);
+                if (e.name === 'QuotaExceededError') {
+                    // Fallback for ANY key that fails due to quota
+                    console.warn(`[DB] QuotaExceeded for ${key}, falling back to MediaDB`);
+                    MediaDB.set(key, cleanVal);
+                    localStorage.removeItem('tc_' + key);
                 }
             }
         }
@@ -424,10 +429,10 @@ const DB = {
                         return;
                     }
 
-                    // Standard single-document sync for non-article or small data
+                    // Enhanced: Prevent syncing excessively large data (>1MB per document limit)
                     if (size > 1000000) {
                         console.error(`[Firebase] Data size too large for ${key}: ${(size / 1024 / 1024).toFixed(2)}MB (Limit: 1MB)`);
-                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük!`, 'error');
+                        if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük! (1MB limit)`, 'error');
                         DB._cloudStaleKeys = DB._cloudStaleKeys || new Set();
                         DB._cloudStaleKeys.add(key);
                         return;
@@ -1316,21 +1321,21 @@ if (typeof FirebaseDB !== 'undefined') {
         });
 
         // Detect connectivity status for UI
-        const updateBadge = (status, message = '') => {
+        function updateBadge(status, message) {
             const badge = document.getElementById('cloudSyncStatus');
-            if (badge) {
-                if (status === 'connected') {
-                    badge.innerHTML = '● Bulut Bağlı';
-                    badge.style.color = '#10b981';
-                    badge.title = 'Veriler güvenle senkronize ediliyor.';
-                } else if (status === 'error') {
-                    badge.innerHTML = '○ Bulut Hatası';
-                    badge.style.color = '#ef4444';
-                    badge.title = 'Hata: ' + (message || 'Bilinmeyen bir sorun oluştu.');
-                    console.error('[Firebase Status] Hata:', message);
-                }
+            if (!badge) return;
+            badge.className = 'status-badge';
+
+            if (status === 'connected') {
+                badge.innerHTML = '<span style="color:#10b981;">● Bulut Bağlı</span>';
+                badge.title = 'Verileriniz bulut ile senkronize ediliyor.';
+            } else if (status === 'connecting') {
+                badge.innerHTML = '<span style="color:#f59e0b;">◌ Bağlanıyor...</span>';
+            } else if (status === 'error') {
+                const shortMsg = message ? (message.length > 30 ? message.substring(0, 30) + '...' : message) : 'Bilinmeyen Hata';
+                badge.innerHTML = `<span style="color:#ef4444;" title="${message || 'Bilinmeyen bir hata oluştu.'}">⚠ Bulut Hatası: ${shortMsg}</span>`;
             }
-        };
+        }
 
         document.addEventListener('firebaseStatus', (e) => updateBadge(e.detail.status, e.detail.message));
 

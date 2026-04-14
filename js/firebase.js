@@ -30,42 +30,52 @@ FirebaseDB = {
 
     // Initialize Firebase & Firestore
     init() {
-        // Load Firebase compat SDKs dynamically
+        // Load Firebase compat SDKs sequentially to prevent race conditions
         const scripts = [
             'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
             'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js'
         ];
 
-        let loaded = 0;
-        const onLoad = () => {
-            loaded++;
-            if (loaded === scripts.length) {
-                try {
-                    firebase.initializeApp(FIREBASE_CONFIG);
-                    this.db = firebase.firestore();
-                    this._ready = true;
-                    this._triggerConnectionEvent('connected');
-                    console.log('[Firebase] Connected to Firestore ✓');
-                    // Run pending callbacks
-                    this._readyCallbacks.forEach(cb => cb());
-                    this._readyCallbacks = [];
-                } catch (e) {
-                    console.warn('[Firebase] Init failed:', e);
-                    this._triggerConnectionEvent('error', `Başlatma hatası: ${e.message}`);
-                }
+        let index = 0;
+        const loadNext = () => {
+            if (index < scripts.length) {
+                const s = document.createElement('script');
+                s.src = scripts[index];
+                s.onload = () => {
+                    index++;
+                    loadNext();
+                };
+                s.onerror = (err) => {
+                    console.warn('[Firebase] Could not load SDK from', scripts[index]);
+                    this._triggerConnectionEvent('error', `SDK yüklenemedi: ${scripts[index]}`);
+                };
+                document.head.appendChild(s);
+            } else {
+                // All scripts loaded
+                this._initialize();
             }
         };
 
-        scripts.forEach(src => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.onload = onLoad;
-            s.onerror = (err) => {
-                console.warn('[Firebase] Could not load SDK from', src);
-                this._triggerConnectionEvent('error', `SDK yüklenemedi: ${src}`);
-            };
-            document.head.appendChild(s);
-        });
+        loadNext();
+    },
+
+    _initialize() {
+        try {
+            // Check if already initialized to avoid "Duplicate App" error
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            this.db = firebase.firestore();
+            this._ready = true;
+            this._triggerConnectionEvent('connected');
+            console.log('[Firebase] Connected to Firestore ✓');
+            // Run pending callbacks
+            this._readyCallbacks.forEach(cb => cb());
+            this._readyCallbacks = [];
+        } catch (e) {
+            console.warn('[Firebase] Init failed:', e);
+            this._triggerConnectionEvent('error', `Başlatma hatası: ${e.message}`);
+        }
     },
 
     // Run callback when Firebase is ready
@@ -139,7 +149,10 @@ FirebaseDB = {
             .doc(docId)
             .onSnapshot(doc => {
                 if (doc.exists) callback(doc.data());
-            }, err => console.warn('[Firebase] Listener error:', err));
+            }, err => {
+                console.warn('[Firebase] Listener error:', err);
+                this._triggerConnectionEvent('error', `Dinleme hatası: ${err.message}`);
+            });
     },
 
     // Listen to all documents in a collection

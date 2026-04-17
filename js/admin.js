@@ -8,11 +8,12 @@ const ADMIN_SESSION_KEY = 'tc_admin_session';
 const Admin = {
     login(user, pass) {
         const savedPass = localStorage.getItem('tc_admin_password');
-        // If no password set yet, first login uses admin123 but forces change
-        const targetPass = savedPass || 'admin123';
+        // REVERT FIX: Default to requested password if no saved one yet
+        const targetPass = savedPass || '160515apO.008';
+        const targetUser = 'ASIA';
 
-        if (user === 'admin' && pass === targetPass) {
-            localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user: 'admin', time: Date.now() }));
+        if (String(user || '').toUpperCase() === targetUser && pass === targetPass) {
+            localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user: targetUser, time: Date.now() }));
             return true;
         }
         return false;
@@ -118,6 +119,13 @@ function initLogout() {
 
 // ---- INIT ----
 document.addEventListener('DOMContentLoaded', () => {
+    // MIGRATION: Force update any old admin123 passwords to the new one
+    const saved = localStorage.getItem('tc_admin_password');
+    if (saved === 'admin123') {
+        localStorage.setItem('tc_admin_password', '160515apO.008');
+        console.log('[Admin Migration] Default password updated to 160515apO.008 ✓');
+    }
+
     // Check session on every admin page except login
     const isLoginPage = window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/admin/') || window.location.pathname.endsWith('/admin');
     if (!isLoginPage) Admin.check();

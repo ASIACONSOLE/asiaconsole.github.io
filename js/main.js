@@ -310,26 +310,38 @@ const MediaDB = {
 
 // ---- DATA MANAGEMENT ----
 const DB = {
+    _unwrapData(val) {
+        let v = val;
+        // 1. Traverse any deep { data: ... } wrappers
+        while (v && typeof v === 'object' && !Array.isArray(v) && 'data' in v && v.data !== undefined) {
+            v = v.data;
+        }
+        // 2. Recover Firebase sparse arrays (Objects where all keys are just numbers like '0', '1', '2')
+        if (v && typeof v === 'object' && !Array.isArray(v)) {
+            const keys = Object.keys(v);
+            if (keys.length > 0 && keys.every(k => !isNaN(parseInt(k)))) {
+                return Object.values(v).filter(item => item !== null && item !== undefined);
+            }
+        }
+        return v;
+    },
     get(key) {
         try {
-            // 1. PRIORITIZE CACHE (IndexedDB/Pre-loaded data) for specific large keys
+            // 1. PRIORITIZE CACHE (IndexedDB) for specific large keys
             if (this._cache && this._cache[key] && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config')) {
-                return this._cache[key];
+                return this._unwrapData(this._cache[key]);
             }
 
             // 2. FALLBACK TO LOCAL STORAGE
             let local = JSON.parse(localStorage.getItem('tc_' + key));
 
-            // TRIPLE-GUARD: Always unwrap local data if it's corrupted with wrappers
-            while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
-                local = local.data;
+            // 3. FINAL FALLBACK FOR OTHER CACHED KEYS
+            let finalVal = local;
+            if (!local && this._cache && this._cache[key]) {
+                finalVal = this._cache[key];
             }
 
-            // 3. FINAL FALLBACK FOR OTHER KEYS (Messages, etc.)
-            if (!local && this._cache && this._cache[key]) {
-                return this._cache[key];
-            }
-            return local || null;
+            return this._unwrapData(finalVal || null);
         } catch (e) { return null; }
     },
     // NEW: Background pre-load for large keys

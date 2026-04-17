@@ -310,26 +310,39 @@ const MediaDB = {
 
 // ---- DATA MANAGEMENT ----
 const DB = {
+    _sanitizeDBArray(key, val) {
+        if (!val) return val;
+        const arrayKeys = ['articles', 'messages', 'users', 'forum_posts', 'user_projects', 'project_reviews', 'bot_config', 'scraped_urls', 'pending_articles'];
+        if (arrayKeys.includes(key)) {
+            if (typeof val === 'object' && !Array.isArray(val)) {
+                // Firebase turned sparse array into an object (e.g. { "0": {...}, "2": {...} })
+                return Object.values(val).filter(item => item !== null && item !== undefined);
+            }
+        }
+        return val;
+    },
     get(key) {
         try {
             // 1. PRIORITIZE CACHE (IndexedDB/Pre-loaded data) for specific large keys
-            if (this._cache && this._cache[key] && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config')) {
-                return this._cache[key];
+            if (this._cache && this._cache[key] && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config' || key === 'user_projects' || key === 'project_reviews')) {
+                let v = this._cache[key];
+                return _sanitizeDBArray(key, v);
             }
 
             // 2. FALLBACK TO LOCAL STORAGE
             let local = JSON.parse(localStorage.getItem('tc_' + key));
 
             // TRIPLE-GUARD: Always unwrap local data if it's corrupted with wrappers
-            while (local && typeof local === 'object' && 'data' in local && local.data !== undefined) {
+            while (local && typeof local === 'object' && !Array.isArray(local) && 'data' in local && local.data !== undefined) {
                 local = local.data;
             }
 
-            // 3. FINAL FALLBACK FOR OTHER KEYS (Messages, etc.)
+            // 3. FINAL FALLBACK FOR OTHER KEYS
             if (!local && this._cache && this._cache[key]) {
-                return this._cache[key];
+                let v = this._cache[key];
+                return _sanitizeDBArray(key, v);
             }
-            return local || null;
+            return _sanitizeDBArray(key, local || null);
         } catch (e) { return null; }
     },
     // NEW: Background pre-load for large keys

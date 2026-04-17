@@ -425,16 +425,24 @@
             }
         }
 
+        let renderTimer;
+        function debouncedRender() {
+            clearTimeout(renderTimer);
+            renderTimer = setTimeout(() => {
+                renderHome();
+                if (typeof renderDailySnippet === 'function') renderDailySnippet();
+            }, 50);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            renderHome();
-            if (typeof renderDailySnippet === 'function') renderDailySnippet();
+            debouncedRender();
         });
+
         document.addEventListener('dbUpdated', (e) => {
             const key = e.detail && e.detail.key;
             // Only re-render if it's one of the keys shown on homepage, or if it's global update
-            if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings') {
-                renderHome();
-                if (typeof renderDailySnippet === 'function') renderDailySnippet();
+            if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings' || key === 'user_projects') {
+                debouncedRender();
             }
         });
     </script>

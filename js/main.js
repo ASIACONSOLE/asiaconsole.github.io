@@ -1300,9 +1300,7 @@ if (typeof FirebaseDB !== 'undefined') {
         try {
             await DB.loadFromCloud();
             console.log('[Firebase] Initial cloud data loaded ✓');
-            // Re-apply settings after cloud load
-            if (typeof applySettings === 'function') applySettings();
-            document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
+            // settings are applied via the listen loop or explicitly when needed
         } catch (e) {
             console.warn('[Firebase] Initial cloud load failed:', e);
         }
@@ -1399,8 +1397,7 @@ if (typeof FirebaseDB !== 'undefined') {
                         renderDynamicNav();
                     }
 
-                    // Dispatch event so individual pages can re-render (like forum list or home cards)
-                    document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key } }));
+                    // Dispatch event is already handled by DB.set()
                 }
             });
         });
@@ -1431,10 +1428,10 @@ if (typeof FirebaseDB !== 'undefined') {
     });
 }
 
-// AUTO-START: Pre-load IndexedDB data then initialize DB
+// AUTO-START: Pre-load IndexedDB data (DOM ready will handle DB.init)
 (async function () {
     if (typeof DB !== 'undefined') {
         await DB.preLoadLargeKeys();
-        DB.init();
+        // DB.init() is safely called inside DOMContentLoaded listener
     }
 })();

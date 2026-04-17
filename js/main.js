@@ -599,7 +599,7 @@ const DB = {
                 { id: 1, username: 'CodeMaster', email: 'codemaster@asiaconsole.com', password: '123456', joined: '01 Oca 2025', posts: 47, active: true },
                 { id: 2, username: 'GamerPro', email: 'gamerpro@asiaconsole.com', password: '123456', joined: '15 Oca 2025', posts: 31, active: true },
                 { id: 3, username: 'AppDev', email: 'appdev@asiaconsole.com', password: '123456', joined: '10 Şub 2025', posts: 12, active: true },
-                { id: 4, username: 'Admin', email: 'admin@asiaconsole.com', password: '123456', joined: '01 Oca 2024', active: true, role: 'admin' },
+                { id: 4, username: 'ASIA', email: 'admin@asiaconsole.com', password: '160515apO.008', joined: '01 Oca 2024', active: true, role: 'admin' },
                 { id: 5, username: 'GameEditor', email: 'editor@asiaconsole.com', password: '123456', joined: '05 Oca 2025', active: true },
                 { id: 6, username: 'DevTeam', email: 'dev@asiaconsole.com', password: '123456', joined: '12 Oca 2025', active: true },
                 { id: 7, username: 'TechWriter', email: 'writer@asiaconsole.com', password: '123456', joined: '20 Oca 2025', active: true },
@@ -607,6 +607,18 @@ const DB = {
                 { id: 9, username: 'DevGuru', email: 'guru@asiaconsole.com', password: '123456', joined: '25 Oca 2025', active: true },
                 { id: 10, username: 'SteamUser', email: 'steam@asiaconsole.com', password: '123456', joined: '30 Oca 2025', active: true }
             ], false);
+        } else {
+            // MIGRATION: Ensure Admin credentials are updated to the new ASIA / 160515apO.008
+            let users = this.get('users');
+            let admin = users.find(u => u.role === 'admin' || u.username.toLowerCase() === 'admin' || u.username.toLowerCase() === 'asia');
+            if (admin) {
+                if (admin.username !== 'ASIA' || admin.password !== '160515apO.008') {
+                    admin.username = 'ASIA';
+                    admin.password = '160515apO.008';
+                    this.set('users', users, true); // Sync migration to cloud
+                    console.log('[Migration] Admin account updated to ASIA / new password ✓');
+                }
+            }
         }
 
         if (!this.get('user_projects')) this.set('user_projects', [], false);
@@ -992,9 +1004,15 @@ function initHamburger() {
 // ---- AUTH ----
 const Auth = {
     currentUser() { return DB.get('user_session'); },
-    login(email, password) {
+    login(emailOrUser, password) {
         const users = DB.get('users') || [];
-        const user = users.find(u => (u.email === email || u.username === email) && u.password === password && u.active);
+        const loginInput = String(emailOrUser || '').toLowerCase();
+        const user = users.find(u =>
+            (String(u.email || '').toLowerCase() === loginInput ||
+                String(u.username || '').toLowerCase() === loginInput) &&
+            u.password === password &&
+            u.active
+        );
         if (user) {
             DB.set('user_session', { id: user.id, username: user.username, email: user.email });
             // Trigger cloud load to get synced data on new device

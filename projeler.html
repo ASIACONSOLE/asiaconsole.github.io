@@ -151,16 +151,16 @@
 
                 // Category Filter
                 if (currentFilter !== 'all') {
-                    filtered = filtered.filter(p => p.category === currentFilter);
+                    filtered = filtered.filter(p => p && p.category === currentFilter);
                 }
 
                 // Search Filter
                 const q = searchInput.value.toLowerCase().trim();
                 if (q) {
-                    filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+                    filtered = filtered.filter(p => p && p.title && p.title.toLowerCase().includes(q) || p && p.desc && p.desc.toLowerCase().includes(q));
                 }
 
-                filtered.sort((a, b) => {
+                filtered.filter(p => Boolean(p)).sort((a, b) => {
                     const idA = String(a.id);
                     const idB = String(b.id);
                     return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
@@ -207,7 +207,7 @@
             // Listen for project approvals dynamically
             document.addEventListener('dbUpdated', (e) => {
                 if (e.detail?.key === 'user_projects') {
-                    userProjects = (DB.get('user_projects') || []).filter(p => p.status === 'approved');
+                    userProjects = (DB.get('user_projects') || []).filter(p => p && p.status === 'approved');
                     render();
                 }
             });

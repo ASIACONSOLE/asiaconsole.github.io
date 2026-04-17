@@ -268,7 +268,7 @@
             let list = projects;
 
             if (currentFilter) {
-                list = projects.filter(p => p.status === currentFilter);
+                list = projects.filter(p => p && p.status === currentFilter);
             }
 
             document.getElementById('projectCountBadge').textContent = `(${list.length})`;
@@ -279,7 +279,7 @@
                 return;
             }
 
-            tbody.innerHTML = list.sort((a, b) => String(b.id).localeCompare(String(a.id), undefined, { numeric: true })).map(p => `
+            tbody.innerHTML = list.filter(p => Boolean(p)).sort((a, b) => String(b.id).localeCompare(String(a.id), undefined, { numeric: true })).map(p => `
                 <tr>
                     <td>
                         <div style="font-weight:600; color:var(--text-primary);">${p.title}</div>
@@ -313,7 +313,7 @@
         function viewCode(id) {
             const projects = DB.get('user_projects') || [];
             // Robust ID finding
-            const proj = projects.find(p => String(p.id) === String(id));
+            const proj = projects.find(p => p && String(p.id) === String(id));
             if (!proj) {
                 console.error("Project not found for ID:", id);
                 return;
@@ -331,7 +331,7 @@
 
         function openEditModal(id) {
             const projects = DB.get('user_projects') || [];
-            const proj = projects.find(p => String(p.id) === String(id));
+            const proj = projects.find(p => p && String(p.id) === String(id));
             if (!proj) return;
 
             currentProjId = id;
@@ -347,7 +347,7 @@
             }
 
             const projects = DB.get('user_projects') || [];
-            const idx = projects.findIndex(p => String(p.id) === String(currentProjId));
+            const idx = projects.findIndex(p => p && String(p.id) === String(currentProjId));
             if (idx !== -1) {
                 projects[idx].title = newTitle;
                 DB.set('user_projects', projects);
@@ -360,7 +360,7 @@
         function deleteProject(id) {
             confirmDelete('Bu projeyi tamamen silmek istediğinize emin misiniz?', () => {
                 let projects = DB.get('user_projects') || [];
-                projects = projects.filter(p => String(p.id) !== String(id));
+                projects = projects.filter(p => p && String(p.id) !== String(id));
                 DB.set('user_projects', projects);
                 showAdminToast('Proje silindi! 🗑️', 'error');
                 renderProjects();
@@ -376,7 +376,7 @@
             const projects = DB.get('user_projects') || [];
 
             // Robust ID finding (handle number/string mismatch)
-            const idx = projects.findIndex(p => String(p.id) === String(currentProjId));
+            const idx = projects.findIndex(p => p && String(p.id) === String(currentProjId));
 
             if (idx !== -1) {
                 projects[idx].status = status;

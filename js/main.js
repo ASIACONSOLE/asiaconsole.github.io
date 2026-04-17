@@ -334,7 +334,7 @@ const DB = {
     },
     // NEW: Background pre-load for large keys
     async preLoadLargeKeys() {
-        const largeKeys = ['articles', 'messages', 'profiles', 'bot_config', 'scraped_urls', 'pending_articles'];
+        const largeKeys = ['articles', 'messages', 'profiles', 'bot_config', 'scraped_urls', 'pending_articles', 'user_projects', 'project_reviews'];
         for (const key of largeKeys) {
             try {
                 const val = await MediaDB.get(key);

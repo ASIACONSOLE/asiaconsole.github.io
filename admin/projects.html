@@ -279,7 +279,7 @@
                 return;
             }
 
-            tbody.innerHTML = list.sort((a, b) => b.id - a.id).map(p => `
+            tbody.innerHTML = list.sort((a, b) => String(b.id).localeCompare(String(a.id), undefined, { numeric: true })).map(p => `
                 <tr>
                     <td>
                         <div style="font-weight:600; color:var(--text-primary);">${p.title}</div>

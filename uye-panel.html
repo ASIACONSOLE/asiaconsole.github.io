@@ -510,54 +510,15 @@
                 }
             });
 
-            // Project submission logic inside DOMContentLoaded
+            // Project submission logic moved to profil.html
             const submitBtn = document.getElementById('submitProjBtn');
             if (submitBtn) {
                 submitBtn.addEventListener('click', () => {
                     const u = Auth.currentUser();
-                    if (!u) {
-                        showToast('Oturumun süresi dolmuş olabilir, lütfen tekrar giriş yap.', 'error');
-                        return;
-                    }
-
-                    const title = document.getElementById('projTitle').value.trim();
-                    const category = document.getElementById('projCategory').value;
-                    const desc = document.getElementById('projDesc').value.trim();
-                    const code = document.getElementById('projCode').value.trim();
-
-                    if (!title || !desc || !code) {
-                        showToast('Lütfen tüm alanları (başlık, açıklama ve kodlar) doldurun!', 'error');
-                        return;
-                    }
-
-                    try {
-                        const projects = DB.get('user_projects') || [];
-                        const newProj = {
-                            id: Date.now(),
-                            title,
-                            category,
-                            desc,
-                            code,
-                            author: u.username,
-                            status: 'pending', // Reverted to pending as requested
-                            date: new Date().toLocaleDateString('tr-TR'),
-                            views: 0
-                        };
-
-                        projects.push(newProj);
-                        DB.set('user_projects', projects);
-
-                        showToast('🚀 Projeniz başarıyla onaya gönderildi!', 'success');
-
-                        // Clear form
-                        document.getElementById('projTitle').value = '';
-                        document.getElementById('projDesc').value = '';
-                        document.getElementById('projCode').value = '';
-
-                        loadMyProjects();
-                    } catch (err) {
-                        console.error('Project submission error:', err);
-                        showToast('Pojeyi kaydederken bir hata oluştu. Depolama alanı dolmuş olabilir.', 'error');
+                    if (u) {
+                        location.href = 'profil.html?user=' + encodeURIComponent(u.username) + '#projects';
+                    } else {
+                        location.reload();
                     }
                 });
             }

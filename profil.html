@@ -786,7 +786,7 @@
                 if (!title || !desc || !code) { showToast('Lütfen tüm alanları doldurun!', 'warning'); return; }
 
                 const newProj = {
-                    id: 'p' + Date.now(),
+                    id: String('p' + Date.now()),
                     author: user.username,
                     title, category, desc, code,
                     status: 'pending',
@@ -794,8 +794,9 @@
                     views: 0
                 };
 
-                allProjects.push(newProj);
-                DB.set('user_projects', allProjects);
+                const allProjectsNow = DB.get('user_projects') || [];
+                allProjectsNow.push(newProj);
+                DB.set('user_projects', allProjectsNow);
                 showToast('🚀 Projeniz onaya gönderildi!', 'success');
 
                 document.getElementById('projTitle').value = '';

@@ -829,7 +829,17 @@ window.BotEngine = (function () {
                 if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
                 if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
 
-                publishArticle(finalHtml, articleData, category);
+                // AI Category Detection
+                let detectedCategory = category;
+                const catMatch = finalHtml.match(/\[KATEGORİ:\s*(\w+)\]/i);
+                if (catMatch) {
+                    detectedCategory = catMatch[1].toLowerCase();
+                    // Clean marker from HTML
+                    finalHtml = finalHtml.replace(/\[KATEGORİ:\s*\w+\]/i, '').trim();
+                    logTerminal(`🏷️ AI Kategorisi Tespit Edildi: ${detectedCategory}`, 'info');
+                }
+
+                publishArticle(finalHtml, articleData, detectedCategory);
 
                 scrapedUrls.push(articleData.url);
                 DB.set('scraped_urls', scrapedUrls);

@@ -3,6 +3,8 @@
  * Optimized for reliability and data loading order.
  */
 
+let lastRenderedHash = "";
+
 function renderHome() {
     try {
         const DB = window.DB;
@@ -14,6 +16,22 @@ function renderHome() {
 
         const forumPosts = (DB.get('forum_posts') || []).filter(p => p && (p.status === 'approved' || !p.status));
         const users = DB.get('users') || [];
+
+        // --- ANTI-FLICKER: Content Hash Check ---
+        // We only re-render the DOM if the essential data has changed.
+        // This prevents the "flash" when Firebase syncs the same data we already have from LocalStorage.
+        const currentDataHash = JSON.stringify({
+            articleIds: articles.map(a => a.id),
+            forumIds: forumPosts.map(f => f.id),
+            userCount: users.length,
+            firstArticleTitle: articles[0]?.title || ''
+        });
+
+        if (currentDataHash === lastRenderedHash) {
+            return; // Data is identical, skip DOM manipulation to prevent flickering
+        }
+        lastRenderedHash = currentDataHash;
+        // ----------------------------------------
 
         // Stats
         const statArticles = document.getElementById('statArticles');
@@ -124,7 +142,7 @@ function renderHome() {
 let renderTimer;
 function debouncedRender() {
     clearTimeout(renderTimer);
-    renderTimer = setTimeout(renderHome, 50);
+    renderTimer = setTimeout(renderHome, 150);
 }
 
 // ---- ROBUST INITIALIZATION ----

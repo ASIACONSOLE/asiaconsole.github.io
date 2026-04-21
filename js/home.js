@@ -122,19 +122,7 @@ function renderHome() {
             `).join('');
         }
 
-        if (videoGrid) {
-            // Filter articles that might have videos or just featured ones
-            const videoArticles = articles.filter(a => a.category === 'oyun').slice(0, 4);
-            videoGrid.innerHTML = videoArticles.map(a => `
-                <a href="makale-detay.html?id=${a.id}" class="video-card">
-                    <img src="${a.cover || a.image || ''}" alt="${a.title}">
-                    <div class="video-play-btn">▶</div>
-                    <div class="portal-slide-content" style="padding:1rem; background:linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
-                        <div style="font-size:0.9rem; font-weight:700; color:white;">${a.title}</div>
-                    </div>
-                </a>
-            `).join('');
-        }
+
 
         // Featured Articles (Below Portal) - INCREASED TO 16
         const combinedFeed = [...articles].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 16);

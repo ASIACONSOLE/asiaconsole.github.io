@@ -686,6 +686,7 @@ h6 {
 
 
 .ticker-content-wrapper {
+  position: relative;
   flex: 1;
   overflow: hidden;
   height: 100%;
@@ -3135,17 +3136,7 @@ h6 {
   color: var(--text-muted);
 }
 
-/* Ticker Tag Fix */
-.ticker-tag {
-  background: #ff4d4d;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  font-weight: 800;
-  font-size: 0.75rem;
-  border-radius: 4px;
-  margin-right: 1.5rem;
-  flex-shrink: 0;
-}
+
 
 /* Dark Section Strip */
 .section-dark {
@@ -3209,4 +3200,41 @@ h6 {
   .portal-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* FINAL TICKER OVERLAP FIX */
+.ticker-content-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ticker-content-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 100%;
+  background: #0d1117; /* Match bg-primary */
+  z-index: 5;
+  pointer-events: none;
+}
+
+.ticker-tag {
+  background: #ff4d4d !important;
+  color: white !important;
+  padding: 0.25rem 0.75rem !important;
+  font-weight: 800 !important;
+  font-size: 0.75rem !important;
+  border-radius: 4px !important;
+  margin-right: 1.5rem !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  box-shadow: 5px 0 15px rgba(0,0,0,0.5) !important;
+}
+
+.ticker-content {
+  padding-left: 20px !important;
 }

@@ -987,6 +987,7 @@ function renderHeroProjects() {
             <div class="mini-tag">${p.category || 'PROJE'}</div>
         </a>
     `).join('');
+    } catch (e) { console.error('[renderHeroProjects] Error:', e); }
 }
 
 function _renderHeroPlaceholders(grid) {
@@ -997,7 +998,6 @@ function _renderHeroPlaceholders(grid) {
         <div class="hero-card-mini"><div class="mini-icon">📱</div><div class="mini-title">Uygulama</div></div>
         <div class="hero-card-mini"><div class="mini-icon">💬</div><div class="mini-title">Forum</div></div>
     `;
-    } catch (e) { console.error('[renderHeroProjects] Error:', e); }
 }
 
 // Refresh hero projects only on data updates

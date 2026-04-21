@@ -1229,6 +1229,40 @@ function updateNavAuth() {
     }
 }
 
+/* ================================================
+   DYNAMIC VIEW COUNTER HELPER
+   ================================================ */
+const ArticleStats = {
+    getDynamicViews(article) {
+        if (!article || !article.id) return 0;
+        
+        // 1. Calculate time passed since publication
+        const ts = article.id > 1000000 ? article.id : (Date.now() - 86400000 * 2); // Fallback for old seeds
+        const elapsedMs = Date.now() - ts;
+        const elapsedHours = elapsedMs / (1000 * 60 * 60);
+        
+        // 2. Base views (initial burst)
+        const base = 40 + (article.id % 120);
+        
+        // 3. Growth rate (different for each article, 8-35 views/hour)
+        const rate = 8 + ((article.id % 270) / 10);
+        const growth = Math.floor(elapsedHours * rate);
+        
+        // 4. Random noise based on current hour to prevent perfect linearity
+        const hourSeed = Math.floor(Date.now() / 3600000);
+        const noise = ((article.id + hourSeed) % 15);
+        
+        let total = base + growth + noise;
+        
+        // 5. Ensure it's at least the stored views (safety)
+        const storedViews = parseInt(article.views) || 0;
+        return Math.max(total, storedViews);
+    },
+    format(count) {
+        return (count || 0).toLocaleString('tr-TR');
+    }
+};
+
 // ---- PROJECT REVIEWS ----
 const ProjectReviews = {
     getAll() { return DB.get('project_reviews') || []; },

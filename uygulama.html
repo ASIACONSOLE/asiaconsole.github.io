@@ -180,7 +180,7 @@
           <div class="card-meta">
             <span>👤 ${a.author}</span>
             <span>📅 ${a.date}</span>
-            <span>👁️ ${(a.views || 0).toLocaleString('tr-TR')}</span>
+            <span>👁️ ${ArticleStats.format(ArticleStats.getDynamicViews(a))}</span>
           </div>
           <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">📚 Devamını oku →</div>
         </div>
@@ -238,3 +238,4 @@
 </body>
 
 </html>
+

@@ -580,7 +580,7 @@
             const authorInitial = (article.author && article.author[0]) ? article.author[0].toUpperCase() : '?';
             document.getElementById('artAuthorAvatar').textContent = authorInitial;
             document.getElementById('artDate').textContent = article.date;
-            document.getElementById('artViews').textContent = (article.views || 0).toLocaleString('tr-TR');
+            document.getElementById('artViews').textContent = ArticleStats.format(ArticleStats.getDynamicViews(article));
 
             // Apply cover image if exists
             if (article.cover) {
@@ -619,7 +619,7 @@
           <h3 style="font-size:0.95rem; font-weight:700; margin:0 0 0.5rem; line-height:1.4;">${a.title}</h3>
           <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">${desc.slice(0, 70)}...</p>
           <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
-            <span>👁️ ${views.toLocaleString('tr-TR')}</span>
+            <span>👁️ ${ArticleStats.format(ArticleStats.getDynamicViews(a))}</span>
             <span>@${a.author}</span>
           </div>
         </div>

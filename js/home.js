@@ -116,7 +116,7 @@ function renderHome() {
                     <img src="${a.cover || a.image || ''}" class="side-item-img" alt="${a.title}">
                     <div class="side-item-content">
                         <div class="side-item-title">${a.title}</div>
-                        <div class="side-item-meta">👁️ ${a.views || 0} okuma</div>
+                        <div class="side-item-meta">👁️ ${ArticleStats.format(ArticleStats.getDynamicViews(a))} okuma</div>
                     </div>
                 </a>
             `).join('');
@@ -154,7 +154,7 @@ function renderHome() {
                                 <div class="card-meta">
                                     <span>👤 ${item.author || 'Editor'}</span>
                                     <span>📅 ${item.date || ''}</span>
-                                    <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
+                                    <span>👁️ ${ArticleStats.format(ArticleStats.getDynamicViews(item))}</span>
                                 </div>
                                 <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;"> Devamını oku →</div>
                             </div>

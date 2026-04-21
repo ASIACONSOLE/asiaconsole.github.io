@@ -124,8 +124,8 @@ function renderHome() {
 
 
 
-        // Featured Articles (Below Portal) - INCREASED TO 16
-        const combinedFeed = [...articles].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 16);
+        // Featured Articles (Below Portal) - SET TO 15
+        const combinedFeed = [...articles].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 15);
         const grid = document.getElementById('featuredArticles');
 
         if (grid) {

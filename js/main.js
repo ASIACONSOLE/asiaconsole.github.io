@@ -1,4 +1,4 @@
-// ---- CONSTANTS & THEMES ----
+
 const THEME_PRESETS = {
     cyberpunk: {
         '--bg-primary': '#050a1a',
@@ -163,7 +163,6 @@ const THEME_PRESETS = {
     }
 };
 
-// ---- DAILY SNIPPETS DATA ----
 const SNIPPETS = [
     {
         title: "C# Pattern Matching",
@@ -175,7 +174,7 @@ const SNIPPETS = [
     {
         title: "JS Optional Chaining",
         desc: "Undefined veya null referans hatalarından kurtulmak için ?. operatörünü kullanın.",
-        code: "const city = user?.address?.city || 'Bilinmiyor';\nconsole.log(city);",
+        code: "const city = user?.address?.city || 'Bilinmiyor';\n",
         category: "📂 JavaScript",
         difficulty: "⚡ Kolay"
     },
@@ -196,26 +195,23 @@ const SNIPPETS = [
     {
         title: "JS Destructuring",
         desc: "Objelerden veri çekmeyi daha kısa ve temiz hale getirin.",
-        code: "const person = { name: 'Ali', job: 'Dev' };\nconst { name, job } = person;\n\nconsole.log(`${name} is a ${job}`);",
+        code: "const person = { name: 'Ali', job: 'Dev' };\nconst { name, job } = person;\n\n",
         category: "📂 JavaScript",
         difficulty: "⚡ Kolay"
     }
 ];
 
 function renderDailySnippet() {
-    // Check if modal or elements exist
+
     if (!document.getElementById('snippetTitle')) return;
 
-    // Calculate daily index based on date
     const now = new Date();
     const dayTimestamp = Math.floor(now.getTime() / (1000 * 60 * 60 * 24));
     const index = dayTimestamp % SNIPPETS.length;
     const snippet = SNIPPETS[index];
 
-    // Format Date
     const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Inject to UI
     const elDate = document.getElementById('snippetDate');
     const elTitle = document.getElementById('snippetTitle');
     const elDesc = document.getElementById('snippetDesc');
@@ -230,7 +226,6 @@ function renderDailySnippet() {
     if (elCat) elCat.innerText = snippet.category;
     if (elDiff) elDiff.innerText = snippet.difficulty;
 
-    // Copy event listener
     const copyBtn = document.getElementById('copySnippetBtn');
     if (copyBtn) {
         copyBtn.onclick = (e) => {
@@ -250,7 +245,6 @@ function openTipModal() {
         modal.classList.add('is-active');
         renderDailySnippet();
 
-        // Close on click outside card
         modal.onclick = (e) => {
             if (e.target === modal) closeTipModal();
         }
@@ -264,7 +258,6 @@ function closeTipModal() {
     }
 }
 
-// ---- MEDIA STORAGE (IndexedDB for Large Assets) ----
 const MediaDB = {
     dbName: 'AsiaConsoleMedia',
     storeName: 'media',
@@ -308,18 +301,17 @@ const MediaDB = {
     }
 };
 
-// ---- DATA MANAGEMENT ----
 var DB = {
     _unwrapData(val) {
         let v = val;
-        // 1. Traverse any deep { data: ... } wrappers (MAX 10 depth to prevent infinite loop)
+
         let depth = 0;
         while (v && typeof v === 'object' && !Array.isArray(v) && 'data' in v && v.data !== undefined && depth < 10) {
             v = v.data;
             depth++;
         }
         if (depth >= 10) console.warn('[DB] _unwrapData hit depth limit — possible circular reference');
-        // 2. Recover Firebase sparse arrays (Objects where all keys are just numbers like '0', '1', '2')
+
         if (v && typeof v === 'object' && !Array.isArray(v)) {
             const keys = Object.keys(v);
             if (keys.length > 0 && keys.every(k => !isNaN(parseInt(k)))) {
@@ -330,15 +322,13 @@ var DB = {
     },
     get(key) {
         try {
-            // 1. PRIORITIZE CACHE (IndexedDB) for specific large keys
+
             if (this._cache && this._cache[key] && (key === 'articles' || key === 'messages' || key === 'profiles' || key === 'bot_config')) {
                 return this._unwrapData(this._cache[key]);
             }
 
-            // 2. FALLBACK TO LOCAL STORAGE
             let local = JSON.parse(localStorage.getItem('tc_' + key));
 
-            // 3. FINAL FALLBACK FOR OTHER CACHED KEYS
             let finalVal = local;
             if (!local && this._cache && this._cache[key]) {
                 finalVal = this._cache[key];
@@ -347,7 +337,7 @@ var DB = {
             return this._unwrapData(finalVal || null);
         } catch (e) { return null; }
     },
-    // NEW: Background pre-load for large keys
+
     async preLoadLargeKeys() {
         const largeKeys = ['articles', 'messages', 'profiles', 'bot_config', 'scraped_urls', 'pending_articles', 'user_projects', 'project_reviews', 'visitor_logs'];
         for (const key of largeKeys) {
@@ -358,8 +348,8 @@ var DB = {
                 }
             } catch (e) { console.warn(`[DB] Pre-load failed for ${key}`); }
         }
-        console.log('[DB] Large keys pre-loaded from IDB ✓');
-        // Trigger UI update ONLY after DOM is ready to prevent race condition
+        
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { all: true } }));
@@ -368,11 +358,11 @@ var DB = {
             document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { all: true } }));
         }
     },
-    // NEW: Async getter for large values
+
     async getAsync(key) {
         let local = this.get(key);
         if (local) return local;
-        // Check MediaDB
+
         const idbVal = await MediaDB.get(key);
         if (idbVal) {
             this._cache = this._cache || {};
@@ -383,7 +373,7 @@ var DB = {
     },
     _cache: {},
     set(key, val, syncToCloud = true) {
-        // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped (MAX 10 depth)
+
         let cleanVal = val;
         let unwrapDepth = 0;
         while (cleanVal && typeof cleanVal === 'object' && 'data' in cleanVal && cleanVal.data !== undefined && unwrapDepth < 10) {
@@ -391,32 +381,28 @@ var DB = {
             unwrapDepth++;
         }
 
-        // 1. Always update memory cache for instant sync access
         this._cache[key] = cleanVal;
 
-        // 2. Prepare data for storage check
         const newVal = JSON.stringify(cleanVal);
         const oldVal = localStorage.getItem('tc_' + key);
 
-        // Skip if data hasn't changed (save performance)
         if (oldVal === newVal) return;
 
-        // 3. Size-based proactive offloading for known large keys
         if (key === 'articles' && newVal.length > 2000000) { // > 2MB
             console.warn(`[DB] ${key} size is large (${(newVal.length / 1024).toFixed(0)}KB), offloading to MediaDB...`);
             MediaDB.set(key, cleanVal);
             localStorage.removeItem('tc_' + key);
         } else {
-            // Save to local for instant access if space permits
+
             try {
                 localStorage.setItem('tc_' + key, newVal);
             } catch (e) {
-                // Only log QuotaExceeded as a warning if we don't have a cache fallback
+
                 if (e.name === 'QuotaExceededError' || e.code === 22) {
                     if (!this._cache[key]) {
                         console.warn(`[DB] LocalStorage full for ${key}, but no IDB fallback available yet!`);
                     }
-                    // Fallback to MediaDB (IndexedDB) for large data
+
                     MediaDB.set(key, cleanVal);
                     localStorage.removeItem('tc_' + key);
                 } else {
@@ -425,16 +411,14 @@ var DB = {
             }
         }
 
-        // Dispatch local event for instant UI update
         document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: cleanVal } }));
 
-        // Sync to Firebase Cloud if initialized AND requested (with DEBOUNCE to save quota)
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
-            // GUARD: Never sync seed/default articles to cloud (IDs 1-8 only)
+
             if (key === 'articles' && Array.isArray(cleanVal) && cleanVal.length <= 8) {
                 const isDefaultSeed = cleanVal.every(a => typeof a.id === 'number' && a.id >= 1 && a.id <= 8);
                 if (isDefaultSeed) {
-                    console.log('[Firebase] Skipping cloud sync — detected default seed articles.');
+                    
                     return;
                 }
             }
@@ -445,12 +429,11 @@ var DB = {
             this._cloudSyncTimers[key] = setTimeout(() => {
                 FirebaseDB.onReady(() => {
                 try {
-                    // Final POJO cleaning
+
                     const finalData = JSON.parse(JSON.stringify(cleanVal));
                     const jsonStr = JSON.stringify(finalData);
                     const size = new Blob([jsonStr]).size;
 
-                    // CHUNKED STORAGE: If large arrays exceed 500KB, split into chunks
                     const chunkableKeys = ['articles', 'user_projects', 'forum_posts', 'messages'];
                     if (chunkableKeys.includes(key) && Array.isArray(finalData) && size > 500000) {
                         const CHUNK_SIZE = 500000; // 500KB per chunk
@@ -470,7 +453,6 @@ var DB = {
                         }
                         if (currentChunk.length > 0) chunks.push(currentChunk);
 
-                        // Write chunk metadata
                         FirebaseDB.set('site_data', key, {
                             data: '__CHUNKED__',
                             chunkCount: chunks.length,
@@ -478,22 +460,19 @@ var DB = {
                             lastSync: Date.now()
                         });
 
-                        // Write each chunk as separate document
                         chunks.forEach((chunk, i) => {
                             FirebaseDB.set('site_data', `${key}_chunk_${i}`, { data: chunk, lastSync: Date.now() });
                         });
 
-                        // Clean up old chunks beyond current count (safety margin 20)
                         for (let i = chunks.length; i < 20; i++) {
                             FirebaseDB.delete('site_data', `${key}_chunk_${i}`);
                         }
 
-                        console.log(`[Firebase] ${key} synced in ${chunks.length} chunks (${(size / 1024).toFixed(0)}KB total) ✓`);
+                        
                         if (DB._cloudStaleKeys) DB._cloudStaleKeys.delete(key);
                         return;
                     }
 
-                    // Enhanced: Prevent syncing excessively large data (>1MB per document limit)
                     if (size > 1000000) {
                         console.error(`[Firebase] Data size too large for ${key}: ${(size / 1024 / 1024).toFixed(2)}MB (Limit: 1MB)`);
                         if (typeof showAdminToast === 'function') showAdminToast(`⚠️ ${key} verisi çok büyük! (1MB limit)`, 'error');
@@ -505,7 +484,7 @@ var DB = {
 
                     FirebaseDB.set('site_data', key, { data: finalData, lastSync: Date.now() })
                         .then(ok => {
-                            if (ok) console.log(`[Firebase] ${key} synced successfully ✓`);
+                            if (ok) 
                             else console.warn(`[Firebase] ${key} sync failed.`);
                         });
                 } catch (e) {
@@ -515,7 +494,7 @@ var DB = {
             }, 1000);
         }
     },
-    // NEW: Sync all local data to cloud (Force Sync)
+
     async syncToCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = [
@@ -528,9 +507,9 @@ var DB = {
             const val = this.get(key);
             if (val) await FirebaseDB.set('site_data', key, { data: val });
         }
-        console.log('[Firebase] All data synced to cloud ✓');
+        
     },
-    // NEW: Load from cloud to local (with chunked article support)
+
     async loadFromCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = [
@@ -542,7 +521,7 @@ var DB = {
         for (const key of keys) {
             const remote = await FirebaseDB.get('site_data', key);
             if (remote && remote.data) {
-                // Handle generic chunked loading
+
                 if (remote.data === '__CHUNKED__' && remote.chunkCount) {
                     let allItems = [];
                     for (let i = 0; i < remote.chunkCount; i++) {
@@ -552,7 +531,7 @@ var DB = {
                         }
                     }
                     DB.set(key, allItems, false);
-                    console.log(`[Firebase] Loaded ${key} (${allItems.length} items) from ${remote.chunkCount} chunks`);
+                    
                 } else {
                     DB.set(key, remote.data, false);
                 }
@@ -560,7 +539,7 @@ var DB = {
         }
     },
     init() {
-        // Default settings
+
         const defaultSettings = {
             siteName: 'AsiaConsole',
             siteSlogan: 'Teknoloji, Oyun ve Uygulama Dünyasına Kapınız',
@@ -589,7 +568,7 @@ var DB = {
             googleClientId: '367594063152-0kagipiibbmh7t8ti3c8chjufe335l0j.apps.googleusercontent.com'
         };
         const currentSettings = this.get('settings') || {};
-        // If current key is empty but default has a key, use the default
+
         if (!currentSettings.geminiApiKey && defaultSettings.geminiApiKey) {
             currentSettings.geminiApiKey = defaultSettings.geminiApiKey;
         }
@@ -604,11 +583,10 @@ var DB = {
         }
         this.set('settings', { ...defaultSettings, ...currentSettings }, false);
 
-        // --- SEED PROTECTION ---
-        // Only seed defaults if NOT in cache (IndexedDB) AND NOT in localStorage, OR if it's an empty array
+
         const hasArticles = this.get('articles');
         if (!hasArticles || (Array.isArray(hasArticles) && hasArticles.length === 0)) {
-            console.log('[DB] Seeding default articles...');
+            
             this.set('articles', [
                 { id: 1, title: 'Yapay Zeka 2025: Geleceğin Teknolojileri', category: 'teknoloji', desc: 'ChatGPT, Gemini ve yeni nesil AI araçlarının iş dünyasını nasıl değiştireceğini keşfediyoruz.', author: 'Editör', date: '24 Şub 2025', views: 1240, image: '🤖', featured: true },
                 { id: 2, title: 'GTA VI Çıkış Tarihi Açıklandı!', category: 'oyun', desc: 'Rockstar Games\'in uzun süredir beklenen GTA VI oyununun resmi çıkış tarihi ve yeni detayları paylaşıldı.', author: 'Editör', date: '23 Şub 2025', views: 5620, image: '🎮', featured: true },
@@ -621,10 +599,9 @@ var DB = {
             ], false);
         }
 
-        // --- FORUM SEEDING ---
         const hasForum = this.get('forum_posts');
         if (!hasForum || (Array.isArray(hasForum) && hasForum.length === 0)) {
-            console.log('[DB] Seeding default forum topics...');
+            
             this.set('forum_posts', [
                 {
                     id: 1713691200000,
@@ -688,7 +665,7 @@ var DB = {
                 { id: 10, username: 'SteamUser', email: 'steam@asiaconsole.com', password: '123456', joined: '30 Oca 2025', active: true }
             ], false);
         } else {
-            // MIGRATION: Ensure Admin credentials are updated to the new ASIA / 160515apO.008
+
             let users = this.get('users');
             let admin = users.find(u => u.role === 'admin' || u.username.toLowerCase() === 'admin' || u.username.toLowerCase() === 'asia');
             if (admin) {
@@ -696,17 +673,17 @@ var DB = {
                     admin.username = 'ASIA';
                     admin.password = '160515apO.008';
                     this.set('users', users, true); // Sync migration to cloud
-                    console.log('[Migration] Admin account updated to ASIA / new password ✓');
+                    
                 }
             }
         }
 
         if (!this.get('user_projects')) this.set('user_projects', [], false);
-        // Default project reviews init
+
         if (!this.get('project_reviews')) {
             this.set('project_reviews', [], false);
         }
-        // Default membership tiers
+
         if (!this.get('user_tiers')) {
             this.set('user_tiers', {
                 standart: { name: 'Standart', color: 'var(--text-secondary)', bg: 'rgba(255,255,255,0.05)', icon: '👤', perks: ['Sınırsız proje izleme', 'Topluluk forumu erişimi', 'Haftalık haber bülteni'] },
@@ -715,7 +692,6 @@ var DB = {
             }, false);
         }
 
-        // --- DATA MIGRATION: Update old author names to "Editör" ---
         let currentArticles = this.get('articles');
         if (Array.isArray(currentArticles)) {
             let changed = false;
@@ -727,14 +703,13 @@ var DB = {
                 }
             });
             if (changed) {
-                console.log('[Migration] Article authors updated to Editör ✓');
+                
                 this.set('articles', currentArticles, false); // NEVER sync migration to cloud
             }
         }
     }
 };
 
-// ---- SETTINGS ----
 function applySettings() {
     try {
     const s = DB.get('settings');
@@ -746,9 +721,9 @@ function applySettings() {
     document.querySelectorAll('.social-github').forEach(el => { el.href = s.socialGithub || '#'; });
     document.querySelectorAll('.social-youtube').forEach(el => { el.href = s.socialYoutube || '#'; });
     document.querySelectorAll('.social-discord').forEach(el => { el.href = s.socialDiscord || '#'; });
-    // Theme application
+
     if (s.activeTheme && s.activeTheme !== 'custom' && THEME_PRESETS[s.activeTheme]) {
-        // Reset structural defaults first
+
         const defaults = {
             '--radius': '12px', '--radius-lg': '20px', '--border-width': '1px',
             '--font-primary': "'Inter', sans-serif", '--font-heading': "'Inter', sans-serif",
@@ -763,12 +738,12 @@ function applySettings() {
     } else if (s.accentColor) {
         document.documentElement.style.setProperty('--accent-blue', s.accentColor);
     }
-    // Font size & typography
+
     if (s.baseFontSize) document.documentElement.style.setProperty('--base-font-size', s.baseFontSize);
     if (s.lineHeight) document.documentElement.style.setProperty('--line-height', s.lineHeight);
     if (s.headingScale) document.documentElement.style.setProperty('--heading-scale', s.headingScale);
     if (s.fontFamily) document.body.style.fontFamily = s.fontFamily;
-    // Announcement ticker
+
     if (s.tickerEnabled && s.tickerText && !document.getElementById('announcementTicker')) {
         const messages = s.tickerText.split('|').map(m => m.trim()).filter(Boolean);
         const speeds = { slow: 40, normal: 28, fast: 18 };
@@ -789,7 +764,7 @@ function applySettings() {
         }
         document.body.insertBefore(ticker, document.body.firstChild);
     }
-    // Banner customization
+
     const hero = document.querySelector('.hero');
     if (hero) {
         if (s.bannerEnabled === false) {
@@ -798,7 +773,7 @@ function applySettings() {
             hero.style.display = 'flex';
             const bannerH1 = hero.querySelector('h1');
             if (bannerH1 && s.bannerTitle) {
-                // SECURITY: Allow only <br> for newline, escape everything else
+
                 const safeTitle = Comments.escapeHTML(s.bannerTitle).replace(/&lt;br&gt;/g, '<br>').replace(/\n/g, '<br>');
                 bannerH1.innerHTML = safeTitle;
             }
@@ -811,19 +786,18 @@ function applySettings() {
         }
     }
 
-    // Hero Background Opacity
     if (hero) {
         const opacity = s.heroBgOpacity !== undefined ? s.heroBgOpacity : 0.3;
         document.documentElement.style.setProperty('--hero-bg-opacity', opacity);
     }
-    // Site logo (Priority: URL > Firebase Base64 > Local MediaDB)
+
     const applyLogo = (src) => {
         document.querySelectorAll('.brand-icon').forEach(el => {
             const sz = s.logoSize ? s.logoSize + 'px' : '36px';
             el.style.width = sz;
             el.style.height = sz;
             if (src) {
-                // SECURITY: Sanitize src to avoid XSS in img tag
+
                 const safeSrc = Comments.escapeHTML(src);
                 el.innerHTML = `<img src="${safeSrc}" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:4px;">`;
             }
@@ -833,26 +807,26 @@ function applySettings() {
     if (s.logoUrl) {
         applyLogo(s.logoUrl);
     } else {
-        // Try getting the globally synced Base64 logo first
+
         const syncedLogo = DB.get('site_logo_base64');
         if (syncedLogo) {
             applyLogo(syncedLogo);
-            // Also cache it locally to MediaDB just in case
+
             MediaDB.set('site_logo', syncedLogo).catch(() => { });
         } else {
-            // Fallback to purely local MediaDB or legacy
+
             MediaDB.get('site_logo').then(src => {
                 if (src) applyLogo(src);
                 else applyLogo(DB.get('site_logo'));
             });
         }
     }
-    // Site name font size + Font Family + Animation
+
     document.querySelectorAll('.navbar-brand').forEach(el => {
         if (s.siteNameSize) el.style.fontSize = parseFloat(s.siteNameSize) + 'rem';
         if (s.siteFont) {
             el.style.fontFamily = s.siteFont;
-            // Add Google Font if not loaded (basic check)
+
             const fontName = s.siteFont.split(',')[0].replace(/['"]/g, '');
             if (fontName !== 'Inter' && !document.getElementById('font-' + fontName)) {
                 const link = document.createElement('link');
@@ -862,10 +836,10 @@ function applySettings() {
                 document.head.appendChild(link);
             }
         }
-        // Brand Animation (Isolate to .site-name)
+
         const nameEl = el.querySelector('.site-name');
         if (nameEl) {
-            // Remove old anim classes but keep site-name
+
             nameEl.className = 'site-name';
             if (s.brandAnim && s.brandAnim !== 'none') {
                 nameEl.classList.add('anim-' + s.brandAnim);
@@ -878,7 +852,6 @@ function applySettings() {
         }
     });
 
-    // Navbar Style
     const navbar = document.querySelector('.navbar');
     if (navbar) {
         if (s.navbarStyle === 'solid') {
@@ -896,18 +869,16 @@ function applySettings() {
         }
     }
 
-    // Hero height & Background
     if (hero) {
         if (s.heroHeight) {
             hero.style.minHeight = s.heroHeight + 'vh';
-            // Hide visual grid if hero is too small
+
             const visual = document.querySelector('.hero-visual');
             if (visual) {
                 visual.style.display = (parseInt(s.heroHeight) < 40) ? 'none' : 'grid';
             }
         }
 
-        // Fetch background (Priority: URL > Local MediaDB > Legacy)
         const applyBg = (src) => {
             if (src) {
                 hero.style.backgroundImage = `url('${src}')`;
@@ -927,17 +898,16 @@ function applySettings() {
             });
         }
     }
-    // Home Hero title size (Only for index.html hero)
+
     if (s.heroTitleSize) {
         const homeH1 = document.querySelector('.hero h1');
         if (homeH1) homeH1.style.fontSize = s.heroTitleSize + 'rem';
     }
 
-    // Navbar Animation Style
     const navEl = document.querySelector('.navbar');
     const mobileNavEl = document.getElementById('mobileNav');
     if (navEl) {
-        // Remove all nav-style-* classes first
+
         navEl.className = navEl.className.split(' ').filter(c => !c.startsWith('nav-style-')).join(' ');
         const animStyle = s.navbarAnimStyle || 'neon'; // Default to neon
         navEl.classList.add('nav-style-' + animStyle);
@@ -948,7 +918,6 @@ function applySettings() {
         }
     }
 
-    // --- Dynamic Category Hero Processing ---
     const path = window.location.pathname.toLowerCase();
     const heroIcon = document.querySelector('.page-hero-icon');
     const heroH1 = document.querySelector('.page-hero h1');
@@ -968,7 +937,6 @@ function applySettings() {
         if (heroP && s.subUygulama) heroP.textContent = s.subUygulama;
     }
 
-    // Apply category icons to cards globally (if they exist)
     document.querySelectorAll('.card-badge, .card i').forEach(el => {
         const text = el.textContent.toLowerCase();
         if (text.includes('teknoloji')) el.innerHTML = `${s.iconTeknoloji || '💻'} Teknoloji`;
@@ -978,7 +946,6 @@ function applySettings() {
     } catch (e) { console.error('[applySettings] Error:', e); }
 }
 
-// ---- DYNAMIC NAVBAR ITEMS ----
 function renderDynamicNav() {
     const customPages = DB.get('custom_pages') || [];
     const navItems = customPages.filter(p => p.inNavbar);
@@ -990,14 +957,12 @@ function renderDynamicNav() {
     navItems.forEach(page => {
         const url = `sayfa.html?slug=${page.slug}`;
 
-        // Add to desktop
         if (desktopNav) {
             const li = document.createElement('li');
             li.innerHTML = `<a href="${url}">${page.title}</a>`;
             desktopNav.appendChild(li);
         }
 
-        // Add to mobile
         if (mobileNav) {
             const a = document.createElement('a');
             a.href = url;
@@ -1007,7 +972,6 @@ function renderDynamicNav() {
     });
 }
 
-// ---- HERO PROJECTS SHOWCASE ----
 function renderHeroProjects() {
     try {
     const grid = document.getElementById('heroProjectGrid');
@@ -1052,14 +1016,12 @@ function _renderHeroPlaceholders(grid) {
     `;
 }
 
-// Refresh hero projects only on data updates
 document.addEventListener('dbUpdated', (e) => {
     if (e.detail.key === 'user_projects') {
         renderHeroProjects();
     }
 });
 
-// ---- NAVBAR ACTIVE STATE ----
 function setNavActive() {
     const path = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.navbar-nav a, .mobile-nav a').forEach(a => {
@@ -1070,7 +1032,6 @@ function setNavActive() {
     });
 }
 
-// ---- HAMBURGER MENU ----
 function initHamburger() {
     const btn = document.getElementById('hamburgerBtn');
     const nav = document.getElementById('mobileNav');
@@ -1085,7 +1046,6 @@ function initHamburger() {
     });
 }
 
-// ---- AUTH ----
 const Auth = {
     currentUser() { return DB.get('user_session'); },
     login(emailOrUser, password) {
@@ -1099,9 +1059,9 @@ const Auth = {
         );
         if (user) {
             DB.set('user_session', { id: user.id, username: user.username, email: user.email });
-            // Trigger cloud load to get synced data on new device
+
             DB.loadFromCloud().then(() => {
-                console.log('[Auth] Cloud data restored after login');
+                
             });
             return true;
         }
@@ -1124,7 +1084,7 @@ const Auth = {
         users.push(newUser);
         DB.set('users', users);
         DB.set('user_session', { id: newUser.id, username, email });
-        // Initial cloud sync setup
+
         DB.loadFromCloud();
         return { ok: true };
     },
@@ -1136,7 +1096,6 @@ const Auth = {
     }
 };
 
-// ---- TOAST ----
 function showToast(msg, type = 'info') {
     const t = document.createElement('div');
     t.className = 'toast ' + type;
@@ -1145,9 +1104,8 @@ function showToast(msg, type = 'info') {
     setTimeout(() => t.remove(), 3500);
 }
 
-// ---- SCROLL ANIMATIONS ----
 function initScrollAnimations() {
-    // Add global styles for scroll animations once if they don't exist
+
     if (!document.getElementById('scrollAnimStyles')) {
         const style = document.createElement('style');
         style.id = 'scrollAnimStyles';
@@ -1173,7 +1131,6 @@ function initScrollAnimations() {
     });
 }
 
-// ---- NAVBAR USER STATE ----
 function updateNavAuth() {
     const user = Auth.currentUser();
     const loginBtn = document.getElementById('navLoginBtn');
@@ -1185,14 +1142,14 @@ function updateNavAuth() {
         if (registerBtn) registerBtn.style.display = 'none';
         if (userMenuEl) userMenuEl.style.display = 'flex';
         if (navUsernameEl) {
-            // Make username a clickable profile link
+
             navUsernameEl.innerHTML = `<a href="profil.html?user=${encodeURIComponent(user.username)}"
                 style="color:var(--text-secondary); text-decoration:none; font-weight:600; transition:color 0.2s;"
                 onmouseover="this.style.color='var(--accent-blue)'"
                 onmouseout="this.style.color='var(--text-secondary)'"
             >${user.username}</a>`;
         }
-        // Add message icon with unread badge (after navUsername span)
+
         let msgIcon = document.getElementById('navMsgIconGlobal');
         if (!msgIcon && userMenuEl) {
             msgIcon = document.createElement('a');
@@ -1204,9 +1161,8 @@ function updateNavAuth() {
             msgIcon.innerHTML = '💬 <span id="navMsgBadgeGlobal" class="badge-dot" style="display:none;"></span>';
             userMenuEl.appendChild(msgIcon);
         }
-        // navPanelBtnGlobal removed (integrated into profile)
 
-        // Add logout button
+
         let logoutBtn = document.getElementById('navLogoutBtnGlobal');
         if (!logoutBtn && userMenuEl) {
             logoutBtn = document.createElement('button');
@@ -1219,7 +1175,7 @@ function updateNavAuth() {
             logoutBtn.onclick = () => { Auth.logout(); window.location.reload(); };
             userMenuEl.appendChild(logoutBtn);
         }
-        // Show unread count
+
         const unread = Messaging.unreadCount(user.username);
         const badgeEl = document.getElementById('navMsgBadgeGlobal');
         if (badgeEl) {
@@ -1229,32 +1185,25 @@ function updateNavAuth() {
     }
 }
 
-/* ================================================
-   DYNAMIC VIEW COUNTER HELPER
-   ================================================ */
+
 const ArticleStats = {
     getDynamicViews(article) {
         if (!article || !article.id) return 0;
-        
-        // 1. Calculate time passed since publication
+
         const ts = article.id > 1000000 ? article.id : (Date.now() - 86400000 * 2); // Fallback for old seeds
         const elapsedMs = Date.now() - ts;
         const elapsedHours = elapsedMs / (1000 * 60 * 60);
-        
-        // 2. Base views (initial burst)
+
         const base = 40 + (article.id % 120);
-        
-        // 3. Growth rate (different for each article, 8-35 views/hour)
+
         const rate = 8 + ((article.id % 270) / 10);
         const growth = Math.floor(elapsedHours * rate);
-        
-        // 4. Random noise based on current hour to prevent perfect linearity
+
         const hourSeed = Math.floor(Date.now() / 3600000);
         const noise = ((article.id + hourSeed) % 15);
         
         let total = base + growth + noise;
-        
-        // 5. Ensure it's at least the stored views (safety)
+
         const storedViews = parseInt(article.views) || 0;
         return Math.max(total, storedViews);
     },
@@ -1263,7 +1212,6 @@ const ArticleStats = {
     }
 };
 
-// ---- PROJECT REVIEWS ----
 const ProjectReviews = {
     getAll() { return DB.get('project_reviews') || []; },
     getByProject(projectId) {
@@ -1286,13 +1234,11 @@ const ProjectReviews = {
     }
 };
 
-// ---- USER TIERS HELPER ----
 const UserTiers = {
     getAll() { return DB.get('user_tiers') || {}; },
     get(id) { return this.getAll()[id] || this.getAll()['standart']; }
 };
 
-// ---- INIT ----
 document.addEventListener('DOMContentLoaded', () => {
     DB.init();
     applySettings();
@@ -1304,9 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initScrollAnimations, 100);
 });
 
-/* ================================================
-   MESSAGING SYSTEM
-   ================================================ */
+
 const Messaging = {
     getConversations(username) {
         const messages = DB.get('messages') || [];
@@ -1354,7 +1298,6 @@ const Messaging = {
     }
 };
 
-// ================================================
 const ProfileData = {
     get(userId) {
         const profiles = DB.get('profiles') || [];
@@ -1363,7 +1306,6 @@ const ProfileData = {
     save(userId, data) {
         const profiles = DB.get('profiles') || [];
 
-        // SECURITY: Escape all string fields in profile data
         const safeData = { ...data };
         if (safeData.bio) safeData.bio = Comments.escapeHTML(safeData.bio);
         if (safeData.socialTwitter) safeData.socialTwitter = Comments.escapeHTML(safeData.socialTwitter);
@@ -1377,11 +1319,9 @@ const ProfileData = {
     }
 };
 
-/* ================================================
-   ARTICLE COMMENTS SYSTEM
-   ================================================ */
+
 const Comments = {
-    // SECURITY: Helper to escape HTML characters
+
     escapeHTML(str) {
         if (!str) return "";
         const div = document.createElement('div');
@@ -1390,7 +1330,7 @@ const Comments = {
     },
     getAll() {
         let data = DB.get('article_comments') || [];
-        // Triple-Guard unwrap (MAX 10 depth)
+
         let d = 0;
         while (data && typeof data === 'object' && 'data' in data && data.data !== undefined && d < 10) {
             data = data.data;
@@ -1429,16 +1369,14 @@ const Comments = {
     }
 };
 
-// DB.init() is called inside DOMContentLoaded handler above
 
-// Auto-sync from cloud on startup
 if (typeof FirebaseDB !== 'undefined') {
     FirebaseDB.onReady(async () => {
-        // CRITICAL: Load cloud data FIRST before listeners to prevent defaults from overwriting
+
         try {
             await DB.loadFromCloud();
-            console.log('[Firebase] Initial cloud data loaded ✓');
-            // settings are applied via the listen loop or explicitly when needed
+            
+
         } catch (e) {
             console.warn('[Firebase] Initial cloud load failed:', e);
         }
@@ -1450,14 +1388,12 @@ if (typeof FirebaseDB !== 'undefined') {
             'pending_articles', 'bot_queue', 'bot_drafts', 'visitor_logs'
         ];
 
-        // Debounce timer for Firebase listener updates to prevent rapid re-renders
         const _fbDebounceTimers = {};
 
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {
                 if (!remote) return;
 
-                // Debounce: Prevent rapid consecutive updates for the same key
                 clearTimeout(_fbDebounceTimers[key]);
                 _fbDebounceTimers[key] = setTimeout(() => {
                     _processFirebaseUpdate(key, remote);
@@ -1465,10 +1401,9 @@ if (typeof FirebaseDB !== 'undefined') {
             });
         });
 
-        // Extracted handler for Firebase updates (debounced)
         function _processFirebaseUpdate(key, remote) {
             try {
-                // RECURSIVE UNWRAP: Clean any accidental nesting from old bugs (MAX 10 depth)
+
                 let remoteData = remote;
                 let uwDepth = 0;
                 while (remoteData && typeof remoteData === 'object' && 'data' in remoteData && remoteData.data !== undefined && uwDepth < 10) {
@@ -1478,14 +1413,12 @@ if (typeof FirebaseDB !== 'undefined') {
 
                 if (remoteData === undefined || remoteData === null) return;
 
-                // GUARD: If this key's local data is NEWER than cloud (cloud write failed due to size),
-                // do NOT overwrite local with stale cloud data!
+
                 if (DB._cloudStaleKeys && DB._cloudStaleKeys.has(key)) {
                     console.warn(`[Firebase] Skipping remote overwrite for '${key}' — local data is newer.`);
                     return;
                 }
 
-                // Handle generic chunked updates: if cloud says '__CHUNKED__', fetch all chunks
                 if (remoteData === '__CHUNKED__' && remote.chunkCount) {
                     (async () => {
                         let allItems = [];
@@ -1495,8 +1428,7 @@ if (typeof FirebaseDB !== 'undefined') {
                                 allItems = allItems.concat(chunk.data);
                             }
                         }
-                        
-                        // Smart comparison: Only apply if cloud has more or equal items than local
+
                         const localItems = DB.get(key);
                         if (Array.isArray(localItems) && localItems.length > allItems.length) {
                              console.warn(`[Firebase] Skipping chunked remote for '${key}' — local has more items.`);
@@ -1504,29 +1436,27 @@ if (typeof FirebaseDB !== 'undefined') {
                         }
 
                         DB.set(key, allItems, false);
-                        console.log(`[Firebase] Loaded ${allItems.length} items for ${key} from ${remote.chunkCount} cloud chunks (Listener)`);
+                        
                         document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: key } }));
                     })();
                     return;
                 }
 
-                // For articles: if local has MORE items, cloud data is stale — protect local
-                // BUT: don't protect if local only has default/seed articles (IDs 1-8)
+
                 if (key === 'articles') {
                     const localArticles = DB.get('articles');
                     if (Array.isArray(localArticles) && Array.isArray(remoteData) && localArticles.length > remoteData.length) {
-                        // Check if local data is just the default seed (IDs 1-8)
+
                         const isDefaultData = localArticles.length <= 8 && localArticles.every(a => a.id >= 1 && a.id <= 8);
                         if (!isDefaultData) {
                             console.warn(`[Firebase] Skipping remote overwrite for 'articles' — local has ${localArticles.length} items vs cloud ${remoteData.length}`);
                             return;
                         }
-                        // Default data — allow cloud to overwrite
-                        console.log(`[Firebase] Local has default articles, allowing cloud overwrite.`);
+
+                        
                     }
                 }
 
-                // Clean any accidental nesting in remoteData before comparison (MAX 10 depth)
                 let cleanRemote = remoteData;
                 let crDepth = 0;
                 while (cleanRemote && typeof cleanRemote === 'object' && 'data' in cleanRemote && cleanRemote.data !== undefined && crDepth < 10) {
@@ -1538,14 +1468,11 @@ if (typeof FirebaseDB !== 'undefined') {
                 const remoteJSON = JSON.stringify(cleanRemote);
                 const localJSON = JSON.stringify(currentLocalData);
 
-                // Only update if data is actually different
                 if (localJSON !== remoteJSON) {
-                    console.log(`[Firebase] Remote change for ${key} (verified difference)`);
+                    
 
-                    // Use DB.set with syncToCloud=false to handle LS vs IDB logic automatically
                     DB.set(key, cleanRemote, false);
 
-                    // Specific reactions
                     if (key === 'settings' || key === 'site_logo_base64') {
                         applySettings();
                     } else if (key === 'user_tiers' && typeof renderTiers === 'function') {
@@ -1554,14 +1481,12 @@ if (typeof FirebaseDB !== 'undefined') {
                         renderDynamicNav();
                     }
 
-                    // Dispatch event is already handled by DB.set()
                 }
             } catch (e) {
                 console.error(`[Firebase] Error processing update for '${key}':`, e);
             }
         }
 
-        // Detect connectivity status for UI
         function updateBadge(status, message) {
             const badge = document.getElementById('cloudSyncStatus');
             if (!badge) return;
@@ -1580,17 +1505,14 @@ if (typeof FirebaseDB !== 'undefined') {
 
         document.addEventListener('firebaseStatus', (e) => updateBadge(e.detail.status, e.detail.message));
 
-        // Initial check if already ready or failed
         if (typeof FirebaseDB !== 'undefined' && FirebaseDB._lastStatus !== 'connecting') {
             updateBadge(FirebaseDB._lastStatus, FirebaseDB._lastErrorMessage);
         }
     });
 }
 
-// Make DB globally accessible
 window.DB = DB;
 
-// AUTO-START: Pre-load IndexedDB data and Initialize
 (async function () {
     try {
         if (window.DB) {
@@ -1601,18 +1523,18 @@ window.DB = DB;
                     window.DB.init();
                     window.DB._isInitialized = true;
                     if (typeof applySettings === 'function') applySettings();
-                    // Visitor Tracking
+
                     if (typeof VisitorTracker !== 'undefined') VisitorTracker.track();
-                    // Dispatch a custom event that DB is fully ready
+
                     document.dispatchEvent(new CustomEvent('dbReady'));
                 }
             };
 
             const VisitorTracker = {
                 async track() {
-                    // Only track once per session
+
                     if (sessionStorage.getItem('tc_v_logged')) return;
-                    // Don't track admins
+
                     if (localStorage.getItem('tc_admin_session')) return;
 
                     try {
@@ -1627,7 +1549,6 @@ window.DB = DB;
                             path: window.location.pathname
                         });
 
-                        // Keep only last 500 records
                         const finalLogs = logs.length > 500 ? logs.slice(-500) : logs;
                         window.DB.set('visitor_logs', finalLogs);
                         sessionStorage.setItem('tc_v_logged', '1');
@@ -1647,3 +1568,4 @@ window.DB = DB;
         console.error('[DB] Pre-load startup error:', e);
     }
 })();
+

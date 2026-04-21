@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /uye-panel.html
+Disallow: /js/
+Disallow: /css/
 
+# SEO
 Sitemap: https://asiaconsole.com/sitemap.xml
+
+# Performance / Crawl Delay
+Crawl-delay: 10

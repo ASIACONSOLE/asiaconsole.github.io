@@ -17,6 +17,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AsiaConsole - Teknoloji, Oyun ve Uygulama Dünyasına Kapınız</title>
     <link rel="canonical" href="https://asiaconsole.com/" />
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('SW Registered');
+                }).catch(err => console.log('SW Fail', err));
+            });
+        }
+    </script>
+
     <meta name="description"
         content="Teknoloji, oyun ve uygulama haberlerini, forum tartışmalarını ve topluluğu keşfedin.">
     <meta name="google-site-verification" content="I_qweKYaYLK_fOBfli-rP0ppSIT4Diu6KtoMQMpvhVQ" />
@@ -28,19 +38,41 @@
         rel="stylesheet">
     <link rel="preload" as="style" href="css/style.css">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        #matrixCanvas {
-            position: fixed !important;
-            z-index: -1 !important;
-            pointer-events: none !important;
-            opacity: 0.1 !important;
+    <style id="critical-css">
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --text-primary: #e6edf3;
+            --accent-blue: #4f8ef7;
+            --accent-purple: #a855f7;
+            --border: rgba(255, 255, 255, 0.08);
+            --radius-lg: 20px;
         }
-
-        .page-wrapper {
-            position: relative;
-            z-index: 1;
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 65px;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+        }
+        .portal-hero { padding: 2rem 0 0; background: var(--bg-primary); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        .portal-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; min-height: 450px; }
+        #matrixCanvas { position: fixed; z-index: -1; pointer-events: none; opacity: 0.1; }
+        @media (max-width: 992px) { 
+            .portal-grid { grid-template-columns: 1fr; }
+            #matrixCanvas { display: none !important; }
         }
     </style>
+
     <!-- Google Fonts for Branding -->
 
 </head>

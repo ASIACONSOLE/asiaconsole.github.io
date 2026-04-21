@@ -96,43 +96,53 @@
 
     <div class="page-wrapper">
 
-        <!-- HERO -->
-        <section class="hero" id="mainHero">
-            <div class="hero-glow-effect"></div>
-
+        <!-- PORTAL HERO (ShiftDelete Style) -->
+        <section class="portal-hero" id="mainHero">
             <div class="container">
-
-                <div class="hero-content">
-                    <div class="hero-badge">
-                        <span class="dot"></span>
-                        Türkiye'nin Teknoloji Topluluğu
-                    </div>
-                    <h1>
-                        Teknolojinin Kalbinde<br>
-                        <span class="gradient-text">Bir Adım Önde Ol</span>
-                    </h1>
-                    <p class="site-slogan">Teknoloji, Oyun ve Uygulama Dünyasına Kapınız</p>
-                </div>
-            </div>
-
-            <!-- TIP TRIGGER (Repositioned above ticker) -->
-            <div class="tip-trigger-wrapper">
-                <button class="btn-tip-trigger" onclick="openTipModal()">
-                    <span>💡</span> Günün İpucu
-                </button>
-            </div>
-
-            <!-- NEWS TICKER (Full-width bar at the bottom) -->
-            <div class="news-ticker-container" id="newsTicker" style="display:none;">
-                <div class="ticker-content-wrapper">
-                    <div class="ticker-content" id="tickerItems">
+                <div class="portal-grid">
+                    <!-- MAIN SLIDER (Left) -->
+                    <div class="portal-slider" id="portalSlider">
+                        <div class="skeleton" style="width:100%; height:100%; border-radius:var(--radius-lg);"></div>
                         <!-- Populated by JS -->
                     </div>
+
+                    <!-- SIDE CONTENT (Right) -->
+                    <div class="portal-side">
+                        <div class="portal-side-header">
+                            <span>🔥 Popüler Haberler</span>
+                        </div>
+                        <div id="portalSideItems" class="portal-side-list">
+                            <div class="skeleton-side"></div>
+                            <div class="skeleton-side"></div>
+                            <div class="skeleton-side"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="hero-visual" id="heroProjectGrid">
-                <!-- Projects injected by JS -->
+            <!-- NEWS TICKER (Repositioned below slider) -->
+            <div class="news-ticker-container" id="newsTicker" style="display:none;">
+                <div class="container">
+                    <div class="ticker-content-wrapper">
+                        <div class="ticker-tag">SON DAKİKA</div>
+                        <div class="ticker-content" id="tickerItems">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIDEO / SPECIAL SECTION (Dark Strip) -->
+        <section class="section-dark">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-label">📺 Özel İncelemeler</span>
+                    <h2 style="color:white;">Video Dünyası</h2>
+                </div>
+                <div class="video-grid" id="videoHighlightGrid">
+                    <!-- Populated by JS -->
+                </div>
             </div>
         </section>
 

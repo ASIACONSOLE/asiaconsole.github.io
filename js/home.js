@@ -78,7 +78,65 @@ function renderHome() {
             }
         }
 
-        // Featured Articles
+        // --- PORTAL RENDER (Slider & Side Content) ---
+        const portalSlider = document.getElementById('portalSlider');
+        const portalSide = document.getElementById('portalSideItems');
+        const videoGrid = document.getElementById('videoHighlightGrid');
+
+        if (portalSlider && articles.length > 0) {
+            const sliderArticles = articles.slice(0, 5);
+            portalSlider.innerHTML = sliderArticles.map((a, i) => `
+                <a href="makale-detay.html?id=${a.id}" class="portal-slide-item ${i === 0 ? 'active' : ''}" data-index="${i}">
+                    <img src="${a.cover || a.image || ''}" class="portal-slide-img" alt="${a.title}">
+                    <div class="portal-slide-content">
+                        <div class="portal-slide-badge">${a.category}</div>
+                        <h2 class="portal-slide-title">${a.title}</h2>
+                        <p>${a.desc ? a.desc.slice(0, 100) + '...' : ''}</p>
+                    </div>
+                </a>
+            `).join('');
+
+            // Simple Auto-Slider logic
+            if (!window._sliderInterval) {
+                let currentIdx = 0;
+                window._sliderInterval = setInterval(() => {
+                    const slides = document.querySelectorAll('.portal-slide-item');
+                    if (!slides.length) return;
+                    slides[currentIdx].classList.remove('active');
+                    currentIdx = (currentIdx + 1) % slides.length;
+                    slides[currentIdx].classList.add('active');
+                }, 5000);
+            }
+        }
+
+        if (portalSide && articles.length > 5) {
+            const sideArticles = articles.slice(5, 8);
+            portalSide.innerHTML = sideArticles.map(a => `
+                <a href="makale-detay.html?id=${a.id}" class="side-item">
+                    <img src="${a.cover || a.image || ''}" class="side-item-img" alt="${a.title}">
+                    <div class="side-item-content">
+                        <div class="side-item-title">${a.title}</div>
+                        <div class="side-item-meta">👁️ ${a.views || 0} okuma</div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        if (videoGrid) {
+            // Filter articles that might have videos or just featured ones
+            const videoArticles = articles.filter(a => a.category === 'oyun').slice(0, 3);
+            videoGrid.innerHTML = videoArticles.map(a => `
+                <div class="video-card">
+                    <img src="${a.cover || a.image || ''}" alt="${a.title}">
+                    <div class="video-play-btn">▶</div>
+                    <div class="portal-slide-content" style="padding:1rem; background:linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                        <div style="font-size:0.9rem; font-weight:700;">${a.title}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Featured Articles (Below Portal)
         const combinedFeed = [...articles].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 8);
         const grid = document.getElementById('featuredArticles');
 
@@ -94,7 +152,7 @@ function renderHome() {
                     const link = isProj ? `proje-izle.html?id=${item.id}` : `makale-detay.html?id=${item.id}`;
                     const badgeClass = catMap[item.category] || 'badge-tech';
                     const labelText = isProj ? `🚀 Proje: ${item.title}` : (catLabel[item.category] || item.category);
-                    const imgSrc = item.cover || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%232a2a2a"/%3E%3C/svg%3E';
+                    const imgSrc = item.cover || item.image || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%232a2a2a"/%3E%3C/svg%3E';
 
                     return `
                         <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden;">
@@ -106,8 +164,8 @@ function renderHome() {
                                 <div class="card-title">${item.title}</div>
                                 <div class="card-desc">${item.desc || ''}</div>
                                 <div class="card-meta">
-                                    <span>👤 ${item.author}</span>
-                                    <span>📅 ${item.date}</span>
+                                    <span>👤 ${item.author || 'Editor'}</span>
+                                    <span>📅 ${item.date || ''}</span>
                                     <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
                                 </div>
                                 <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;"> Devamını oku →</div>

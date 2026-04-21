@@ -6,6 +6,8 @@
     'use strict';
 
     function initMatrix() {
+        if (window.innerWidth <= 768) return; // Mobil cihazlarda performansı korumak için animasyonu kapat
+
         const canvas = document.createElement('canvas');
         canvas.id = 'matrixCanvas';
         canvas.style.cssText = `

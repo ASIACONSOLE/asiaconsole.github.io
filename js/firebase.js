@@ -73,6 +73,7 @@ window.FirebaseDB = {
                 firebase.initializeApp(FIREBASE_CONFIG);
             }
             this.db = firebase.firestore();
+
             this._ready = true;
             this._triggerConnectionEvent('connected');
             console.log('[Firebase] Connected to Firestore ✓');

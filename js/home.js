@@ -127,15 +127,43 @@ function debouncedRender() {
     renderTimer = setTimeout(renderHome, 50);
 }
 
-// Global listeners
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.DB && window.DB._isInitialized) debouncedRender();
-});
+// ---- ROBUST INITIALIZATION ----
+// Handles all timing scenarios:
+// 1. DB already initialized before this script ran
+// 2. DB initializes after DOMContentLoaded
+// 3. DB fires dbReady before DOMContentLoaded
+function tryRender() {
+    if (window.DB && window.DB._isInitialized) {
+        debouncedRender();
+    }
+}
 
+// If DOM is already ready and DB is up — render immediately
+if (document.readyState !== 'loading') {
+    tryRender();
+} else {
+    document.addEventListener('DOMContentLoaded', tryRender);
+}
+
+// dbReady fires when main.js finishes DB.init() (primary trigger)
 document.addEventListener('dbReady', debouncedRender);
+
+// dbUpdated fires on any data change (Firebase sync, admin edits, etc.)
 document.addEventListener('dbUpdated', (e) => {
     const key = e.detail?.key;
     if (!key || ['articles', 'forum_posts', 'users', 'settings'].includes(key) || e.detail.all) {
         debouncedRender();
     }
 });
+
+// Fallback: if nothing triggered within 2 seconds, force render
+// (handles edge cases where events are missed)
+setTimeout(() => {
+    if (window.DB) {
+        if (!window.DB._isInitialized) {
+            window.DB.init();
+            window.DB._isInitialized = true;
+        }
+        renderHome();
+    }
+}, 2000);

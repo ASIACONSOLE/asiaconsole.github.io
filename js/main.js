@@ -511,6 +511,7 @@ var DB = {
                     console.error('[Firebase] Serialization failed for ' + key, e);
                 }
             });
+            }, 1000);
         }
     },
     // NEW: Sync all local data to cloud (Force Sync)
@@ -603,9 +604,9 @@ var DB = {
         this.set('settings', { ...defaultSettings, ...currentSettings }, false);
 
         // --- SEED PROTECTION ---
-        // Only seed defaults if NOT in cache (IndexedDB) AND NOT in localStorage
+        // Only seed defaults if NOT in cache (IndexedDB) AND NOT in localStorage, OR if it's an empty array
         const hasArticles = this.get('articles');
-        if (!hasArticles) {
+        if (!hasArticles || (Array.isArray(hasArticles) && hasArticles.length === 0)) {
             console.log('[DB] Seeding default articles...');
             this.set('articles', [
                 { id: 1, title: 'Yapay Zeka 2025: Geleceğin Teknolojileri', category: 'teknoloji', desc: 'ChatGPT, Gemini ve yeni nesil AI araçlarının iş dünyasını nasıl değiştireceğini keşfediyoruz.', author: 'Editör', date: '24 Şub 2025', views: 1240, image: '🤖', featured: true },

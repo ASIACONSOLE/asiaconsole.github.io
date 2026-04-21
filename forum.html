@@ -349,26 +349,34 @@
     <script src="js/main.js" defer></script>
     <script src="js/ai-assistant.js" defer></script>
     <script>
-        const TOPICS_PER_PAGE = 15;
-        let currentFilter = 'all';
-        let currentSort = 'date';
-        let currentPage = 1;
-        let topicImages = [];
+        (function () {
+            const TOPICS_PER_PAGE = 15;
+            let currentFilter = 'all';
+            let currentSort = 'date';
+            let currentPage = 1;
+            let topicImages = [];
+            let posts = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-            let posts = (DB.get('forum_posts') || []).filter(p => p && p.title && (p.status === 'approved' || !p.status));
-            const listEl = document.getElementById('forumList');
+            function loadAndRender() {
+                try {
+                    const DB = window.DB;
+                    posts = (DB ? (DB.get('forum_posts') || []) : []).filter(p => p && p.title && (p.status === 'approved' || !p.status));
+                    const listEl = document.getElementById('forumList');
+                    if (!listEl) return;
 
-            // Quick stats
-            const totalReplies = posts.reduce((a, p) => a + (p.replies || 0), 0);
-            const totalViews = posts.reduce((a, p) => a + (p.views || 0), 0);
-            const stTopicsEl = document.getElementById('statTopics');
-            const stRepliesEl = document.getElementById('statReplies');
-            const stViewsEl = document.getElementById('statViews');
-            if (stTopicsEl) stTopicsEl.textContent = posts.length.toLocaleString('tr-TR');
-            if (stRepliesEl) stRepliesEl.textContent = totalReplies.toLocaleString('tr-TR');
-            if (stViewsEl) stViewsEl.textContent = totalViews.toLocaleString('tr-TR');
+                    // Quick stats
+                    const totalReplies = posts.reduce((a, p) => a + (p.replies || 0), 0);
+                    const totalViews = posts.reduce((a, p) => a + (p.views || 0), 0);
+                    const stTopicsEl = document.getElementById('statTopics');
+                    const stRepliesEl = document.getElementById('statReplies');
+                    const stViewsEl = document.getElementById('statViews');
+                    if (stTopicsEl) stTopicsEl.textContent = posts.length.toLocaleString('tr-TR');
+                    if (stRepliesEl) stRepliesEl.textContent = totalReplies.toLocaleString('tr-TR');
+                    if (stViewsEl) stViewsEl.textContent = totalViews.toLocaleString('tr-TR');
+
+                    render();
+                } catch (e) { console.error('[Forum Init] Error:', e); }
+            }
 
             function getSorted(list) {
                 const l = [...list];
@@ -378,7 +386,7 @@
             }
 
             function getFiltered() {
-                const q = document.getElementById('searchInput').value.toLowerCase();
+                const q = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
                 return posts.filter(p => {
                     if (currentFilter !== 'all' && p.category !== currentFilter) return false;
                     if (q && !p.title.toLowerCase().includes(q) && !(p.author || '').toLowerCase().includes(q)) return false;
@@ -387,7 +395,8 @@
             }
 
             function getUserAv(username) {
-                const users = DB.get('users') || [];
+                const DB = window.DB;
+                const users = DB ? (DB.get('users') || []) : [];
                 const u = users.find(x => x.username === username);
                 if (u) {
                     const ph = localStorage.getItem('tc_avatar_' + u.id);
@@ -397,6 +406,8 @@
             }
 
             function render() {
+                const listEl = document.getElementById('forumList');
+                if (!listEl) return;
                 const filtered = getSorted(getFiltered());
                 const totalPages = Math.ceil(filtered.length / TOPICS_PER_PAGE);
                 const start = (currentPage - 1) * TOPICS_PER_PAGE;
@@ -404,7 +415,8 @@
 
                 if (!page.length) {
                     listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Konu bulunamadı</h3><p>İlk konuyu siz başlatın!</p></div>';
-                    document.getElementById('pagination').innerHTML = '';
+                    const pag = document.getElementById('pagination');
+                    if(pag) pag.innerHTML = '';
                     return;
                 }
 
@@ -432,6 +444,7 @@
 
                 // Pagination
                 const pag = document.getElementById('pagination');
+                if(!pag) return;
                 if (totalPages <= 1) { pag.innerHTML = ''; return; }
                 let html = '';
                 if (currentPage > 1) html += `<button class="sort-btn" onclick="changePage(${currentPage - 1})">‹</button>`;
@@ -444,123 +457,148 @@
 
             window.changePage = (p) => { currentPage = p; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-            document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; render(); });
+            // Event Listeners (setup once)
+            document.addEventListener('DOMContentLoaded', () => {
+                const searchInput = document.getElementById('searchInput');
+                if(searchInput) searchInput.addEventListener('input', () => { currentPage = 1; render(); });
 
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    currentFilter = tab.dataset.filter || 'all';
-                    currentPage = 1;
-                    render();
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        currentFilter = tab.dataset.filter || 'all';
+                        currentPage = 1;
+                        render();
+                    });
                 });
-            });
 
-            document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.sort-btn[data-sort]').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentSort = btn.dataset.sort;
-                    render();
+                document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.sort-btn[data-sort]').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        currentSort = btn.dataset.sort;
+                        render();
+                    });
                 });
-            });
 
-            render();
+                // Modal logic
+                const modal = document.getElementById('newTopicModal');
+                const newTopicBtn = document.getElementById('newTopicBtn');
+                const closeModal = document.getElementById('closeModal');
+                
+                if(newTopicBtn && modal) {
+                    newTopicBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+                    if(closeModal) closeModal.addEventListener('click', () => { modal.style.display = 'none'; });
+                    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+                }
 
-            // REAL-TIME SYNC: Listen for database updates
-            document.addEventListener('dbUpdated', (e) => {
-                const key = e.detail?.key;
-                if (key === 'articles' || key === 'user_projects' || key === 'users' || key === 'profiles') {
-                    console.log(`[Sync] ${key} updated`);
-                    posts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
+                if (typeof Auth !== 'undefined') {
+                    const user = Auth.currentUser();
+                    if (!user) {
+                        const msg = document.getElementById('modalAuthMsg');
+                        const form = document.getElementById('topicForm');
+                        if (msg) msg.style.display = 'block';
+                        if (form) {
+                            form.style.opacity = '0.4';
+                            form.style.pointerEvents = 'none';
+                        }
+                    }
+                }
 
-                    // Update stats
-                    const totalReplies = posts.reduce((a, p) => a + (p.replies || 0), 0);
-                    const totalViews = posts.reduce((a, p) => a + (p.views || 0), 0);
-                    const stTopics = document.getElementById('statTopics');
-                    const stReplies = document.getElementById('statReplies');
-                    const stViews = document.getElementById('statViews');
-                    if (stTopics) stTopics.textContent = posts.length.toLocaleString('tr-TR');
-                    if (stReplies) stReplies.textContent = totalReplies.toLocaleString('tr-TR');
-                    if (stViews) stViews.textContent = totalViews.toLocaleString('tr-TR');
+                // Image upload
+                const imgInput = document.getElementById('topicImgInput');
+                if (imgInput) {
+                    imgInput.addEventListener('change', function () {
+                        const files = Array.from(this.files);
+                        if (topicImages.length + files.length > 3) { if(typeof showToast === 'function') showToast('En fazla 3 resim ekleyebilirsiniz.', 'error'); return; }
+                        files.forEach(file => {
+                            if (file.size > 5 * 1024 * 1024) { if(typeof showToast === 'function') showToast(file.name + ' 5MB\'dan büyük.', 'error'); return; }
+                            const fr = new FileReader();
+                            fr.onload = e => { topicImages.push(e.target.result); renderTopicThumbs(); };
+                            fr.readAsDataURL(file);
+                        });
+                        this.value = '';
+                    });
+                }
 
-                    render();
+                const submitBtn = document.getElementById('submitTopic');
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', () => {
+                        if (typeof Auth === 'undefined') return;
+                        const u = Auth.currentUser();
+                        if (!u) { showToast('Konu açmak için giriş yapın.', 'error'); return; }
+                        const title = document.getElementById('topicTitle').value.trim();
+                        const cat = document.getElementById('topicCategory').value;
+                        const content = document.getElementById('topicContent').value.trim();
+                        if (!title) { showToast('Konu başlığı boş olamaz.', 'error'); return; }
+                        if (!content) { showToast('İçerik boş olamaz.', 'error'); return; }
+
+                        const allPosts = DB.get('forum_posts') || [];
+                        const newPost = {
+                            id: Date.now(),
+                            title,
+                            category: cat,
+                            body: content,
+                            preview: content.slice(0, 200),
+                            author: u.username,
+                            authorInit: u.username[0].toUpperCase(),
+                            date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
+                            replies: 0,
+                            views: 0,
+                            likes: 0,
+                            pinned: false,
+                            status: 'pending',
+                            images: [...topicImages]
+                        };
+                        allPosts.unshift(newPost);
+                        DB.set('forum_posts', allPosts);
+                        if(modal) modal.style.display = 'none';
+                        document.getElementById('topicTitle').value = '';
+                        document.getElementById('topicContent').value = '';
+                        topicImages = [];
+                        renderTopicThumbs();
+                        showToast('⏳ Konunuz admin onayına gönderildi!', 'success');
+                    });
+                }
+
+                // Initial render attempt if DB is ready
+                if (window.DB && window.DB._isInitialized) {
+                    loadAndRender();
                 }
             });
 
-            // Modal
-            const modal = document.getElementById('newTopicModal');
-            document.getElementById('newTopicBtn').addEventListener('click', () => { modal.style.display = 'flex'; });
-            document.getElementById('closeModal').addEventListener('click', () => { modal.style.display = 'none'; });
-            modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
-
-            const user = Auth.currentUser();
-            if (!user) {
-                document.getElementById('modalAuthMsg').style.display = 'block';
-                document.getElementById('topicForm').style.opacity = '0.4';
-                document.getElementById('topicForm').style.pointerEvents = 'none';
-            }
-
-            // Image upload for topic
-            document.getElementById('topicImgInput').addEventListener('change', function () {
-                const files = Array.from(this.files);
-                if (topicImages.length + files.length > 3) { showToast('En fazla 3 resim ekleyebilirsiniz.', 'error'); return; }
-                files.forEach(file => {
-                    if (file.size > 5 * 1024 * 1024) { showToast(file.name + ' 5MB\'dan büyük.', 'error'); return; }
-                    const fr = new FileReader();
-                    fr.onload = e => { topicImages.push(e.target.result); renderTopicThumbs(); };
-                    fr.readAsDataURL(file);
-                });
-                this.value = '';
-            });
-
             function renderTopicThumbs() {
-                document.getElementById('topicImgThumbs').innerHTML = topicImages.map((src, i) => `
-                  <div class="img-thumb-item">
-                    <img src="${src}" alt="">
-                    <div class="img-thumb-del" onclick="removeTopicImg(${i})">✕</div>
-                  </div>
-                `).join('');
+                const thumbsEl = document.getElementById('topicImgThumbs');
+                if(thumbsEl) {
+                    thumbsEl.innerHTML = topicImages.map((src, i) => `
+                      <div class="img-thumb-item">
+                        <img src="${src}" alt="">
+                        <div class="img-thumb-del" onclick="removeTopicImg(${i})">✕</div>
+                      </div>
+                    `).join('');
+                }
             }
             window.removeTopicImg = (i) => { topicImages.splice(i, 1); renderTopicThumbs(); };
 
-            document.getElementById('submitTopic').addEventListener('click', () => {
-                const u = Auth.currentUser();
-                if (!u) { showToast('Konu açmak için giriş yapın.', 'error'); return; }
-                const title = document.getElementById('topicTitle').value.trim();
-                const cat = document.getElementById('topicCategory').value;
-                const content = document.getElementById('topicContent').value.trim();
-                if (!title) { showToast('Konu başlığı boş olamaz.', 'error'); return; }
-                if (!content) { showToast('İçerik boş olamaz.', 'error'); return; }
-
-                const allPosts = DB.get('forum_posts') || [];
-                const newPost = {
-                    id: Date.now(),
-                    title,
-                    category: cat,
-                    body: content,
-                    preview: content.slice(0, 200),
-                    author: u.username,
-                    authorInit: u.username[0].toUpperCase(),
-                    date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
-                    replies: 0,
-                    views: 0,
-                    likes: 0,
-                    pinned: false,
-                    status: 'pending',
-                    images: [...topicImages]
-                };
-                allPosts.unshift(newPost);
-                DB.set('forum_posts', allPosts);
-                modal.style.display = 'none';
-                document.getElementById('topicTitle').value = '';
-                document.getElementById('topicContent').value = '';
-                topicImages = [];
-                renderTopicThumbs();
-                showToast('⏳ Konunuz admin onayına gönderildi!', 'success');
+            // DB sync listeners
+            document.addEventListener('dbReady', loadAndRender);
+            document.addEventListener('dbUpdated', (e) => {
+                const key = e.detail?.key;
+                if (!key || ['forum_posts', 'users', 'profiles'].includes(key) || e.detail.all) {
+                    loadAndRender();
+                }
             });
-            } catch (e) { console.error('[Forum Init] Error:', e); }
-        });
+
+            // Fallback
+            setTimeout(() => {
+                if (window.DB) {
+                    if (!window.DB._isInitialized) { window.DB.init(); window.DB._isInitialized = true; }
+                    const listEl = document.getElementById('forumList');
+                    if (listEl && listEl.children.length === 0) loadAndRender();
+                }
+            }, 2000);
+
+        })();
     </script>
 </body>
 

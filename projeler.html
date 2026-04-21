@@ -139,14 +139,22 @@
     <script src="js/firebase.js" defer></script>
     <script src="js/main.js" defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let userProjects = (DB.get('user_projects') || []).filter(p => p.status === 'approved');
+        (function() {
+            let userProjects = [];
             const grid = document.getElementById('projectGrid');
-            const searchInput = document.getElementById('searchInput');
-            const filterTabs = document.querySelectorAll('.filter-tab');
             let currentFilter = 'all';
 
+            function loadAndRender() {
+                try {
+                    const DB = window.DB;
+                    userProjects = (DB ? (DB.get('user_projects') || []) : []).filter(p => p && p.status === 'approved');
+                    render();
+                } catch(e) { console.error('[Projeler Init] Error:', e); }
+            }
+
             function render() {
+                if(!grid) return;
+                const searchInput = document.getElementById('searchInput');
                 let filtered = userProjects;
 
                 // Category Filter
@@ -155,7 +163,7 @@
                 }
 
                 // Search Filter
-                const q = searchInput.value.toLowerCase().trim();
+                const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
                 if (q) {
                     filtered = filtered.filter(p => p && p.title && p.title.toLowerCase().includes(q) || p && p.desc && p.desc.toLowerCase().includes(q));
                 }
@@ -190,28 +198,43 @@
             }
 
             // Bind Events
-            searchInput.addEventListener('input', render);
+            document.addEventListener('DOMContentLoaded', () => {
+                const searchInput = document.getElementById('searchInput');
+                if(searchInput) searchInput.addEventListener('input', render);
 
-            filterTabs.forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    filterTabs.forEach(t => t.classList.remove('active'));
-                    e.target.classList.add('active');
-                    currentFilter = e.target.getAttribute('data-filter');
-                    render();
+                const filterTabs = document.querySelectorAll('.filter-tab');
+                filterTabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        filterTabs.forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        currentFilter = e.target.getAttribute('data-filter');
+                        render();
+                    });
                 });
-            });
 
-            // Initial render
-            render();
-
-            // Listen for project approvals dynamically
-            document.addEventListener('dbUpdated', (e) => {
-                if (e.detail?.key === 'user_projects') {
-                    userProjects = (DB.get('user_projects') || []).filter(p => p && p.status === 'approved');
-                    render();
+                // Initial render if DB ready
+                if (window.DB && window.DB._isInitialized) {
+                    loadAndRender();
                 }
             });
-        });
+
+            // Listen for DB events
+            document.addEventListener('dbReady', loadAndRender);
+            document.addEventListener('dbUpdated', (e) => {
+                const key = e.detail?.key;
+                if (!key || ['user_projects'].includes(key) || e.detail.all) {
+                    loadAndRender();
+                }
+            });
+
+            // Fallback
+            setTimeout(() => {
+                if (window.DB) {
+                    if (!window.DB._isInitialized) { window.DB.init(); window.DB._isInitialized = true; }
+                    if (grid && grid.children.length === 0) loadAndRender();
+                }
+            }, 2000);
+        })();
     </script>
 </body>
 

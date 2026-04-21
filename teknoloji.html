@@ -143,19 +143,19 @@
     <script src="js/main.js" defer></script>
     <script src="js/ai-assistant.js" defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
+        (function () {
             const ITEMS_PER_PAGE = 15;
             let currentPage = 1;
             const grid = document.getElementById('articleGrid');
 
             function getArticles() {
                 const DB = window.DB;
-                return (DB ? DB.get('articles') : [])
+                return (DB ? (DB.get('articles') || []) : [])
                     .filter(a => a && typeof a === 'object' && a.title && a.category === 'teknoloji');
             }
 
             function renderPage(list, page) {
+                if (!grid) return;
                 currentPage = page;
                 const totalPages = Math.ceil(list.length / ITEMS_PER_PAGE);
                 const start = (page - 1) * ITEMS_PER_PAGE;
@@ -187,7 +187,6 @@
       </a>`;
                 }).join('');
 
-                // Pagination UI
                 if (totalPages > 1) {
                     html += `<div class="pagination">`;
                     if (page > 1) html += `<button class="page-btn" onclick="goToPage(${page - 1})">← Önceki</button>`;
@@ -199,7 +198,6 @@
                 }
 
                 grid.innerHTML = html;
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
             window.goToPage = (page) => {
@@ -209,20 +207,40 @@
                 renderPage(arts, page);
             };
 
-            renderPage(getArticles(), 1);
+            // Render on dbReady (primary trigger)
+            document.addEventListener('dbReady', () => renderPage(getArticles(), 1));
 
+            // Re-render on data changes (Firebase sync, admin)
             document.addEventListener('dbUpdated', (e) => {
                 if (e.detail?.key === 'articles' || e.detail?.all) renderPage(getArticles(), currentPage);
             });
 
-            document.getElementById('searchInput').addEventListener('input', e => {
-                const q = e.target.value.toLowerCase();
-                let arts = getArticles();
-                if (q) arts = arts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q));
-                renderPage(arts, 1);
+            // Also try on DOMContentLoaded (if DB already initialized)
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.DB && window.DB._isInitialized) renderPage(getArticles(), 1);
             });
-            } catch (e) { console.error('[Teknoloji Init] Error:', e); }
-        });
+
+            // Search input
+            document.addEventListener('DOMContentLoaded', () => {
+                const searchEl = document.getElementById('searchInput');
+                if (searchEl) {
+                    searchEl.addEventListener('input', e => {
+                        const q = e.target.value.toLowerCase();
+                        let arts = getArticles();
+                        if (q) arts = arts.filter(a => a.title.toLowerCase().includes(q) || (a.desc || '').toLowerCase().includes(q));
+                        renderPage(arts, 1);
+                    });
+                }
+            });
+
+            // Fallback: force render after 2s if nothing else triggered
+            setTimeout(() => {
+                if (window.DB) {
+                    if (!window.DB._isInitialized) { window.DB.init(); window.DB._isInitialized = true; }
+                    if (grid && grid.children.length === 0) renderPage(getArticles(), 1);
+                }
+            }, 2000);
+        })();
     </script>
 </body>
 

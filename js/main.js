@@ -349,7 +349,7 @@ var DB = {
     },
     // NEW: Background pre-load for large keys
     async preLoadLargeKeys() {
-        const largeKeys = ['articles', 'messages', 'profiles', 'bot_config', 'scraped_urls', 'pending_articles', 'user_projects', 'project_reviews'];
+        const largeKeys = ['articles', 'messages', 'profiles', 'bot_config', 'scraped_urls', 'pending_articles', 'user_projects', 'project_reviews', 'visitor_logs'];
         for (const key of largeKeys) {
             try {
                 const val = await MediaDB.get(key);
@@ -1362,7 +1362,7 @@ if (typeof FirebaseDB !== 'undefined') {
             'settings', 'articles', 'users', 'forum_posts', 'user_projects',
             'user_tiers', 'profiles', 'custom_pages', 'article_comments',
             'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
-            'pending_articles', 'bot_queue', 'bot_drafts'
+            'pending_articles', 'bot_queue', 'bot_drafts', 'visitor_logs'
         ];
 
         // Debounce timer for Firebase listener updates to prevent rapid re-renders
@@ -1516,8 +1516,39 @@ window.DB = DB;
                     window.DB.init();
                     window.DB._isInitialized = true;
                     if (typeof applySettings === 'function') applySettings();
+                    // Visitor Tracking
+                    if (typeof VisitorTracker !== 'undefined') VisitorTracker.track();
                     // Dispatch a custom event that DB is fully ready
                     document.dispatchEvent(new CustomEvent('dbReady'));
+                }
+            };
+
+            const VisitorTracker = {
+                async track() {
+                    // Only track once per session
+                    if (sessionStorage.getItem('tc_v_logged')) return;
+                    // Don't track admins
+                    if (localStorage.getItem('tc_admin_session')) return;
+
+                    try {
+                        const resp = await fetch('https://api.ipify.org?format=json');
+                        const data = await resp.json();
+                        const logs = window.DB.get('visitor_logs') || [];
+                        
+                        logs.push({
+                            ip: data.ip,
+                            ts: Date.now(),
+                            ua: navigator.userAgent.substring(0, 100),
+                            path: window.location.pathname
+                        });
+
+                        // Keep only last 500 records
+                        const finalLogs = logs.length > 500 ? logs.slice(-500) : logs;
+                        window.DB.set('visitor_logs', finalLogs);
+                        sessionStorage.setItem('tc_v_logged', '1');
+                    } catch (e) {
+                        console.warn('[Tracker] Failed:', e);
+                    }
                 }
             };
 

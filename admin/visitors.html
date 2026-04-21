@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ziyaretçi Analitiği - AsiaConsole Admin</title>
+    <link rel="icon" href="../favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-mini-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-mini-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+
+        .stat-mini-lbl {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu</a>
+                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <a href="visitors.html" class="sidebar-link active"><span class="icon">👁️</span> Ziyaretçiler</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-title">👁️ Ziyaretçi Analitiği</div>
+                <div class="topbar-actions">
+                    <button class="topbar-btn secondary" onclick="clearLogs()">🗑️ Logları Temizle</button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <div class="stat-grid">
+                    <div class="stat-mini-card">
+                        <div class="stat-mini-val" id="totalVisits">0</div>
+                        <div class="stat-mini-lbl">Toplam Oturum (Son 500)</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-mini-val" id="uniqueIps">0</div>
+                        <div class="stat-mini-lbl">Benzersiz IP Sayısı</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-mini-val" id="todayVisits">0</div>
+                        <div class="stat-mini-lbl">Bugünkü Ziyaretler</div>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title">📋 Son Ziyaret Logları</div>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>IP Adresi</th>
+                                    <th>Tarih / Saat</th>
+                                    <th>Sayfa</th>
+                                    <th>Tarayıcı (UA)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitorsBody">
+                                <tr>
+                                    <td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">Yükleniyor...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        function renderVisitors() {
+            const logs = DB.get('visitor_logs') || [];
+            const tbody = document.getElementById('visitorsBody');
+            
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">Henüz ziyaretçi kaydı yok.</td></tr>';
+                document.getElementById('totalVisits').textContent = '0';
+                document.getElementById('uniqueIps').textContent = '0';
+                document.getElementById('todayVisits').textContent = '0';
+                return;
+            }
+
+            // Stats
+            const total = logs.length;
+            const uniqueIps = new Set(logs.map(l => l.ip)).size;
+            
+            const today = new Date().toLocaleDateString('tr-TR');
+            const todayCount = logs.filter(l => new Date(l.ts).toLocaleDateString('tr-TR') === today).length;
+
+            document.getElementById('totalVisits').textContent = total;
+            document.getElementById('uniqueIps').textContent = uniqueIps;
+            document.getElementById('todayVisits').textContent = todayCount;
+
+            // Table (Sorted by newest first)
+            const sortedLogs = [...logs].reverse();
+            tbody.innerHTML = sortedLogs.map(l => {
+                const date = new Date(l.ts).toLocaleString('tr-TR');
+                return `
+                    <tr>
+                        <td style="font-family:monospace; font-weight:600; color:var(--accent-blue);">${l.ip}</td>
+                        <td style="font-size:0.85rem;">${date}</td>
+                        <td style="font-size:0.8rem; color:var(--text-secondary);">${l.path || '/'}</td>
+                        <td style="font-size:0.75rem; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${l.ua}">${l.ua}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function clearLogs() {
+            if (confirm('Tüm ziyaretçi loglarını temizlemek istediğinize emin misiniz?')) {
+                DB.set('visitor_logs', []);
+                renderVisitors();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof DB !== 'undefined' && DB._isInitialized) renderVisitors();
+        });
+        document.addEventListener('dbReady', renderVisitors);
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail.all || e.detail.key === 'visitor_logs') renderVisitors();
+        });
+    </script>
+</body>
+
+</html>

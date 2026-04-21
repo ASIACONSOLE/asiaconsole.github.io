@@ -3238,3 +3238,39 @@ h6 {
 .ticker-content {
   padding-left: 20px !important;
 }
+
+/* PERFORMANCE OPTIMIZATIONS (PageSpeed Fixes) */
+.portal-slider {
+  aspect-ratio: 16 / 9;
+  min-height: 300px; /* Mobile fallback */
+  background: var(--bg-secondary);
+}
+
+.card img, .side-item-img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--bg-secondary);
+}
+
+.side-item-img {
+  aspect-ratio: 1 / 1;
+}
+
+/* Reduce Layout Shift */
+.section {
+  contain-intrinsic-size: 0 500px;
+  content-visibility: auto;
+}
+
+/* Font Display */
+@font-face {
+  font-display: swap;
+}
+
+/* Optimize Matrix Opacity for LCP */
+#matrixCanvas {
+  display: none !important; /* Hide on mobile to save CPU/Render */
+}
+@media (min-width: 992px) {
+  #matrixCanvas { display: block !important; }
+}

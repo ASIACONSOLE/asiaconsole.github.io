@@ -87,7 +87,11 @@ function renderHome() {
             const sliderArticles = articles.slice(0, 5);
             portalSlider.innerHTML = sliderArticles.map((a, i) => `
                 <a href="makale-detay.html?id=${a.id}" class="portal-slide-item ${i === 0 ? 'active' : ''}" data-index="${i}">
-                    <img src="${a.cover || a.image || ''}" class="portal-slide-img" alt="${a.title}">
+                    <img src="${a.cover || a.image || ''}" 
+                         class="portal-slide-img" 
+                         alt="${a.title}"
+                         ${i === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'}
+                         width="800" height="450">
                     <div class="portal-slide-content">
                         <div class="portal-slide-badge">${a.category}</div>
                         <h2 class="portal-slide-title">${a.title}</h2>
@@ -113,7 +117,7 @@ function renderHome() {
             const sideArticles = articles.slice(5, 8);
             portalSide.innerHTML = sideArticles.map(a => `
                 <a href="makale-detay.html?id=${a.id}" class="side-item">
-                    <img src="${a.cover || a.image || ''}" class="side-item-img" alt="${a.title}">
+                    <img src="${a.cover || a.image || ''}" class="side-item-img" alt="${a.title}" loading="lazy" width="80" height="80">
                     <div class="side-item-content">
                         <div class="side-item-title">${a.title}</div>
                         <div class="side-item-meta">👁️ ${ArticleStats.format(ArticleStats.getDynamicViews(a))} okuma</div>
@@ -145,7 +149,7 @@ function renderHome() {
                     return `
                         <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden;">
                             <div style="height:160px; position:relative; background: #1a1a1a; overflow: hidden;">
-                                <img src="${imgSrc}" alt="${item.title}" loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;">
+                                <img src="${imgSrc}" alt="${item.title}" loading="lazy" width="400" height="225" style="width:100%; height:100%; object-fit:cover; display:block;">
                                 <div class="card-badge ${badgeClass}" style="position:absolute; top:0.75rem; left:0.75rem;">${labelText}</div>
                             </div>
                             <div style="padding:1.25rem;">

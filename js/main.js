@@ -621,7 +621,58 @@ var DB = {
             ], false);
         }
 
-        if (!this.get('forum_posts')) this.set('forum_posts', [], false);
+        // --- FORUM SEEDING ---
+        const hasForum = this.get('forum_posts');
+        if (!hasForum || (Array.isArray(hasForum) && hasForum.length === 0)) {
+            console.log('[DB] Seeding default forum topics...');
+            this.set('forum_posts', [
+                {
+                    id: 1713691200000,
+                    title: "AsiaConsole Forumuna Hoş Geldiniz! 🚀",
+                    category: "Genel",
+                    body: "Merhaba AsiaConsole topluluğu! Burası teknoloji, oyun ve yazılım dünyasını tartıştığımız yeni evimiz. Lütfen kurallara uyalım ve saygılı bir ortam oluşturalım. Keyifli paylaşımlar!",
+                    preview: "Merhaba AsiaConsole topluluğu! Burası teknoloji, oyun ve yazılım dünyasını tartıştığımız yeni evimiz...",
+                    author: "Admin",
+                    authorInit: "A",
+                    date: "21 Nis 2026",
+                    replies: 5,
+                    views: 124,
+                    likes: 12,
+                    pinned: true,
+                    status: "approved"
+                },
+                {
+                    id: 1713694800000,
+                    title: "En iyi mobil oyun tavsiyeleri (2026)",
+                    category: "Oyun",
+                    body: "Arkadaşlar şu sıralar mobil oyunlara sardım. Sizin severek oynadığınız, grafikleri güzel veya hikayesi sürükleyici oyun tavsiyeleriniz var mı? Özellikle RPG türü önceliğim.",
+                    preview: "Arkadaşlar şu sıralar mobil oyunlara sardım. Sizin severek oynadığınız, grafikleri güzel veya hikayesi...",
+                    author: "AsiaBot",
+                    authorInit: "B",
+                    date: "21 Nis 2026",
+                    replies: 8,
+                    views: 256,
+                    likes: 15,
+                    pinned: false,
+                    status: "approved"
+                },
+                {
+                    id: 1713698400000,
+                    title: "Yeni nesil işlemciler ve performans testleri",
+                    category: "Teknoloji",
+                    body: "Son çıkan işlemcilerin benchmark sonuçlarını inceledim. Verimlilik tarafında devasa adımlar atılmış görünüyor. Sizce geçmeye değer mi yoksa bir nesil daha beklemeli mi?",
+                    preview: "Son çıkan işlemcilerin benchmark sonuçlarını inceledim. Verimlilik tarafında devasa adımlar...",
+                    author: "Sibel",
+                    authorInit: "S",
+                    date: "21 Nis 2026",
+                    replies: 3,
+                    views: 89,
+                    likes: 7,
+                    pinned: false,
+                    status: "approved"
+                }
+            ], false);
+        }
 
         if (!this.get('users')) {
             this.set('users', [

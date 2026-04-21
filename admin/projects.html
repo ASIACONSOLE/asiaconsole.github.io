@@ -502,7 +502,16 @@
             renderProjects();
         };
 
-        document.addEventListener('DOMContentLoaded', renderProjects);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof DB !== 'undefined' && DB._isInitialized) renderProjects();
+        });
+        document.addEventListener('dbReady', renderProjects);
+        setTimeout(() => {
+            if (typeof DB !== 'undefined') {
+                if (!DB._isInitialized) { try { DB.init(); DB._isInitialized = true; } catch(e){} }
+                renderProjects();
+            }
+        }, 2000);
     </script>
     <script src="../js/ai-assistant.js"></script>
 </body>

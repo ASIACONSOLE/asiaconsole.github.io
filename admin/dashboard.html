@@ -316,8 +316,17 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', renderDashboard);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof DB !== 'undefined' && DB._isInitialized) renderDashboard();
+        });
+        document.addEventListener('dbReady', renderDashboard);
         document.addEventListener('dbUpdated', renderDashboard);
+        setTimeout(() => {
+            if (typeof DB !== 'undefined') {
+                if (!DB._isInitialized) { try { DB.init(); DB._isInitialized = true; } catch(e){} }
+                renderDashboard();
+            }
+        }, 2000);
     </script>
 </body>
 

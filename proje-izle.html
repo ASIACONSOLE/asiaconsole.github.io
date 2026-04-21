@@ -217,7 +217,7 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function initPage() {
             const urlParams = new URLSearchParams(window.location.search);
             currentProjectId = urlParams.get('id');
 
@@ -236,11 +236,14 @@
             }
 
             const projects = DB.get('user_projects') || [];
-            const proj = projects.find(p => String(p.id) === String(currentProjectId));
+            const proj = projects.find(p => p && String(p.id) === String(currentProjectId));
 
             if (!proj || proj.status !== 'approved') {
-                alert('Proje bulunamadı veya henüz onaylanmamış.');
-                window.location.href = 'index.html';
+                // Only alert if DB is initialized and we STILL can't find it
+                if (DB._isInitialized) {
+                    alert('Proje bulunamadı veya henüz onaylanmamış.');
+                    window.location.href = 'index.html';
+                }
                 return;
             }
 
@@ -248,18 +251,38 @@
             document.getElementById('viewAuthor').innerHTML = `<a href="profil.html?user=${encodeURIComponent(proj.author)}" style="color:inherit; text-decoration:none;">@${proj.author}</a> tarafından sunuldu`;
 
             const iframe = document.getElementById('runner');
-            iframe.srcdoc = proj.code;
+            if (iframe && iframe.srcdoc !== proj.code) {
+                iframe.srcdoc = proj.code;
+            }
 
-            // Increment views
-            const allProjects = DB.get('user_projects') || [];
-            const idx = allProjects.findIndex(p => String(p.id) === String(currentProjectId));
-            if (idx !== -1) {
-                allProjects[idx].views = (allProjects[idx].views || 0) + 1;
-                DB.set('user_projects', allProjects);
+            // Increment views (only once)
+            if (!window._viewCounted) {
+                const allProjects = DB.get('user_projects') || [];
+                const idx = allProjects.findIndex(p => p && String(p.id) === String(currentProjectId));
+                if (idx !== -1) {
+                    allProjects[idx].views = (allProjects[idx].views || 0) + 1;
+                    DB.set('user_projects', allProjects);
+                    window._viewCounted = true;
+                }
             }
 
             initReviews();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof DB !== 'undefined' && DB._isInitialized) initPage();
         });
+        document.addEventListener('dbReady', initPage);
+        document.addEventListener('dbUpdated', (e) => {
+            if (e.detail.all || e.detail.key === 'user_projects') initPage();
+        });
+
+        setTimeout(() => {
+            if (typeof DB !== 'undefined') {
+                if (!DB._isInitialized) { try { DB.init(); DB._isInitialized = true; } catch(e){} }
+                initPage();
+            }
+        }, 2000);
 
         function initReviews() {
             // Star picker logic
@@ -293,11 +316,19 @@
             // Submit logic
             const submitBtn = document.getElementById('submitReviewBtn');
             if (submitBtn) {
-                submitBtn.addEventListener('click', () => {
+                // Remove old listener if any
+                const newBtn = submitBtn.cloneNode(true);
+                submitBtn.parentNode.replaceChild(newBtn, submitBtn);
+                
+                newBtn.addEventListener('click', () => {
                     const textEl = document.getElementById('reviewText');
                     const text = textEl ? textEl.value.trim() : '';
                     const user = Auth.currentUser();
 
+                    if (!user) {
+                        showToast('Lütfen giriş yapın!', 'error');
+                        return;
+                    }
                     if (!currentRating) {
                         showToast('Lütfen bir puan verin!', 'error');
                         return;

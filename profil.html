@@ -457,23 +457,46 @@
     <script src="js/ai-assistant.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            DB.init();
+            // Only render if DB is already initialized by the main.js IIFE
+            if (typeof DB !== 'undefined' && DB._isInitialized) {
+                applySettings();
+                renderDynamicNav();
+                setNavActive();
+                initHamburger();
+                updateNavAuth();
+                renderProfile();
+            }
+        });
+
+        // Main trigger: when DB is ready (pre-load finished)
+        document.addEventListener('dbReady', () => {
             applySettings();
             renderDynamicNav();
             setNavActive();
             initHamburger();
             updateNavAuth();
             renderProfile();
-
-            // Listen for data sync from Firebase and re-render if it targets our user or projects
-            document.addEventListener('dbUpdated', (e) => {
-                const { key } = e.detail;
-                if (['users', 'profiles', 'user_projects', 'forum_posts'].includes(key)) {
-                    console.log('[Profile] Sync detected for:', key);
-                    renderProfile();
-                }
-            });
         });
+
+        // Sync trigger: when data changes from cloud
+        document.addEventListener('dbUpdated', (e) => {
+            const { key, all } = e.detail;
+            if (all || ['users', 'profiles', 'user_projects', 'forum_posts', 'settings'].includes(key)) {
+                console.log('[Profile] Sync detected for:', key || 'all');
+                renderProfile();
+            }
+        });
+
+        // Safety fallback: 2s forced render
+        setTimeout(() => {
+            if (typeof DB !== 'undefined') {
+                if (!DB._isInitialized) {
+                    console.log('[Profile] Fallback initialization...');
+                    try { DB.init(); DB._isInitialized = true; } catch(e) {}
+                }
+                renderProfile();
+            }
+        }, 2000);
 
         function switchProfileTab(tab) {
             // Save state in a global var to prevent reset on re-render

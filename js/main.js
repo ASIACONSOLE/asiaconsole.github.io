@@ -450,44 +450,45 @@ var DB = {
                     const jsonStr = JSON.stringify(finalData);
                     const size = new Blob([jsonStr]).size;
 
-                    // CHUNKED STORAGE: If articles exceed 500KB, split into chunks
-                    if (key === 'articles' && Array.isArray(finalData) && size > 500000) {
-                        const CHUNK_SIZE = 500000; // 500KB per chunk (safely under 1MB)
+                    // CHUNKED STORAGE: If large arrays exceed 500KB, split into chunks
+                    const chunkableKeys = ['articles', 'user_projects', 'forum_posts', 'messages'];
+                    if (chunkableKeys.includes(key) && Array.isArray(finalData) && size > 500000) {
+                        const CHUNK_SIZE = 500000; // 500KB per chunk
                         const chunks = [];
                         let currentChunk = [];
                         let currentSize = 0;
 
-                        for (const article of finalData) {
-                            const articleSize = new Blob([JSON.stringify(article)]).size;
-                            if (currentSize + articleSize > CHUNK_SIZE && currentChunk.length > 0) {
+                        for (const item of finalData) {
+                            const itemSize = new Blob([JSON.stringify(item)]).size;
+                            if (currentSize + itemSize > CHUNK_SIZE && currentChunk.length > 0) {
                                 chunks.push(currentChunk);
                                 currentChunk = [];
                                 currentSize = 0;
                             }
-                            currentChunk.push(article);
-                            currentSize += articleSize;
+                            currentChunk.push(item);
+                            currentSize += itemSize;
                         }
                         if (currentChunk.length > 0) chunks.push(currentChunk);
 
                         // Write chunk metadata
-                        FirebaseDB.set('site_data', 'articles', {
+                        FirebaseDB.set('site_data', key, {
                             data: '__CHUNKED__',
                             chunkCount: chunks.length,
-                            totalArticles: finalData.length,
+                            totalItems: finalData.length,
                             lastSync: Date.now()
                         });
 
                         // Write each chunk as separate document
                         chunks.forEach((chunk, i) => {
-                            FirebaseDB.set('site_data', `articles_chunk_${i}`, { data: chunk, lastSync: Date.now() });
+                            FirebaseDB.set('site_data', `${key}_chunk_${i}`, { data: chunk, lastSync: Date.now() });
                         });
 
-                        // Clean up old chunks beyond current count
+                        // Clean up old chunks beyond current count (safety margin 20)
                         for (let i = chunks.length; i < 20; i++) {
-                            FirebaseDB.delete('site_data', `articles_chunk_${i}`);
+                            FirebaseDB.delete('site_data', `${key}_chunk_${i}`);
                         }
 
-                        console.log(`[Firebase] Articles synced in ${chunks.length} chunks (${(size / 1024).toFixed(0)}KB total) ✓`);
+                        console.log(`[Firebase] ${key} synced in ${chunks.length} chunks (${(size / 1024).toFixed(0)}KB total) ✓`);
                         if (DB._cloudStaleKeys) DB._cloudStaleKeys.delete(key);
                         return;
                     }
@@ -541,17 +542,17 @@ var DB = {
         for (const key of keys) {
             const remote = await FirebaseDB.get('site_data', key);
             if (remote && remote.data) {
-                // Handle chunked articles
-                if (key === 'articles' && remote.data === '__CHUNKED__' && remote.chunkCount) {
-                    let allArticles = [];
+                // Handle generic chunked loading
+                if (remote.data === '__CHUNKED__' && remote.chunkCount) {
+                    let allItems = [];
                     for (let i = 0; i < remote.chunkCount; i++) {
-                        const chunk = await FirebaseDB.get('site_data', `articles_chunk_${i}`);
+                        const chunk = await FirebaseDB.get('site_data', `${key}_chunk_${i}`);
                         if (chunk && Array.isArray(chunk.data)) {
-                            allArticles = allArticles.concat(chunk.data);
+                            allItems = allItems.concat(chunk.data);
                         }
                     }
-                    DB.set('articles', allArticles, false);
-                    console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} chunks`);
+                    DB.set(key, allItems, false);
+                    console.log(`[Firebase] Loaded ${key} (${allItems.length} items) from ${remote.chunkCount} chunks`);
                 } else {
                     DB.set(key, remote.data, false);
                 }
@@ -1399,26 +1400,27 @@ if (typeof FirebaseDB !== 'undefined') {
                     return;
                 }
 
-                // Handle CHUNKED articles: if cloud says '__CHUNKED__', fetch all chunks
-                if (key === 'articles' && remoteData === '__CHUNKED__' && remote.chunkCount) {
+                // Handle generic chunked updates: if cloud says '__CHUNKED__', fetch all chunks
+                if (remoteData === '__CHUNKED__' && remote.chunkCount) {
                     (async () => {
-                        let allArticles = [];
+                        let allItems = [];
                         for (let i = 0; i < remote.chunkCount; i++) {
-                            const chunk = await FirebaseDB.get('site_data', `articles_chunk_${i}`);
+                            const chunk = await FirebaseDB.get('site_data', `${key}_chunk_${i}`);
                             if (chunk && Array.isArray(chunk.data)) {
-                                allArticles = allArticles.concat(chunk.data);
+                                allItems = allItems.concat(chunk.data);
                             }
                         }
-                        // Only apply if cloud has more or equal articles
-                        const localArticles = DB.get('articles');
-                        if (Array.isArray(localArticles) && localArticles.length > allArticles.length) {
-                            console.warn(`[Firebase] Skipping chunked remote — local has ${localArticles.length} vs cloud ${allArticles.length}`);
-                            return;
+                        
+                        // Smart comparison: Only apply if cloud has more or equal items than local
+                        const localItems = DB.get(key);
+                        if (Array.isArray(localItems) && localItems.length > allItems.length) {
+                             console.warn(`[Firebase] Skipping chunked remote for '${key}' — local has more items.`);
+                             return;
                         }
-                        // Use DB.set with syncToCloud=false to leverage MediaDB fallback automatically
-                        DB.set('articles', allArticles, false);
-                        console.log(`[Firebase] Loaded ${allArticles.length} articles from ${remote.chunkCount} cloud chunks`);
-                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: 'articles' } }));
+
+                        DB.set(key, allItems, false);
+                        console.log(`[Firebase] Loaded ${allItems.length} items for ${key} from ${remote.chunkCount} cloud chunks (Listener)`);
+                        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: key } }));
                     })();
                     return;
                 }

@@ -1,15 +1,12 @@
 /**
  * AsiaConsole Home Page Logic
- * Optimized with global scope access (window.DB)
+ * Optimized for reliability and data loading order.
  */
 
 function renderHome() {
     try {
         const DB = window.DB;
-        if (!DB) {
-            console.warn('[Home] DB not ready yet...');
-            return;
-        }
+        if (!DB) return;
 
         const articles = (DB.get('articles') || [])
             .filter(a => a && typeof a === 'object' && a.title)
@@ -44,7 +41,7 @@ function renderHome() {
         if (elApp) elApp.textContent = appCount + ' makale';
         if (elForum) elForum.textContent = forumPosts.length + ' konu';
 
-        // News Ticker Logic
+        // News Ticker
         const tickerContainer = document.getElementById('newsTicker');
         const tickerContent = document.getElementById('tickerItems');
         if (tickerContainer && tickerContent) {
@@ -63,7 +60,7 @@ function renderHome() {
             }
         }
 
-        // Featured Articles / Feed
+        // Featured Articles
         const combinedFeed = [...articles].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 8);
         const grid = document.getElementById('featuredArticles');
 
@@ -79,29 +76,23 @@ function renderHome() {
                     const link = isProj ? `proje-izle.html?id=${item.id}` : `makale-detay.html?id=${item.id}`;
                     const badgeClass = catMap[item.category] || 'badge-tech';
                     const labelText = isProj ? `🚀 Proje: ${item.title}` : (catLabel[item.category] || item.category);
-
                     const imgSrc = item.cover || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%232a2a2a"/%3E%3C/svg%3E';
 
                     return `
-                        <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
+                        <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden;">
                             <div style="height:160px; position:relative; background: #1a1a1a; overflow: hidden;">
-                                <img src="${imgSrc}" 
-                                     alt="${item.title}" 
-                                     loading="lazy" 
-                                     style="width:100%; height:100%; object-fit:cover; display:block;">
+                                <img src="${imgSrc}" alt="${item.title}" loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;">
                                 <div class="card-badge ${badgeClass}" style="position:absolute; top:0.75rem; left:0.75rem;">${labelText}</div>
                             </div>
                             <div style="padding:1.25rem;">
                                 <div class="card-title">${item.title}</div>
-                                <div class="card-desc">${item.desc || (isProj ? 'Bu bir kullanıcı projesidir.' : '')}</div>
+                                <div class="card-desc">${item.desc || ''}</div>
                                 <div class="card-meta">
                                     <span>👤 ${item.author}</span>
                                     <span>📅 ${item.date}</span>
                                     <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
                                 </div>
-                                <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">
-                                    ${isProj ? '🎮 Hemen İzle/Oyna →' : '📚 Devamını oku →'}
-                                </div>
+                                <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;"> Devamını oku →</div>
                             </div>
                         </a>
                     `;
@@ -109,68 +100,42 @@ function renderHome() {
             }
         }
 
-        // Forum list
+        // Forum
         const forumEl = document.getElementById('homeForumList');
         if (forumEl) {
-            const forumPosts = (DB.get('forum_posts') || []).filter(p => p && (p.status === 'approved' || !p.status));
             const topPosts = forumPosts.slice(0, 6);
             if (topPosts.length === 0) {
-                forumEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Henüz konu yok</h3><p>İlk forum konusunu siz başlatın!</p></div>';
+                forumEl.innerHTML = '<div class="empty-state"><h3>Henüz konu yok</h3></div>';
             } else {
                 forumEl.innerHTML = topPosts.map(p => `
                     <a href="forum-detay.html?id=${p.id}" class="forum-topic" style="text-decoration:none; display:flex;">
                         <div class="forum-avatar">${p.authorInit || (p.author || '?')[0].toUpperCase()}</div>
                         <div class="forum-content">
-                            <div class="forum-title">${p.pinned ? '📌 ' : ''}${p.title}</div>
+                            <div class="forum-title">${p.title}</div>
                             <div class="forum-meta">@${p.author} · ${p.date}</div>
-                        </div>
-                        <div class="forum-stats">
-                            <div class="forum-stat">
-                                <div class="forum-stat-num">${p.replies || 0}</div>
-                                <div class="forum-stat-label">Yanıt</div>
-                            </div>
-                            <div class="forum-stat">
-                                <div class="forum-stat-num">${(p.views || 0).toLocaleString('tr-TR')}</div>
-                                <div class="forum-stat-label">Görüntü</div>
-                            </div>
                         </div>
                     </a>
                 `).join('');
             }
         }
-    } catch (e) {
-        console.error('[renderHome] Error:', e);
-    }
+    } catch (e) { console.error('[Home] Render error:', e); }
 }
 
 let renderTimer;
 function debouncedRender() {
     clearTimeout(renderTimer);
-    renderTimer = setTimeout(() => {
-        try {
-            renderHome();
-            if (typeof renderDailySnippet === 'function') renderDailySnippet();
-        } catch (e) {
-            console.error('[debouncedRender] Error:', e);
-        }
-    }, 50);
+    renderTimer = setTimeout(renderHome, 50);
 }
 
-// Listen for DB ready or DOM ready
+// Global listeners
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.DB) {
-        debouncedRender();
-    }
+    if (window.DB && window.DB._isInitialized) debouncedRender();
 });
 
-// This is the main trigger when data arrives from Firebase/IDB
+document.addEventListener('dbReady', debouncedRender);
 document.addEventListener('dbUpdated', (e) => {
-    try {
-        const key = e.detail && e.detail.key;
-        if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings' || key === 'user_projects' || e.detail.all) {
-            debouncedRender();
-        }
-    } catch (e2) {
-        console.error('[dbUpdated] Error:', e2);
+    const key = e.detail?.key;
+    if (!key || ['articles', 'forum_posts', 'users', 'settings'].includes(key) || e.detail.all) {
+        debouncedRender();
     }
 });

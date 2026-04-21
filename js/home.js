@@ -1,10 +1,16 @@
 /**
  * AsiaConsole Home Page Logic
- * Extracted from index.html for performance and caching.
+ * Optimized with global scope access (window.DB)
  */
 
 function renderHome() {
     try {
+        const DB = window.DB;
+        if (!DB) {
+            console.warn('[Home] DB not ready yet...');
+            return;
+        }
+
         const articles = (DB.get('articles') || [])
             .filter(a => a && typeof a === 'object' && a.title)
             .map(a => ({ ...a, type: 'article' }));
@@ -74,9 +80,7 @@ function renderHome() {
                     const badgeClass = catMap[item.category] || 'badge-tech';
                     const labelText = isProj ? `🚀 Proje: ${item.title}` : (catLabel[item.category] || item.category);
 
-                    // Image optimization: Using <img> with loading="lazy" instead of background-image
-                    const placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%232a2a2a"/%3E%3C/svg%3E';
-                    const imgSrc = item.cover || placeholder;
+                    const imgSrc = item.cover || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%232a2a2a"/%3E%3C/svg%3E';
 
                     return `
                         <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
@@ -152,14 +156,18 @@ function debouncedRender() {
     }, 50);
 }
 
+// Listen for DB ready or DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    debouncedRender();
+    if (window.DB) {
+        debouncedRender();
+    }
 });
 
+// This is the main trigger when data arrives from Firebase/IDB
 document.addEventListener('dbUpdated', (e) => {
     try {
         const key = e.detail && e.detail.key;
-        if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings' || key === 'user_projects') {
+        if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings' || key === 'user_projects' || e.detail.all) {
             debouncedRender();
         }
     } catch (e2) {

@@ -309,7 +309,7 @@ const MediaDB = {
 };
 
 // ---- DATA MANAGEMENT ----
-const DB = {
+window.DB = {
     _unwrapData(val) {
         let v = val;
         // 1. Traverse any deep { data: ... } wrappers (MAX 10 depth to prevent infinite loop)
@@ -1499,12 +1499,16 @@ if (typeof FirebaseDB !== 'undefined') {
     });
 }
 
-// AUTO-START: Pre-load IndexedDB data (DOM ready will handle DB.init)
+// AUTO-START: Pre-load IndexedDB data and Initialize
 (async function () {
     try {
-        if (typeof DB !== 'undefined') {
-            await DB.preLoadLargeKeys();
+        if (window.DB) {
+            await window.DB.preLoadLargeKeys();
             // DB.init() is safely called inside DOMContentLoaded listener
+            document.addEventListener('DOMContentLoaded', () => {
+                window.DB.init();
+                if (typeof applySettings === 'function') applySettings();
+            });
         }
     } catch (e) {
         console.error('[DB] Pre-load startup error:', e);

@@ -150,7 +150,8 @@
             const grid = document.getElementById('articleGrid');
 
             function getArticles() {
-                return (DB.get('articles') || [])
+                const DB = window.DB;
+                return (DB ? DB.get('articles') : [])
                     .filter(a => a && typeof a === 'object' && a.title && a.category === 'teknoloji');
             }
 
@@ -211,7 +212,7 @@
             renderPage(getArticles(), 1);
 
             document.addEventListener('dbUpdated', (e) => {
-                if (e.detail?.key === 'articles') renderPage(getArticles(), currentPage);
+                if (e.detail?.key === 'articles' || e.detail?.all) renderPage(getArticles(), currentPage);
             });
 
             document.getElementById('searchInput').addEventListener('input', e => {

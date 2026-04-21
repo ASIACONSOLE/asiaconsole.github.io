@@ -17,10 +17,7 @@ const FIREBASE_CONFIG = {
 };
 
 // Global instance variable
-var FirebaseDB;
-
-// ---- FIREBASE REALTIME DB WRAPPER ----
-FirebaseDB = {
+window.FirebaseDB = {
     db: null,
     _listeners: {},
     _ready: false,

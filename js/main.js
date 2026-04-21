@@ -1247,7 +1247,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initHamburger();
     updateNavAuth();
     renderHeroProjects();
-    setTimeout(initScrollAnimations, 100);
+    requestAnimationFrame(() => {
+        initScrollAnimations();
+    });
 });
 
 

@@ -30,6 +30,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap"
         rel="stylesheet">
+    <link rel="preload" as="style" href="css/style.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
         #matrixCanvas {
@@ -286,169 +287,10 @@
 
     </div>
 
-    <script>
-        function renderHome() {
-            const articles = (DB.get('articles') || []).map(a => ({ ...a, type: 'article' }));
-
-            const forumPosts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
-            const users = DB.get('users') || [];
-
-            // Combine and Sort by Date (descending)
-            // Note: Since IDs are Date.now(), we can use them for sorting too
-            const combinedFeed = [...articles].sort((a, b) => {
-                const dateA = a.id || 0;
-                const dateB = b.id || 0;
-                return dateB - dateA;
-            }).slice(0, 8); // Show top 8 latest items
-
-            // Stats
-            const statArticles = document.getElementById('statArticles');
-            const statTopics = document.getElementById('statTopics');
-            const statMembers = document.getElementById('statMembers');
-
-            if (statArticles) statArticles.textContent = articles.length.toLocaleString('tr-TR');
-            if (statTopics) statTopics.textContent = forumPosts.length.toLocaleString('tr-TR');
-            if (statMembers && users.length > 3) {
-                statMembers.textContent = (1240 + users.length - 3).toLocaleString('tr-TR');
-            }
-
-            // Category counts
-            const techCount = articles.filter(a => a.category === 'teknoloji').length;
-            const gameCount = articles.filter(a => a.category === 'oyun').length;
-            const appCount = articles.filter(a => a.category === 'uygulama').length;
-
-            const elTech = document.getElementById('catTechCount');
-            const elGame = document.getElementById('catGameCount');
-            const elApp = document.getElementById('catAppCount');
-            const elForum = document.getElementById('catForumCount');
-
-            if (elTech) elTech.textContent = techCount + ' makale';
-            if (elGame) elGame.textContent = gameCount + ' makale';
-            if (elApp) elApp.textContent = appCount + ' makale';
-            if (elForum) elForum.textContent = forumPosts.length + ' konu';
-
-            // News Ticker Logic
-            const tickerContainer = document.getElementById('newsTicker');
-            const tickerContent = document.getElementById('tickerItems');
-            if (tickerContainer && tickerContent) {
-                const latestArticles = articles.slice(0, 5);
-                if (latestArticles.length > 0) {
-                    tickerContainer.style.display = 'flex';
-                    // Duplicate for seamless scroll
-                    const tickerHTML = latestArticles.map(a => `
-                        <a href="makale-detay.html?id=${a.id}" class="ticker-item">
-                            <span class="dot"></span>
-                            ${a.title}
-                        </a>
-                    `).join('');
-                    tickerContent.innerHTML = tickerHTML + tickerHTML;
-                } else {
-                    tickerContainer.style.display = 'none';
-                }
-            }
-
-            // News Feed (Combined Articles & Projects)
-            const catMap = { teknoloji: 'badge-tech', oyun: 'badge-game', uygulama: 'badge-app' };
-            const catLabel = { teknoloji: '💻 Teknoloji', oyun: '🎮 Oyun', uygulama: '📱 Uygulama' };
-            const grid = document.getElementById('featuredArticles');
-
-            if (grid) {
-                if (combinedFeed.length === 0) {
-                    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><h3>Henüz içerik yok</h3><p>Yeni içerikler yakında burada olacak.</p></div>';
-                } else {
-                    grid.innerHTML = combinedFeed.map(item => {
-                        const isProj = item.type === 'project';
-                        const link = isProj ? `proje-izle.html?id=${item.id}` : `makale-detay.html?id=${item.id}`;
-                        const badgeClass = catMap[item.category] || 'badge-tech';
-                        const labelText = isProj ? `🚀 Proje: ${item.title}` : (catLabel[item.category] || item.category);
-
-                        const gradients = {
-                            teknoloji: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            oyun: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                            uygulama: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-                        };
-                        const coverBg = item.cover
-                            ? `url(${item.cover})`
-                            : (gradients[item.category] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
-                        const coverStyle = item.cover
-                            ? `background:${coverBg}; background-size:cover; background-position:center;`
-                            : `background:${coverBg};`;
-
-                        return `
-      <a href="${link}" class="card animate-fadeInUp" style="text-decoration:none; display:block; cursor:pointer; padding:0; overflow:hidden; border-top: ${isProj ? '3px solid var(--accent-blue)' : 'none'};">
-        <div style="${coverStyle} height:160px; position:relative;">
-          <div class="card-badge ${badgeClass}" style="position:absolute; top:0.75rem; left:0.75rem;">${labelText}</div>
-        </div>
-        <div style="padding:1.25rem;">
-          <div class="card-title">${item.title}</div>
-          <div class="card-desc">${item.desc || (isProj ? 'Bu bir kullanıcı projesidir. İncelemek için tıklayın.' : '')}</div>
-          <div class="card-meta">
-            <span>👤 ${item.author}</span>
-            <span>📅 ${item.date}</span>
-            <span>👁️ ${(item.views || 0).toLocaleString('tr-TR')}</span>
-          </div>
-          <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--accent-blue); font-weight:600;">${isProj ? '🎮 Hemen İzle/Oyna →' : '📚 Devamını oku →'}</div>
-        </div>
-      </a>
-    `;
-                    }).join('');
-                }
-            }
-
-            // Forum list
-            const forumEl = document.getElementById('homeForumList');
-            if (forumEl) {
-                const topPosts = forumPosts.slice(0, 6);
-                if (topPosts.length === 0) {
-                    forumEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><h3>Henüz konu yok</h3><p>İlk forum konusunu siz başlatın!</p></div>';
-                } else {
-                    forumEl.innerHTML = topPosts.map(p => `
-      <a href="forum-detay.html?id=${p.id}" class="forum-topic" style="text-decoration:none; display:flex;">
-        <div class="forum-avatar">${p.authorInit || (p.author || '?')[0].toUpperCase()}</div>
-        <div class="forum-content">
-          <div class="forum-title">${p.pinned ? '📌 ' : ''}${p.title}</div>
-          <div class="forum-meta">@${p.author} · ${p.date}</div>
-        </div>
-        <div class="forum-stats">
-          <div class="forum-stat">
-            <div class="forum-stat-num">${p.replies || 0}</div>
-            <div class="forum-stat-label">Yanıt</div>
-          </div>
-          <div class="forum-stat">
-            <div class="forum-stat-num">${(p.views || 0).toLocaleString('tr-TR')}</div>
-            <div class="forum-stat-label">Görüntü</div>
-          </div>
-        </div>
-      </a>
-    `).join('');
-                }
-            }
-        }
-
-        let renderTimer;
-        function debouncedRender() {
-            clearTimeout(renderTimer);
-            renderTimer = setTimeout(() => {
-                renderHome();
-                if (typeof renderDailySnippet === 'function') renderDailySnippet();
-            }, 50);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            debouncedRender();
-        });
-
-        document.addEventListener('dbUpdated', (e) => {
-            const key = e.detail && e.detail.key;
-            // Only re-render if it's one of the keys shown on homepage, or if it's global update
-            if (!key || key === 'articles' || key === 'forum_posts' || key === 'users' || key === 'settings' || key === 'user_projects') {
-                debouncedRender();
-            }
-        });
-    </script>
     <script src="js/matrix.js" defer></script>
     <script src="js/firebase.js" defer></script>
     <script src="js/main.js" defer></script>
+    <script src="js/home.js" defer></script>
     <script src="js/ai-assistant.js" defer></script>
     <!-- TIP MODAL -->
     <div class="tip-modal-overlay" id="dailyTipModal">

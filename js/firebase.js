@@ -36,6 +36,14 @@ FirebaseDB = {
             'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js'
         ];
 
+        // TIMEOUT: If Firebase SDK doesn't load in 15 seconds, give up gracefully
+        const loadTimeout = setTimeout(() => {
+            if (!this._ready) {
+                console.warn('[Firebase] SDK load timeout after 15s');
+                this._triggerConnectionEvent('error', 'SDK yükleme zaman aşımı (15s)');
+            }
+        }, 15000);
+
         let index = 0;
         const loadNext = () => {
             if (index < scripts.length) {
@@ -47,11 +55,13 @@ FirebaseDB = {
                 };
                 s.onerror = (err) => {
                     console.warn('[Firebase] Could not load SDK from', scripts[index]);
+                    clearTimeout(loadTimeout);
                     this._triggerConnectionEvent('error', `SDK yüklenemedi: ${scripts[index]}`);
                 };
                 document.head.appendChild(s);
             } else {
                 // All scripts loaded
+                clearTimeout(loadTimeout);
                 this._initialize();
             }
         };
@@ -78,10 +88,17 @@ FirebaseDB = {
         }
     },
 
-    // Run callback when Firebase is ready
+    // Run callback when Firebase is ready (limit queue to prevent memory leak)
     onReady(cb) {
-        if (this._ready) cb();
-        else this._readyCallbacks.push(cb);
+        if (this._ready) {
+            try { cb(); } catch (e) { console.error('[Firebase] onReady callback error:', e); }
+        } else {
+            if (this._readyCallbacks.length < 50) {
+                this._readyCallbacks.push(cb);
+            } else {
+                console.warn('[Firebase] onReady queue full, dropping callback');
+            }
+        }
     },
 
     // Write a full document to a collection
@@ -150,8 +167,11 @@ FirebaseDB = {
             .onSnapshot(doc => {
                 if (doc.exists) callback(doc.data());
             }, err => {
-                console.warn('[Firebase] Listener error:', err);
-                this._triggerConnectionEvent('error', `Dinleme hatası: ${err.message}`);
+                console.warn('[Firebase] Listener error for', key, ':', err.message || err);
+                // Don't trigger full error state for listener disconnects (these auto-reconnect)
+                if (err.code !== 'unavailable') {
+                    this._triggerConnectionEvent('error', `Dinleme hatası: ${err.message}`);
+                }
             });
     },
 

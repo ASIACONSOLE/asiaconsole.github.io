@@ -312,10 +312,13 @@ const MediaDB = {
 const DB = {
     _unwrapData(val) {
         let v = val;
-        // 1. Traverse any deep { data: ... } wrappers
-        while (v && typeof v === 'object' && !Array.isArray(v) && 'data' in v && v.data !== undefined) {
+        // 1. Traverse any deep { data: ... } wrappers (MAX 10 depth to prevent infinite loop)
+        let depth = 0;
+        while (v && typeof v === 'object' && !Array.isArray(v) && 'data' in v && v.data !== undefined && depth < 10) {
             v = v.data;
+            depth++;
         }
+        if (depth >= 10) console.warn('[DB] _unwrapData hit depth limit — possible circular reference');
         // 2. Recover Firebase sparse arrays (Objects where all keys are just numbers like '0', '1', '2')
         if (v && typeof v === 'object' && !Array.isArray(v)) {
             const keys = Object.keys(v);
@@ -356,8 +359,14 @@ const DB = {
             } catch (e) { console.warn(`[DB] Pre-load failed for ${key}`); }
         }
         console.log('[DB] Large keys pre-loaded from IDB ✓');
-        // Trigger UI update once pre-load is done
-        document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { all: true } }));
+        // Trigger UI update ONLY after DOM is ready to prevent race condition
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { all: true } }));
+            }, { once: true });
+        } else {
+            document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { all: true } }));
+        }
     },
     // NEW: Async getter for large values
     async getAsync(key) {
@@ -374,10 +383,12 @@ const DB = {
     },
     _cache: {},
     set(key, val, syncToCloud = true) {
-        // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped
+        // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped (MAX 10 depth)
         let cleanVal = val;
-        while (cleanVal && typeof cleanVal === 'object' && 'data' in cleanVal && cleanVal.data !== undefined) {
+        let unwrapDepth = 0;
+        while (cleanVal && typeof cleanVal === 'object' && 'data' in cleanVal && cleanVal.data !== undefined && unwrapDepth < 10) {
             cleanVal = cleanVal.data;
+            unwrapDepth++;
         }
 
         // 1. Always update memory cache for instant sync access
@@ -417,7 +428,7 @@ const DB = {
         // Dispatch local event for instant UI update
         document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key, data: cleanVal } }));
 
-        // Sync to Firebase Cloud if initialized AND requested
+        // Sync to Firebase Cloud if initialized AND requested (with DEBOUNCE to save quota)
         if (syncToCloud && typeof FirebaseDB !== 'undefined') {
             // GUARD: Never sync seed/default articles to cloud (IDs 1-8 only)
             if (key === 'articles' && Array.isArray(cleanVal) && cleanVal.length <= 8) {
@@ -428,7 +439,11 @@ const DB = {
                 }
             }
 
-            FirebaseDB.onReady(() => {
+            this._cloudSyncTimers = this._cloudSyncTimers || {};
+            clearTimeout(this._cloudSyncTimers[key]);
+            
+            this._cloudSyncTimers[key] = setTimeout(() => {
+                FirebaseDB.onReady(() => {
                 try {
                     // Final POJO cleaning
                     const finalData = JSON.parse(JSON.stringify(cleanVal));
@@ -668,6 +683,7 @@ const DB = {
 
 // ---- SETTINGS ----
 function applySettings() {
+    try {
     const s = DB.get('settings');
     if (!s) return;
     document.querySelectorAll('.site-name').forEach(el => el.textContent = s.siteName);
@@ -906,6 +922,7 @@ function applySettings() {
         if (text.includes('oyun')) el.innerHTML = `${s.iconOyun || '🎮'} Oyun`;
         if (text.includes('uygulama')) el.innerHTML = `${s.iconUygulama || '📱'} Uygulama`;
     });
+    } catch (e) { console.error('[applySettings] Error:', e); }
 }
 
 // ---- DYNAMIC NAVBAR ITEMS ----
@@ -939,6 +956,7 @@ function renderDynamicNav() {
 
 // ---- HERO PROJECTS SHOWCASE ----
 function renderHeroProjects() {
+    try {
     const grid = document.getElementById('heroProjectGrid');
     if (!grid) return;
 
@@ -978,6 +996,7 @@ function _renderHeroPlaceholders(grid) {
         <div class="hero-card-mini"><div class="mini-icon">📱</div><div class="mini-title">Uygulama</div></div>
         <div class="hero-card-mini"><div class="mini-icon">💬</div><div class="mini-title">Forum</div></div>
     `;
+    } catch (e) { console.error('[renderHeroProjects] Error:', e); }
 }
 
 // Refresh hero projects only on data updates
@@ -1284,9 +1303,11 @@ const Comments = {
     },
     getAll() {
         let data = DB.get('article_comments') || [];
-        // Triple-Guard unwrap
-        while (data && typeof data === 'object' && 'data' in data && data.data !== undefined) {
+        // Triple-Guard unwrap (MAX 10 depth)
+        let d = 0;
+        while (data && typeof data === 'object' && 'data' in data && data.data !== undefined && d < 10) {
             data = data.data;
+            d++;
         }
         return Array.isArray(data) ? data : [];
     },
@@ -1342,14 +1363,30 @@ if (typeof FirebaseDB !== 'undefined') {
             'pending_articles', 'bot_queue', 'bot_drafts'
         ];
 
+        // Debounce timer for Firebase listener updates to prevent rapid re-renders
+        const _fbDebounceTimers = {};
+
         syncKeys.forEach(key => {
             FirebaseDB.listen('site_data', key, (remote) => {
                 if (!remote) return;
 
-                // RECURSIVE UNWRAP: Clean any accidental nesting from old bugs
+                // Debounce: Prevent rapid consecutive updates for the same key
+                clearTimeout(_fbDebounceTimers[key]);
+                _fbDebounceTimers[key] = setTimeout(() => {
+                    _processFirebaseUpdate(key, remote);
+                }, key === 'settings' ? 200 : 100);
+            });
+        });
+
+        // Extracted handler for Firebase updates (debounced)
+        function _processFirebaseUpdate(key, remote) {
+            try {
+                // RECURSIVE UNWRAP: Clean any accidental nesting from old bugs (MAX 10 depth)
                 let remoteData = remote;
-                while (remoteData && typeof remoteData === 'object' && 'data' in remoteData && remoteData.data !== undefined) {
+                let uwDepth = 0;
+                while (remoteData && typeof remoteData === 'object' && 'data' in remoteData && remoteData.data !== undefined && uwDepth < 10) {
                     remoteData = remoteData.data;
+                    uwDepth++;
                 }
 
                 if (remoteData === undefined || remoteData === null) return;
@@ -1401,10 +1438,12 @@ if (typeof FirebaseDB !== 'undefined') {
                     }
                 }
 
-                // Clean any accidental nesting in remoteData before comparison
+                // Clean any accidental nesting in remoteData before comparison (MAX 10 depth)
                 let cleanRemote = remoteData;
-                while (cleanRemote && typeof cleanRemote === 'object' && 'data' in cleanRemote && cleanRemote.data !== undefined) {
+                let crDepth = 0;
+                while (cleanRemote && typeof cleanRemote === 'object' && 'data' in cleanRemote && cleanRemote.data !== undefined && crDepth < 10) {
                     cleanRemote = cleanRemote.data;
+                    crDepth++;
                 }
 
                 const currentLocalData = DB.get(key);
@@ -1429,8 +1468,10 @@ if (typeof FirebaseDB !== 'undefined') {
 
                     // Dispatch event is already handled by DB.set()
                 }
-            });
-        });
+            } catch (e) {
+                console.error(`[Firebase] Error processing update for '${key}':`, e);
+            }
+        }
 
         // Detect connectivity status for UI
         function updateBadge(status, message) {
@@ -1460,8 +1501,12 @@ if (typeof FirebaseDB !== 'undefined') {
 
 // AUTO-START: Pre-load IndexedDB data (DOM ready will handle DB.init)
 (async function () {
-    if (typeof DB !== 'undefined') {
-        await DB.preLoadLargeKeys();
-        // DB.init() is safely called inside DOMContentLoaded listener
+    try {
+        if (typeof DB !== 'undefined') {
+            await DB.preLoadLargeKeys();
+            // DB.init() is safely called inside DOMContentLoaded listener
+        }
+    } catch (e) {
+        console.error('[DB] Pre-load startup error:', e);
     }
 })();

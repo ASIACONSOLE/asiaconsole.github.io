@@ -356,15 +356,19 @@
         let topicImages = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            let posts = (DB.get('forum_posts') || []).filter(p => p.status === 'approved' || !p.status);
+            try {
+            let posts = (DB.get('forum_posts') || []).filter(p => p && p.title && (p.status === 'approved' || !p.status));
             const listEl = document.getElementById('forumList');
 
             // Quick stats
             const totalReplies = posts.reduce((a, p) => a + (p.replies || 0), 0);
             const totalViews = posts.reduce((a, p) => a + (p.views || 0), 0);
-            document.getElementById('statTopics').textContent = posts.length.toLocaleString('tr-TR');
-            document.getElementById('statReplies').textContent = totalReplies.toLocaleString('tr-TR');
-            document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
+            const stTopicsEl = document.getElementById('statTopics');
+            const stRepliesEl = document.getElementById('statReplies');
+            const stViewsEl = document.getElementById('statViews');
+            if (stTopicsEl) stTopicsEl.textContent = posts.length.toLocaleString('tr-TR');
+            if (stRepliesEl) stRepliesEl.textContent = totalReplies.toLocaleString('tr-TR');
+            if (stViewsEl) stViewsEl.textContent = totalViews.toLocaleString('tr-TR');
 
             function getSorted(list) {
                 const l = [...list];
@@ -555,6 +559,7 @@
                 renderTopicThumbs();
                 showToast('⏳ Konunuz admin onayına gönderildi!', 'success');
             });
+            } catch (e) { console.error('[Forum Init] Error:', e); }
         });
     </script>
 </body>

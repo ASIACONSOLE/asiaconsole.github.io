@@ -829,14 +829,20 @@ window.BotEngine = (function () {
                 if (finalHtml.startsWith("```")) finalHtml = finalHtml.substring(3);
                 if (finalHtml.endsWith("```")) finalHtml = finalHtml.slice(0, -3);
 
-                // AI Category Detection
+                // AI Category Detection (Robust)
                 let detectedCategory = category;
-                const catMatch = finalHtml.match(/\[KATEGORİ:\s*(\w+)\]/i);
+                const catMatch = finalHtml.match(/\[KATEGORİ:\s*([^\]]+)\]/i);
                 if (catMatch) {
-                    detectedCategory = catMatch[1].toLowerCase();
+                    const rawCat = catMatch[1].toLowerCase().trim();
+                    if (rawCat.includes('oyun')) detectedCategory = 'oyun';
+                    else if (rawCat.includes('teknoloji')) detectedCategory = 'teknoloji';
+                    else if (rawCat.includes('uygulama') || rawCat.includes('mobil') || rawCat.includes('yazılım')) detectedCategory = 'uygulama';
+                    
                     // Clean marker from HTML
-                    finalHtml = finalHtml.replace(/\[KATEGORİ:\s*\w+\]/i, '').trim();
-                    logTerminal(`🏷️ AI Kategorisi Tespit Edildi: ${detectedCategory}`, 'info');
+                    finalHtml = finalHtml.replace(/\[KATEGORİ:[^\]]+\]/i, '').trim();
+                    logTerminal(`🏷️ AI Kategorisi Tespit Edildi: ${detectedCategory.toUpperCase()}`, 'info');
+                } else {
+                    logTerminal(`⚠️ AI kategori etiketi bulamadı, varsayılan kullanılıyor: ${category}`, 'warning');
                 }
 
                 publishArticle(finalHtml, articleData, detectedCategory);

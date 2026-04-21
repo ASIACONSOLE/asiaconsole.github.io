@@ -495,7 +495,7 @@ YAZIM KURALLARI:
 2. Sadece yazının gövde HTML'ini ver (<html>, <body>, <head> gibi kapsayıcı etiketler KULLANMA).
 3. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul>/<li> kullan.
 4. ÖNEMLİ (MEDYA): Sana bir medya listesi verilecek. Yazı içine bu medyaları yerleştirmek için SADECE [RESiM-1], [ViDEO-1] gibi yer tutucuları kullan. Her habere mutlaka en az 2-3 adet [RESiM-X] yer tutucusu yerleştir.
-5. ÖNEMLİ (KATEGORİ): Haberin içeriğini analiz et ve en uygun kategoriyi belirle. Yazının EN BAŞINA şu formatta ekle: [KATEGORİ: teknoloji] veya [KATEGORİ: oyun] veya [KATEGORİ: uygulama].
+5. ÖNEMLİ (KATEGORİ): Haberin içeriğini analiz et ve SADECE şu üç seçenekten birini seç: "teknoloji", "oyun", "uygulama". Seçtiğin kategoriyi yazının EN BAŞINA şu formatta ekle: [KATEGORİ: teknoloji] veya [KATEGORİ: oyun] veya [KATEGORİ: uygulama]. Bu etiket mutlaka en üstte olmalıdır.
 6. <img> veya <iframe> etiketlerini ASLA kendin yazma. Sadece köşeli parantez içindeki yer tutucuları paragrafların hemen altına yerleştir.
 7. Haberin içindeki önemli kaynak bağlantılarını (<a> etiketlerini) mutlaka yazı içinde uygun yerlerde koru.
 

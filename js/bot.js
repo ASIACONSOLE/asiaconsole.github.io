@@ -62,6 +62,13 @@ window.BotEngine = (function () {
         terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
     }
 
+    function decodeHTML(html) {
+        if (!html) return '';
+        const txt = document.createElement('textarea');
+        txt.innerHTML = html;
+        return txt.value;
+    }
+
     // ==================== HELPERS: MEDIA FILTERING & EXTRACTION ====================
 
     // Helper: Extract the best possible image URL from an <img> element
@@ -303,7 +310,7 @@ window.BotEngine = (function () {
                 const videos = extractVideos(parser);
 
                 return {
-                    title: (post.title?.rendered || '').replace(/<[^>]*>/g, ''),
+                    title: decodeHTML((post.title?.rendered || '').replace(/<[^>]*>/g, '')),
                     content: post.content?.rendered || '', // Pass HTML to AI for better context
                     contentHtml: post.content?.rendered || '',
                     url: post.link,
@@ -354,7 +361,7 @@ window.BotEngine = (function () {
                         const videos = extractVideos(extractor);
 
                         return {
-                            title: item.title,
+                            title: decodeHTML(item.title),
                             content: htmlContent, // Pass HTML for links
                             url: item.link,
                             image: item.thumbnail || item.enclosure?.link || imgs[0] || '',

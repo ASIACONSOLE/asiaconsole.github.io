@@ -1384,8 +1384,14 @@ const Comments = {
     // SECURITY: Helper to escape HTML characters
     escapeHTML(str) {
         if (!str) return "";
+        // First, decode any existing entities safely using a textarea
+        const txt = document.createElement("textarea");
+        txt.innerHTML = str;
+        const decoded = txt.value;
+        
+        // Then, escape properly to prevent XSS using textContent
         const div = document.createElement('div');
-        div.textContent = str;
+        div.textContent = decoded;
         return div.innerHTML;
     },
     getAll() {

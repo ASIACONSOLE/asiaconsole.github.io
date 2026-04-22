@@ -848,8 +848,18 @@ window.BotEngine = (function () {
                     // Clean marker from HTML
                     finalHtml = finalHtml.replace(/\[KATEGORİ:[^\]]+\]/i, '').trim();
                     logTerminal(`🏷️ AI Kategorisi Tespit Edildi: ${detectedCategory.toUpperCase()}`, 'info');
-                } else {
-                    logTerminal(`⚠️ AI kategori etiketi bulamadı, varsayılan kullanılıyor: ${category}`, 'warning');
+                }
+
+                // KEYWORD OVERRIDE: Ensure apps/social media don't get stuck in 'teknoloji'
+                const appKeywords = ['whatsapp', 'instagram', 'twitter', 'tiktok', 'facebook', 'uygulama', 'mobil uygulama', 'yazılım', 'güncelleme', 'ios', 'android'];
+                const lowTitle = articleData.title.toLowerCase();
+                const isXNews = lowTitle.includes(' x ') || lowTitle.startsWith('x ') || lowTitle.includes(' x\'');
+                
+                if (detectedCategory === 'teknoloji') {
+                    if (appKeywords.some(kw => lowTitle.includes(kw)) || isXNews) {
+                        detectedCategory = 'uygulama';
+                        logTerminal(`🏷️ Kategori Düzeltildi (Keyword): UYGULAMA`, 'info');
+                    }
                 }
 
                 publishArticle(finalHtml, articleData, detectedCategory);

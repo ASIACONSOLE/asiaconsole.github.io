@@ -549,7 +549,7 @@
             return article.body || sections.join('\n');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function initPage() {
             const params = new URLSearchParams(window.location.search);
             const id = Number(params.get('id'));
             if (!id) { document.getElementById('notFoundSection').style.display = 'block'; return; }
@@ -719,6 +719,24 @@
                     renderComments();
                 }
             });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Priority: Wait for DB to be ready
+            document.addEventListener('dbReady', initPage);
+
+            // Fallback: If DB is already ready
+            if (window.DB && window.DB._isInitialized) {
+                initPage();
+            }
+            
+            // Safety timeout: If nothing happens in 3s, try anyway
+            setTimeout(() => {
+                if (document.getElementById('articleContent').style.display === 'none' && 
+                    document.getElementById('notFoundSection').style.display === 'none') {
+                    initPage();
+                }
+            }, 3000);
         });
     </script>
 </body>

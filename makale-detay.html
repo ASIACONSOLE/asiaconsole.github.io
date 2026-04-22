@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -555,7 +555,8 @@
             if (!id) { document.getElementById('notFoundSection').style.display = 'block'; return; }
 
             const articles = DB.get('articles') || [];
-            const article = articles.find(a => a.id === id);
+            // Robust search with type coercion (handles string/number mismatch from Firebase)
+            const article = articles.find(a => String(a.id) === String(id));
 
             if (!article) {
                 document.getElementById('notFoundSection').style.display = 'block';

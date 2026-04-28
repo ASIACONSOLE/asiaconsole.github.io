@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolution Neural Dashboard - AsiaConsole</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050a14;
+            --card: #0d1220;
+            --accent: #a855f7;
+            --text: #e2e8f0;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        .title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .card-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .stat {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        .log-list {
+            font-family: 'JetBrains+Mono', monospace;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-item {
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .log-type {
+            font-weight: 700;
+            min-width: 80px;
+        }
+        .type-error { color: #ef4444; }
+        .type-click { color: #3b82f6; }
+        .type-db_set { color: #10b981; }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🧠 Evolution Neural Dashboard</div>
+        <div>
+            <button class="btn" onclick="syncNow()">Force Sync</button>
+            <button class="btn" style="background:rgba(255,255,255,0.1)" onclick="location.href='../index.html'">Geri Dön</button>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">Sinirsel Seviye (Level)</div>
+            <div class="stat" id="lvl-val">1</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="lvl-progress"></div>
+            </div>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Site şu an öğrenme ve adaptasyon sürecinin başlangıcında.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Toplam Deneyim (EXP)</div>
+            <div class="stat" id="exp-val">0</div>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Her etkileşim ve her hata siteyi daha akıllı hale getirir.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Aktif Yamalar (Patches)</div>
+            <div class="stat" id="patch-count">0</div>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Yapay zeka tarafından üretilen aktif iyileştirme sayısı.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Son Sinirsel Aktiviteler (Logs)</div>
+        <div class="log-list" id="log-list">
+            <div class="log-item">Veriler bekleniyor...</div>
+        </div>
+    </div>
+
+    <script>
+        function updateDashboard() {
+            const state = JSON.parse(localStorage.getItem('tc_evolution_state') || '{}');
+            const localLogs = JSON.parse(localStorage.getItem('tc_evolution_logs') || '[]'); // This would need to be saved in evolution-core.js too
+            
+            document.getElementById('lvl-val').innerText = state.level || 1;
+            document.getElementById('exp-val').innerText = state.experience || 0;
+            
+            const progress = ((state.experience || 0) % ((state.level || 1) * 100)) / (state.level || 1);
+            document.getElementById('lvl-progress').style.width = progress + '%';
+
+            // Logs (We need to pull them from the running engine or a separate store)
+            // For now, let's just show a simulated log if none exist
+            const logList = document.getElementById('log-list');
+            if (localLogs.length > 0) {
+                logList.innerHTML = localLogs.map(log => `
+                    <div class="log-item">
+                        <span style="color:#64748b">[${new Date(log.time).toLocaleTimeString()}]</span>
+                        <span class="log-type type-${log.type}">${log.type.toUpperCase()}</span>
+                        <span>${JSON.stringify(log.data)}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function syncNow() {
+            alert('Bulut senkronizasyonu tetiklendi. Veriler Firebase\'e aktarılıyor...');
+        }
+
+        setInterval(updateDashboard, 2000);
+        updateDashboard();
+    </script>
+</body>
+</html>

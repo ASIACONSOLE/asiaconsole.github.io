@@ -394,6 +394,11 @@ var DB = {
         // 1. Always update memory cache for instant sync access
         this._cache[key] = cleanVal;
 
+        // Evolution Engine Hook
+        if (typeof EvolutionEngine !== 'undefined') {
+            EvolutionEngine.logEvent('db_set', { key });
+        }
+
         // 2. Prepare data for storage check
         const newVal = JSON.stringify(cleanVal);
         const oldVal = localStorage.getItem('tc_' + key);

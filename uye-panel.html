@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -428,7 +428,7 @@
             if (sBtn) sBtn.style.display = 'block';
         }
 
-        function fpSave() {
+        async function fpSave() {
             const msg = document.getElementById('fpMsg');
             const p1El = document.getElementById('fpNewPass');
             const p2El = document.getElementById('fpNewPass2');
@@ -441,7 +441,8 @@
             const users = DB.get('users') || [];
             const idx = users.findIndex(u => u.id === _fpUser.id);
             if (idx !== -1) {
-                users[idx].password = p1;
+                const hashed = await hashPassword(p1);
+                users[idx].password = hashed;
                 DB.set('users', users);
                 msg.textContent = '✅ Şifreniz güncellendi! Şimdi giriş yapabilirsiniz.';
                 msg.style.color = '#10b981';
@@ -467,12 +468,12 @@
                 return;
             }
 
-            document.getElementById('loginBtn').addEventListener('click', () => {
+            document.getElementById('loginBtn').addEventListener('click', async () => {
                 const email = document.getElementById('loginEmail').value.trim();
                 const pass = document.getElementById('loginPassword').value;
                 const errEl = document.getElementById('loginError');
                 if (!email || !pass) { errEl.textContent = 'Lütfen tüm alanları doldurun.'; errEl.style.display = 'block'; return; }
-                if (Auth.login(email, pass)) {
+                if (await Auth.login(email, pass)) {
                     const me = Auth.currentUser();
                     location.replace('profil.html?user=' + encodeURIComponent(me.username));
                 } else {
@@ -481,7 +482,7 @@
                 }
             });
 
-            document.getElementById('registerBtn').addEventListener('click', () => {
+            document.getElementById('registerBtn').addEventListener('click', async () => {
                 const username = document.getElementById('regUsername').value.trim();
                 const email = document.getElementById('regEmail').value.trim();
                 const pass = document.getElementById('regPassword').value;
@@ -491,7 +492,7 @@
                 if (!username || !email || !pass) { errEl.textContent = 'Lütfen tüm alanları doldurun.'; errEl.style.display = 'block'; return; }
                 if (pass.length < 6) { errEl.textContent = 'Şifre en az 6 karakter olmalıdır.'; errEl.style.display = 'block'; return; }
                 if (!secQ || !secA) { errEl.textContent = 'Lütfen bir güvenlik sorusu ve cevabı belirleyin.'; errEl.style.display = 'block'; return; }
-                const result = Auth.register(username, email, pass);
+                const result = await Auth.register(username, email, pass);
                 if (result.ok) {
                     // Save security question to user record
                     const users = DB.get('users') || [];

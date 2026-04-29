@@ -8,8 +8,9 @@ const ADMIN_SESSION_KEY = 'tc_admin_session';
 const Admin = {
     login(user, pass) {
         const savedPass = localStorage.getItem('tc_admin_password');
-        // REVERT FIX: Default to requested password if no saved one yet
-        const targetPass = savedPass || '160515apO.008';
+        // SECURITY: No fallback password — must be set via admin panel
+        if (!savedPass) return false;
+        const targetPass = savedPass;
         const targetUser = 'ASIA';
 
         if (String(user || '').toUpperCase() === targetUser && pass === targetPass) {
@@ -119,12 +120,7 @@ function initLogout() {
 
 // ---- INIT ----
 document.addEventListener('DOMContentLoaded', () => {
-    // MIGRATION: Force update any old admin123 passwords to the new one
-    const saved = localStorage.getItem('tc_admin_password');
-    if (saved === 'admin123') {
-        localStorage.setItem('tc_admin_password', '160515apO.008');
-        console.log('[Admin Migration] Default password updated to 160515apO.008 ✓');
-    }
+    // Legacy migration removed for security
 
     // Check session on every admin page except login
     const isLoginPage = window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/admin/') || window.location.pathname.endsWith('/admin');

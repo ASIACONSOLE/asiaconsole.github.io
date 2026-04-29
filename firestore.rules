@@ -7,9 +7,8 @@ service cloud.firestore {
     //  AsiaConsole - Firestore Güvenlik Kuralları
     // ======================================================
     // 
-    // Bu kurallar tüm cihazlar arasında gerçek zamanlı 
-    // senkronizasyonu (makaleler, ayarlar, bot konfigürasyonu vb.)
-    // mümkün kılar.
+    // Okuma herkese açık (SEO ve ziyaretçiler için).
+    // Yazma sadece belirli koşullarda izinlidir.
     //
     // ======================================================
 
@@ -17,13 +16,15 @@ service cloud.firestore {
       // Okuma herkes için açık (SEO ve ziyaretçiler için)
       allow read: if true;
       
-      // Yazma izni (Senkronizasyon için açık)
-      // NOT: Daha yüksek güvenlik için Firebase Auth entegre edilip
-      // 'allow write: if request.auth != null;' şeklinde güncellenmelidir.
-      allow write: if true;
+      // SECURITY: Yazma izni — sadece boyut limiti ve temel doğrulama ile
+      // Firestore Auth entegrasyonu yapıldığında:
+      // allow write: if request.auth != null;
+      // Şimdilik: İstek boyutu sınırlandırması ile temel koruma
+      allow write: if request.resource.data.keys().size() < 50
+                   && request.resource.size() < 1048576;
     }
 
-    // Gelecekte eklenebilecek özel koleksiyonlar için koruma
+    // Diğer tüm koleksiyonlar tamamen kapalı
     match /{document=**} {
       allow read, write: if false;
     }

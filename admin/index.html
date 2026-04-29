@@ -68,16 +68,14 @@
             const errEl = document.getElementById('loginError');
 
             const savedPass = localStorage.getItem('tc_admin_password');
-            const targetPass = savedPass || '160515apO.008';
+            if (!savedPass) { document.getElementById('loginError').textContent = '⚠️ İlk kurulum: Admin paneli → Ayarlar bölümünden şifre belirleyin.'; document.getElementById('loginError').style.display = 'block'; return; }
+            const targetPass = savedPass;
             const targetUser = 'ASIA';
 
             if (String(user || '').toUpperCase() === targetUser && pass === targetPass) {
                 localStorage.setItem('tc_admin_session', JSON.stringify({ user: targetUser, time: Date.now() }));
 
-                // Initial password update check (legacy)
-                if (!savedPass) {
-                    localStorage.setItem('tc_admin_password', '160515apO.008');
-                }
+                // Session established successfully
 
                 window.location.href = 'dashboard.html';
             } else {

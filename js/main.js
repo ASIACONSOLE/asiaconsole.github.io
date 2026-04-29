@@ -1123,20 +1123,39 @@ function initHamburger() {
 }
 
 // ---- AUTH ----
+// SECURITY: SHA-256 hash helper for password storage
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + '_tc_salt_2026');
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 const Auth = {
     currentUser() { return DB.get('user_session'); },
-    login(emailOrUser, password) {
+    async login(emailOrUser, password) {
         const users = DB.get('users') || [];
         const loginInput = String(emailOrUser || '').toLowerCase();
-        const user = users.find(u =>
-            (String(u.email || '').toLowerCase() === loginInput ||
-                String(u.username || '').toLowerCase() === loginInput) &&
-            u.password === password &&
-            u.active
-        );
+        const hashedPass = await hashPassword(password);
+
+        const user = users.find(u => {
+            const emailMatch = String(u.email || '').toLowerCase() === loginInput;
+            const userMatch = String(u.username || '').toLowerCase() === loginInput;
+            if (!emailMatch && !userMatch) return false;
+            if (!u.active) return false;
+            // SECURITY: Support both hashed and legacy plaintext passwords
+            return u.password === hashedPass || u.password === password;
+        });
+
         if (user) {
+            // MIGRATION: If password was plaintext, upgrade to hash
+            if (user.password === password && user.password !== hashedPass) {
+                user.password = hashedPass;
+                DB.set('users', users);
+                console.log('[Auth] Password migrated to SHA-256 for:', user.username);
+            }
             DB.set('user_session', { id: user.id, username: user.username, email: user.email });
-            // Trigger cloud load to get synced data on new device
             DB.loadFromCloud().then(() => {
                 console.log('[Auth] Cloud data restored after login');
             });
@@ -1144,15 +1163,16 @@ const Auth = {
         }
         return false;
     },
-    register(username, email, password) {
+    async register(username, email, password) {
         const users = DB.get('users') || [];
         if (users.find(u => u.email === email)) return { ok: false, msg: 'Bu e-posta zaten kayıtlı.' };
         if (users.find(u => u.username === username)) return { ok: false, msg: 'Bu kullanıcı adı alınmış.' };
+        const hashedPass = await hashPassword(password);
         const newUser = {
             id: Date.now(),
             username,
             email,
-            password,
+            password: hashedPass,
             joined: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }),
             posts: 0,
             active: true,
@@ -1161,7 +1181,6 @@ const Auth = {
         users.push(newUser);
         DB.set('users', users);
         DB.set('user_session', { id: newUser.id, username, email });
-        // Initial cloud sync setup
         DB.loadFromCloud();
         return { ok: true };
     },

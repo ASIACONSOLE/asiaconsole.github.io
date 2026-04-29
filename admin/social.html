@@ -438,16 +438,27 @@
             btn.style.opacity = '0.5';
 
             try {
-                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL olabilecek, görsellerle uyumlu, dikkat çekici ve BOL EMOJİLİ bir paylaşım metni hazırla. 
+                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL olabilecek, bol emojili bir paylaşım metni hazırla. 
 
-                DİKKAT: Metnin sonuna mutlaka makale içeriğiyle alakalı (örneğin: #Teknoloji #Oyun #AI #Nvidia vb.) ve popüler olan EN AZ 5-6 ADET HASHTAG ekle. Sadece paylaşım metnini ver.
+                DİZİLİM ŞÖYLE OLMALI:
+                1. Haber metni (Giriş ve gelişme)
+                2. Boşluk bırak ve sadece [LINK] yazısı koy (Oraya link gelecek)
+                3. En sona içerikle alakalı 5-6 adet HASHTAG ekle.
+
+                Sadece paylaşım metnini ver.
 
                 Başlık: ${article.title}\nÖzet: ${article.desc}`;
                 
                 if (typeof AIAssistant !== 'undefined' && AIAssistant.ask) {
-                    const response = await AIAssistant.ask(prompt);
+                    let response = await AIAssistant.ask(prompt);
                     if (response) {
-                        // Linki buraya eklemiyoruz, paylaş butonunda otomatik eklenecek
+                        const articleUrl = `https://asiaconsole.com/makale-detay.html?id=${article.id}`;
+                        // AI'nın koyduğu [LINK] alanını gerçek linkle değiştir
+                        if (response.includes('[LINK]')) {
+                            response = response.replace('[LINK]', articleUrl);
+                        } else {
+                            response += "\n\n" + articleUrl;
+                        }
                         preview.textContent = response;
                     } else {
                         preview.textContent = "AI yanıt vermedi. Lütfen Site Ayarları sayfasından Gemini API anahtarınızı kontrol edin.";
@@ -509,7 +520,13 @@
             const select = document.getElementById('articleSelect');
             const id = select.value;
             const url = `https://asiaconsole.com/makale-detay.html?id=${id}`;
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+            
+            // Eğer metinde zaten link varsa sadece text'i gönder, yoksa url parametresini ekle
+            if (text.includes(url)) {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+            } else {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+            }
         }
     </script>
 </body>

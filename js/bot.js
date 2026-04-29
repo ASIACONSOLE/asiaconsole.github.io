@@ -69,6 +69,17 @@ window.BotEngine = (function () {
         return txt.value;
     }
 
+    // SECURITY FIX: Robust HTML tag stripping to prevent "Incomplete multi-character sanitization" (CodeQL js/missing-multi-character-sanitization)
+    function stripTags(html) {
+        if (!html) return '';
+        let previous;
+        do {
+            previous = html;
+            html = html.replace(/<[^>]*>/g, '');
+        } while (html !== previous);
+        return html;
+    }
+
     // ==================== HELPERS: MEDIA FILTERING & EXTRACTION ====================
 
     // Helper: Extract the best possible image URL from an <img> element
@@ -310,7 +321,7 @@ window.BotEngine = (function () {
                 const videos = extractVideos(parser);
 
                 return {
-                    title: decodeHTML((post.title?.rendered || '').replace(/<[^>]*>/g, '')),
+                    title: stripTags(decodeHTML(post.title?.rendered || '')),
                     content: post.content?.rendered || '', // Pass HTML to AI for better context
                     contentHtml: post.content?.rendered || '',
                     url: post.link,
@@ -361,7 +372,7 @@ window.BotEngine = (function () {
                         const videos = extractVideos(extractor);
 
                         return {
-                            title: decodeHTML(item.title),
+                            title: stripTags(decodeHTML(item.title)),
                             content: htmlContent, // Pass HTML for links
                             url: item.link,
                             image: item.thumbnail || item.enclosure?.link || imgs[0] || '',

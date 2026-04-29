@@ -443,7 +443,8 @@
                 if (typeof AIAssistant !== 'undefined' && AIAssistant.ask) {
                     const response = await AIAssistant.ask(prompt);
                     if (response) {
-                        preview.textContent = response + "\n\n🔗 https://asiaconsole.com/makale-detay.html?id=" + article.id;
+                        // Linki buraya eklemiyoruz, paylaş butonunda otomatik eklenecek
+                        preview.textContent = response;
                     } else {
                         preview.textContent = "AI yanıt vermedi. Lütfen Site Ayarları sayfasından Gemini API anahtarınızı kontrol edin.";
                     }

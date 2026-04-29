@@ -23,9 +23,7 @@
         <aside class="admin-sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">⚙️</div>
-                <div>
-                    <h1>AsiaConsole</h1><span>Admin Paneli</span>
-                </div>
+                <div><h1>AsiaConsole</h1><span>Admin Paneli</span></div>
             </div>
             <nav class="sidebar-nav">
                 <div class="sidebar-section-label">Ana Menü</div>
@@ -43,10 +41,7 @@
             <div class="sidebar-footer">
                 <div class="admin-user-info">
                     <div class="admin-avatar">A</div>
-                    <div>
-                        <div class="admin-user-name">Admin</div>
-                        <div class="admin-user-role">Süper Yönetici</div>
-                    </div>
+                    <div><div class="admin-user-name">Admin</div><div class="admin-user-role">Süper Yönetici</div></div>
                 </div>
                 <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
             </div>
@@ -67,7 +62,7 @@
 
             <div class="admin-content">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
-                    <!-- GENEL AYARLAR -->
+                    <!-- GENEL BILGILER -->
                     <div class="admin-card">
                         <div class="admin-card-header"><div class="admin-card-title">📍 Genel Bilgiler</div></div>
                         <div style="padding:1.5rem;">
@@ -101,22 +96,14 @@
                     <div class="admin-card">
                         <div class="admin-card-header"><div class="admin-card-title">✨ Tipografi & Marka</div></div>
                         <div style="padding:1.5rem;">
+                            <div class="form-group"><label>Site İsmi Fontu</label><select id="siteFont" style="width:100%; padding:0.75rem; background:var(--bg-glass); border:1px solid var(--border); color:white; border-radius:8px;"><option value="'Inter', sans-serif">Inter</option><option value="'Orbitron', sans-serif">Orbitron</option></select></div>
                             <div class="form-group">
-                                <label>Site İsmi Fontu</label>
-                                <select id="siteFont" style="width:100%; padding:0.75rem; background:var(--bg-glass); border:1px solid var(--border); color:white; border-radius:8px;">
-                                    <option value="'Inter', sans-serif">Inter (Modern)</option>
-                                    <option value="'Orbitron', sans-serif">Orbitron (Fütüristik)</option>
-                                    <option value="'Press Start 2P', cursive">Retro Pixel</option>
-                                </select>
+                                <label>Logo Boyutu</label>
+                                <div style="display:flex; align-items:center; gap:1rem;"><input type="range" id="logoSize" min="20" max="80" step="2" style="flex:1;"><span id="logoSizeVal">36px</span></div>
                             </div>
                             <div class="form-group">
-                                <label>Marka Animasyonu</label>
-                                <select id="brandAnim" style="width:100%; padding:0.75rem; background:var(--bg-glass); border:1px solid var(--border); color:white; border-radius:8px;">
-                                    <option value="none">Yok</option>
-                                    <option value="glow">Parlayan</option>
-                                    <option value="glitch">Digital Glitch</option>
-                                    <option value="neon">Neon Titreşim</option>
-                                </select>
+                                <label>Site İsmi Boyutu</label>
+                                <div style="display:flex; align-items:center; gap:1rem;"><input type="range" id="siteNameSize" min="1.0" max="3.0" step="0.1" style="flex:1;"><span id="siteNameSizeVal">1.4rem</span></div>
                             </div>
                         </div>
                     </div>
@@ -125,63 +112,80 @@
                     <div class="admin-card">
                         <div class="admin-card-header"><div class="admin-card-title">🤖 Yapay Zeka (AI) Havuzu</div></div>
                         <div style="padding:1.5rem;">
-                            <div class="form-group" style="display:flex; align-items:center; justify-content:space-between;">
-                                <label>AI Asistanını Etkinleştir</label>
-                                <label class="switch"><input type="checkbox" id="aiEnabled"><span class="slider round"></span></label>
-                            </div>
-                            <div class="form-group"><label>Gemini API Anahtarı</label><input type="password" id="geminiApiKey" placeholder="Google AI Key" style="font-family:monospace;"></div>
-                            
+                            <div class="form-group" style="display:flex; align-items:center; justify-content:space-between;"><label>AI Asistanını Etkinleştir</label><label class="switch"><input type="checkbox" id="aiEnabled"><span class="slider round"></span></label></div>
+                            <div class="form-group"><label>Gemini API Anahtarı</label><input type="password" id="geminiApiKey" placeholder="Google Key" style="font-family:monospace;"></div>
                             <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
-                                <label style="font-weight:700; color:#a855f7;">Groq API Havuzu (4 Anahtar)</label>
+                                <label style="font-weight:700; color:#a855f7;">Groq API Havuzu (4x)</label>
                                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-top:0.5rem;">
-                                    <input type="password" id="groqApiKey" placeholder="Anahtar 1" style="font-family:monospace;">
-                                    <input type="password" id="groqApiKey2" placeholder="Anahtar 2" style="font-family:monospace;">
-                                    <input type="password" id="groqApiKey3" placeholder="Anahtar 3" style="font-family:monospace;">
-                                    <input type="password" id="groqApiKey4" placeholder="Anahtar 4" style="font-family:monospace;">
+                                    <input type="password" id="groqApiKey" placeholder="Anahtar 1"><input type="password" id="groqApiKey2" placeholder="Anahtar 2"><input type="password" id="groqApiKey3" placeholder="Anahtar 3"><input type="password" id="groqApiKey4" placeholder="Anahtar 4">
                                 </div>
-                                <button type="button" class="btn-action" onclick="restoreLegacyKeys()" style="width:100%; margin-top:0.5rem; background:rgba(168,85,247,0.1); border:1px solid #a855f7; color:#a855f7; padding:0.5rem; border-radius:8px; cursor:pointer; font-weight:700;">🔑 ÖNCEKİ 4 ANAHTARI OTOMATİK GETİR</button>
+                                <button type="button" class="btn-action" onclick="restoreLegacyKeys()" style="width:100%; margin-top:0.5rem; background:rgba(168,85,247,0.1); border:1px solid #a855f7; color:#a855f7; padding:0.5rem; border-radius:8px; cursor:pointer;">🔑 ÖNCEKİ 4 ANAHTARI GETİR</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- SEO & ANALİTİK -->
+                    <!-- HERO & DÜZEN -->
+                    <div class="admin-card">
+                        <div class="admin-card-header"><div class="admin-card-title">🏠 Hero & Düzen</div></div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group"><label>Hero Banner Yüksekliği</label><input type="range" id="heroHeight" min="10" max="100" step="5" style="width:100%;"><div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>10vh</span><span id="heroHeightVal">100vh</span><span>100vh</span></div></div>
+                            <div class="form-group"><label>Navbar Stili</label><select id="navbarStyle" style="width:100%; padding:0.75rem; background:var(--bg-glass); border:1px solid var(--border); color:white; border-radius:8px;"><option value="blur">Blur (Cam)</option><option value="solid">Düz Siyah</option><option value="trans">Şeffaf</option></select></div>
+                        </div>
+                    </div>
+
+                    <!-- SEO & ANALITIK -->
                     <div class="admin-card">
                         <div class="admin-card-header"><div class="admin-card-title">📈 SEO & Analitik</div></div>
                         <div style="padding:1.5rem;">
-                            <div class="form-group"><label>Meta Açıklama</label><textarea id="metaDesc" rows="3" placeholder="Site açıklaması..."></textarea></div>
+                            <div class="form-group"><label>Meta Açıklama</label><textarea id="metaDesc" rows="3"></textarea></div>
                             <div class="form-group"><label>Google Analytics ID</label><input type="text" id="gaId" placeholder="G-XXXXXXXXXX"></div>
-                            <div class="form-group"><label>Anahtar Kelimeler</label><input type="text" id="metaKeywords" placeholder="teknoloji, oyun, uygulama"></div>
+                            <div class="form-group"><label>Anahtar Kelimeler</label><input type="text" id="metaKeywords" placeholder="teknoloji, oyun..."></div>
+                        </div>
+                    </div>
+
+                    <!-- SOSYAL MEDYA -->
+                    <div class="admin-card">
+                        <div class="admin-card-header"><div class="admin-card-title">🔗 Sosyal Medya</div></div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group"><label>Twitter URL</label><input type="url" id="socialTwitter"></div>
+                            <div class="form-group"><label>GitHub URL</label><input type="url" id="socialGithub"></div>
+                            <div class="form-group"><label>YouTube URL</label><input type="url" id="socialYoutube"></div>
+                            <div class="form-group"><label>Discord URL</label><input type="url" id="socialDiscord"></div>
                         </div>
                     </div>
 
                     <!-- BANNER YÖNETİMİ -->
                     <div class="admin-card">
-                        <div class="admin-card-header"><div class="admin-card-title">📢 Banner & Duyuru</div></div>
+                        <div class="admin-card-header"><div class="admin-card-title">📢 Banner Yönetimi</div></div>
                         <div style="padding:1.5rem;">
                             <div class="form-group"><label>Banner Başlığı</label><input type="text" id="bannerTitle"></div>
                             <div class="form-group"><label>Banner Alt Başlığı</label><input type="text" id="bannerSubtitle"></div>
-                            <div class="form-group" style="display:flex; align-items:center; justify-content:space-between;">
-                                <label>Duyuru Bandı (Ticker)</label>
-                                <label class="switch"><input type="checkbox" id="tickerEnabled"><span class="slider round"></span></label>
-                            </div>
-                            <div class="form-group"><label>Duyuru Metni</label><textarea id="tickerText" rows="2"></textarea></div>
+                            <div class="form-group"><label>Buton 1</label><input type="text" id="bannerBtn1"></div>
+                            <div class="form-group"><label>Buton 2</label><input type="text" id="bannerBtn2"></div>
                         </div>
                     </div>
 
+                </div>
+
+                <!-- ÜYELİK SEVİYELERİ -->
+                <div class="admin-card" style="margin-top:1.5rem;">
+                    <div class="admin-card-header" style="display:flex; justify-content:space-between; align-items:center;"><div class="admin-card-title">💎 Üyelik Seviyesi Yönetimi</div></div>
+                    <div style="padding:1.5rem;">
+                        <table class="admin-table">
+                            <thead><tr><th>İkon</th><th>Seviye Adı</th><th>Renk</th><th>İşlemler</th></tr></thead>
+                            <tbody id="tiersTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- TEHLİKELİ BÖLGE -->
                 <div class="admin-card" style="margin-top:1.5rem; border:1px solid rgba(239,68,68,0.3);">
                     <div class="admin-card-header" style="background:rgba(239,68,68,0.1);"><div class="admin-card-title" style="color:#ef4444;">⚠️ Tehlikeli Bölge</div></div>
                     <div style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:700;">Tüm Verileri Sıfırla</div>
-                            <div style="font-size:0.85rem; color:var(--text-secondary);">Tüm makaleler ve forum konuları kalıcı olarak silinir.</div>
-                        </div>
-                        <button class="btn-action btn-delete" id="resetAllBtn">🗑️ Her Şeyi Sıfırla</button>
+                        <div><div style="font-weight:700;">Her Şeyi Sıfırla</div><div style="font-size:0.85rem; color:var(--text-secondary);">Tüm veriler kalıcı olarak silinir.</div></div>
+                        <button class="btn-action btn-delete" id="resetAllBtn">🗑️ Sıfırla</button>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
@@ -200,8 +204,8 @@
                 document.getElementById('groqApiKey2').value = k2;
                 document.getElementById('groqApiKey3').value = k3;
                 document.getElementById('groqApiKey4').value = k4;
-                alert('🚀 4 Anahtar yüklendi! Kaydetmeyi unutmayın.');
-            } catch(e) { alert('Hata oluştu.'); }
+                alert('🚀 Anahtarlar yüklendi!');
+            } catch(e) { alert('Hata!'); }
         }
 
         function loadSettings() {
@@ -219,42 +223,46 @@
             document.getElementById('metaDesc').value = s.metaDesc || '';
             document.getElementById('gaId').value = s.gaId || '';
             document.getElementById('metaKeywords').value = s.metaKeywords || '';
+            document.getElementById('socialTwitter').value = s.socialTwitter || '';
+            document.getElementById('socialGithub').value = s.socialGithub || '';
+            document.getElementById('socialYoutube').value = s.socialYoutube || '';
+            document.getElementById('socialDiscord').value = s.socialDiscord || '';
             document.getElementById('bannerTitle').value = s.bannerTitle || '';
             document.getElementById('bannerSubtitle').value = s.bannerSubtitle || '';
-            document.getElementById('tickerEnabled').checked = !!s.tickerEnabled;
-            document.getElementById('tickerText').value = s.tickerText || '';
-            if(s.siteFont) document.getElementById('siteFont').value = s.siteFont;
-            if(s.brandAnim) document.getElementById('brandAnim').value = s.brandAnim;
+            document.getElementById('bannerBtn1').value = s.bannerBtn1 || '';
+            document.getElementById('bannerBtn2').value = s.bannerBtn2 || '';
         }
 
         async function saveSettings() {
             const btn = document.getElementById('saveAllBtn');
-            btn.textContent = '⏳ Kaydediliyor...';
+            btn.textContent = '⏳...';
             const settings = {
-                siteName: document.getElementById('siteName').value.trim(),
-                siteSlogan: document.getElementById('siteSlogan').value.trim(),
-                footerText: document.getElementById('footerText').value.trim(),
-                contactEmail: document.getElementById('contactEmail').value.trim(),
+                siteName: document.getElementById('siteName').value,
+                siteSlogan: document.getElementById('siteSlogan').value,
+                footerText: document.getElementById('footerText').value,
+                contactEmail: document.getElementById('contactEmail').value,
                 aiEnabled: document.getElementById('aiEnabled').checked,
-                geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
-                groqApiKey: document.getElementById('groqApiKey').value.trim(),
-                groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
-                groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
-                groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
-                metaDesc: document.getElementById('metaDesc').value.trim(),
-                gaId: document.getElementById('gaId').value.trim(),
-                metaKeywords: document.getElementById('metaKeywords').value.trim(),
-                bannerTitle: document.getElementById('bannerTitle').value.trim(),
-                bannerSubtitle: document.getElementById('bannerSubtitle').value.trim(),
-                tickerEnabled: document.getElementById('tickerEnabled').checked,
-                tickerText: document.getElementById('tickerText').value.trim(),
-                siteFont: document.getElementById('siteFont').value,
-                brandAnim: document.getElementById('brandAnim').value
+                geminiApiKey: document.getElementById('geminiApiKey').value,
+                groqApiKey: document.getElementById('groqApiKey').value,
+                groqApiKey2: document.getElementById('groqApiKey2').value,
+                groqApiKey3: document.getElementById('groqApiKey3').value,
+                groqApiKey4: document.getElementById('groqApiKey4').value,
+                metaDesc: document.getElementById('metaDesc').value,
+                gaId: document.getElementById('gaId').value,
+                metaKeywords: document.getElementById('metaKeywords').value,
+                socialTwitter: document.getElementById('socialTwitter').value,
+                socialGithub: document.getElementById('socialGithub').value,
+                socialYoutube: document.getElementById('socialYoutube').value,
+                socialDiscord: document.getElementById('socialDiscord').value,
+                bannerTitle: document.getElementById('bannerTitle').value,
+                bannerSubtitle: document.getElementById('bannerSubtitle').value,
+                bannerBtn1: document.getElementById('bannerBtn1').value,
+                bannerBtn2: document.getElementById('bannerBtn2').value
             };
             try {
                 await DB.set('tc_settings', settings);
-                alert('✅ Başarıyla kaydedildi!');
-            } catch(e) { alert('Hata: ' + e.message); }
+                alert('✅ Kaydedildi!');
+            } catch(e) { alert('Hata!'); }
             btn.textContent = '💾 Kaydet';
         }
 

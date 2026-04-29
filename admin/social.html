@@ -438,7 +438,11 @@
             btn.style.opacity = '0.5';
 
             try {
-                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL olabilecek, görsellerle uyumlu, dikkat çekici ve bol emojili bir paylaşım metni hazırla. Sadece paylaşım metnini ver.\n\nBaşlık: ${article.title}\nÖzet: ${article.desc}`;
+                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL olabilecek, görsellerle uyumlu, dikkat çekici ve BOL EMOJİLİ bir paylaşım metni hazırla. 
+
+                DİKKAT: Metnin sonuna mutlaka makale içeriğiyle alakalı (örneğin: #Teknoloji #Oyun #AI #Nvidia vb.) ve popüler olan EN AZ 5-6 ADET HASHTAG ekle. Sadece paylaşım metnini ver.
+
+                Başlık: ${article.title}\nÖzet: ${article.desc}`;
                 
                 if (typeof AIAssistant !== 'undefined' && AIAssistant.ask) {
                     const response = await AIAssistant.ask(prompt);

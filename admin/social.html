@@ -438,9 +438,12 @@
             btn.style.opacity = '0.5';
 
             try {
-                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL, bol emojili ve HASHTAGLİ bir paylaşım metni hazırla. 
+                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL, BOL EMOJİLİ ve HASHTAGLİ bir paylaşım metni hazırla. 
 
-                KURAL: Önce haberi yaz, sonra [LINK] yaz, en sona MUTLAKA en az 6-7 tane popüler hashtag ekle (#Teknoloji #Haber vb.). Hashtagleri asla unutma!
+                KURAL: 
+                - Haberin içeriğine göre her satıra ilgili ve CANLI emojiler ekle (Ateş, Roket, Robot vb.).
+                - Önce haberi yaz, sonra [LINK] yaz, en sona MUTLAKA en az 6-7 tane popüler hashtag ekle.
+                - Metin heyecan verici ve görsel olarak dolu görünsün.
 
                 Başlık: ${article.title}\nÖzet: ${article.desc}`;
                 

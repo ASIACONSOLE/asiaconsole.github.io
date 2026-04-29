@@ -1,1294 +1,204 @@
 <!DOCTYPE html>
 <html lang="tr">
-
 <head>
-    <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
-    <script>
-        (self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
-            basicSubscriptions.init({
-                type: "NewsArticle",
-                isPartOfType: ["Product"],
-                isPartOfProductId: "CAowocrFDA:openaccess",
-                clientOptions: { theme: "light", lang: "tr" },
-            });
-        });
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site AyarlarÂ± - AsiaConsole Admin</title>
+    <title>Site Ayarları - AsiaConsole Admin</title>
     <link rel="icon" href="../favicon.png" type="image/png">
     <link rel="stylesheet" href="../css/admin.css">
 </head>
-
 <body>
-
     <div class="admin-layout">
         <aside class="admin-sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo">¢Å¡â¢¯Â¸Â</div>
+                <div class="sidebar-logo">⚙️</div>
                 <div>
                     <h1>AsiaConsole</h1><span>Admin Panel</span>
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <div class="sidebar-section-label">Ana MenÂ¼</div>
-                <a href="dashboard.html" class="sidebar-link"><span class="icon">ÄÅ¸âÅ </span> Dashboard</a>
-                <a href="pages.html" class="sidebar-link"><span class="icon">ÄÅ¸ââ</span> Sayfa & Â°Â§erik</a>
-                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">ÄÅ¸âÂ¬</span> Forum Moderasyonu</a>
-                <a href="bot.html" class="sidebar-link"><span class="icon">ÄÅ¸Â¤â</span> Otonom Bot</a>
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
                 <a href="social.html" class="sidebar-link"><span class="icon">📱</span> Sosyal Medya</a>
-                <a href="users.html" class="sidebar-link"><span class="icon">ÄÅ¸âÂ¥</span> KullanÂ±cÂ±lar</a>
-                <a href="visitors.html" class="sidebar-link"><span class="icon">??</span> Ziyaret§i AnalitiÄi</a>
-                <div class="sidebar-section-label" style="margin-top:0.5rem;">YapÂ±landÂ±rma</div>
-                <a href="settings.html" class="sidebar-link active"><span class="icon">ÄÅ¸ÂÂ¨</span> Site AyarlarÂ±</a>
-                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">ÄÅ¸ÅÂ</span> Siteyi
-                    GÂ¶rÂ¼ntÂ¼le</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <a href="visitors.html" class="sidebar-link"><span class="icon">👁️</span> Ziyaretçi Analitiği</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link active"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="admin-user-info">
                     <div class="admin-avatar">A</div>
-                    <div>
-                        <div class="admin-user-name">Admin</div>
-                        <div class="admin-user-role">SÂ¼per YÂ¶netici</div>
-                    </div>
+                    <div><div class="admin-user-name">Admin</div><div class="admin-user-role">Süper Yönetici</div></div>
                 </div>
-                <button class="btn-logout" id="logoutBtn">ÄÅ¸Å¡Âª â¡Â±kÂ±Å¸ Yap</button>
+                <button class="btn-logout" id="logoutBtn">🚪 Çıkış Yap</button>
             </div>
         </aside>
 
         <main class="admin-main">
             <div class="admin-topbar">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="menu-toggle">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                    <div class="topbar-title">ÄÅ¸ÂÂ¨ Site AyarlarÂ±</div>
+                    <div class="menu-toggle"><span></span><span></span><span></span></div>
+                    <div class="topbar-title">🎨 Site Ayarları</div>
                 </div>
                 <div class="topbar-actions">
-                    <span id="cloudSyncStatus" style="margin-right:0.5rem;">¢âÅ BaÅ¸lanÂ±yor...</span>
-                    <button class="topbar-btn" id="saveAllBtn" style="white-space:nowrap;">ÄÅ¸âÂ¾ Kaydet</button>
-                    <a href="../index.html" target="_blank" class="topbar-btn secondary">ÄÅ¸ÅÂ ânizle</a>
+                    <span id="cloudSyncStatus" style="margin-right:0.5rem;">◌ Bağlanıyor...</span>
+                    <button class="topbar-btn" id="saveAllBtn">💾 Kaydet</button>
+                    <a href="../index.html" target="_blank" class="topbar-btn secondary">🌐 Önizle</a>
                 </div>
             </div>
 
             <div class="admin-content">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
 
-                    <!-- GENERAL SETTINGS -->
+                    <!-- GENEL BILGILER -->
                     <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸âÂ Genel Bilgiler</div>
-                        </div>
+                        <div class="admin-card-header"><div class="admin-card-title">📍 Genel Bilgiler</div></div>
                         <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Site AdÂ±</label>
-                                <input type="text" id="siteName" placeholder="AsiaConsole">
-                            </div>
-                            <div class="form-group">
-                                <label>Site SloganÂ±</label>
-                                <input type="text" id="siteSlogan" placeholder="Teknoloji, Oyun ve Uygulama...">
-                            </div>
-                            <div class="form-group">
-                                <label>Footer Metni</label>
-                                <input type="text" id="footerText" placeholder="Â© 2025 AsiaConsole...">
-                            </div>
-                            <div class="form-group">
-                                <label>Â°letiÅ¸im E-postasÂ±</label>
-                                <input type="email" id="contactEmail" placeholder="iletisim@asiaconsole.com">
-                            </div>
+                            <div class="form-group"><label>Site Adı</label><input type="text" id="siteName" placeholder="AsiaConsole"></div>
+                            <div class="form-group"><label>Site Sloganı</label><input type="text" id="siteSlogan" placeholder="Teknoloji, Oyun ve Uygulama..."></div>
+                            <div class="form-group"><label>Footer Metni</label><input type="text" id="footerText" placeholder="© 2025 AsiaConsole..."></div>
+                            <div class="form-group"><label>İletişim E-postası</label><input type="email" id="contactEmail" placeholder="iletisim@asiaconsole.com"></div>
                         </div>
                     </div>
 
-                    <!-- LOGO UPLOAD -->
+                    <!-- TEMA AYARLARI -->
                     <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸âÂ¼¯Â¸Â Site Logosu</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
-                                <div id="logoPreviewBox"
-                                    style="width:80px;height:80px;border-radius:12px;background:var(--bg-glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                                    <img id="logoPreviewImg" src="" alt="Logo"
-                                        style="width:100%;height:100%;object-fit:contain;display:none;">
-                                    <span id="logoPlaceholder" style="font-size:2rem;">ÄÅ¸ÅÂ</span>
-                                </div>
-                                <div style="flex:1;">
-                                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Site Logosu (PNG
-                                        / JPG / SVG)</div>
-                                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">
-                                        Maksimum boyut 5MB. Kare format Â¶nerilir.</div>
-                                    <label for="logoFileInput" class="logo-upload-label"
-                                        style="cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);border-radius:8px;font-size:0.85rem;color:#4f8ef7;font-weight:600;">ÄÅ¸âÂ
-                                        Logo SeÂ§</label>
-                                    <input type="file" id="logoFileInput" accept="image/*" style="display:none;">
-
-                                    <div style="margin-top:0.75rem;">
-                                        <label
-                                            style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem;">Veya
-                                            Logo URL (Bulut Senkronizasyonu)</label>
-                                        <input type="text" id="logoUrl" placeholder="https://..."
-                                            style="width:100%; padding:0.4rem 0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; font-size:0.8rem; color:white;">
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="logoRemoveRow" style="display:none;">
-                                <button class="btn-action btn-delete" id="logoRemoveBtn">ÄÅ¸ââ¯Â¸Â Logoyu KaldÂ±r</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TYPOGRAPHY & BRANDING -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">¢ÅÂ¯Â¸Â Tipografi & Marka</div>
-                        </div>
+                        <div class="admin-card-header"><div class="admin-card-title">🎨 Tema & Görünüm</div></div>
                         <div style="padding:1.5rem;">
                             <div class="form-group">
-                                <label>Site Â°smi Fontu</label>
-                                <select id="siteFont"
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
-                                    <option value="'Inter', sans-serif">Inter (Modern & Temiz)</option>
-                                    <option value="'Orbitron', sans-serif">Orbitron (FÂ¼tÂ¼ristik)</option>
-                                    <option value="'Playfair Display', serif">Playfair Display (Zarif)</option>
-                                    <option value="'Roboto', sans-serif">Roboto (Standart)</option>
-                                    <option value="'Press Start 2P', cursive">Retro Pixel (Oyun)</option>
-                                    <option value="'Michroma', sans-serif">Michroma (Teknolojik)</option>
+                                <label>Aktif Tema</label>
+                                <select id="activeTheme">
+                                    <option value="modern-dark">Modern Dark (Varsayılan)</option>
+                                    <option value="cyberpunk">Cyberpunk</option>
+                                    <option value="glass">Glassmorphism</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Marka Animasyonu (Site Â°smi)</label>
-                                <select id="brandAnim"
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
-                                    <option value="none">Yok</option>
-                                    <option value="glow">Glow (Parlayan)</option>
-                                    <option value="float">Float (YÂ¼zen)</option>
-                                    <option value="glitch">Glitch (Digital Bozulma)</option>
-                                    <option value="neon">Neon (TitreÅ¸en Tabela)</option>
-                                    <option value="typing">Typing (YazÂ± Yazma - Siyah/Beyaz)</option>
-                                    <option value="pulse">Pulse (NabÂ±z)</option>
-                                    <option value="shimmer">Shimmer (GÂ¼mÂ¼Å¸ ParÂ±ltÂ±)</option>
-                                    <option value="bounce">Bounce (ZÂ±plama)</option>
-                                    <option value="flip">Flip (3D DÂ¶nÂ¼Å¸)</option>
-                                    <option value="skew">Skew (EÅ¸ilme)</option>
-                                </select>
+                                <label>Ana Renk (Accent)</label>
+                                <input type="color" id="accentColor" value="#4f8ef7">
                             </div>
                             <div class="form-group">
-                                <label>Logo Boyutu</label>
-                                <div style="display:flex; align-items:center; gap:1rem;">
-                                    <input type="range" id="logoSize" min="20" max="80" step="2"
-                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
-                                    <span id="logoSizeVal"
-                                        style="font-weight:700; color:var(--accent-blue); width:50px;">36px</span>
+                                <label>Yazı Tipi (Google Fonts)</label>
+                                <input type="text" id="googleFont" placeholder="'Inter', sans-serif">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI AYARLARI -->
+                    <div class="admin-card">
+                        <div class="admin-card-header"><div class="admin-card-title">🤖 Yapay Zeka (AI) Havuzu</div></div>
+                        <div style="padding:1.5rem;">
+                            <div class="form-group" style="display:flex; align-items:center; justify-content:space-between;">
+                                <label style="margin-bottom:0;">AI Asistanını Etkinleştir</label>
+                                <label class="switch"><input type="checkbox" id="aiEnabled"><span class="slider round"></span></label>
+                            </div>
+                            <div class="form-group"><label>Gemini API Anahtarı</label><input type="password" id="geminiApiKey" placeholder="Google AI Studio Anahtarı" style="font-family:monospace;"></div>
+                            
+                            <div class="form-group" style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem;">
+                                <label style="font-weight:700; color:#a855f7;">Groq API Havuz Sistemi (4x Kota)</label>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-top:0.5rem;">
+                                    <input type="password" id="groqApiKey" placeholder="Anahtar 1" style="font-family:monospace; font-size:0.8rem;">
+                                    <input type="password" id="groqApiKey2" placeholder="Anahtar 2" style="font-family:monospace; font-size:0.8rem;">
+                                    <input type="password" id="groqApiKey3" placeholder="Anahtar 3" style="font-family:monospace; font-size:0.8rem;">
+                                    <input type="password" id="groqApiKey4" placeholder="Anahtar 4" style="font-family:monospace; font-size:0.8rem;">
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Site Â°smi Font Boyutu</label>
-                                <div style="display:flex; align-items:center; gap:1rem;">
-                                    <input type="range" id="siteNameSize" min="1.0" max="3.0" step="0.1"
-                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
-                                    <span id="siteNameSizeVal"
-                                        style="font-weight:700; color:var(--accent-blue); width:50px;">1.4rem</span>
-                                </div>
-                            </div>
-                            <!-- NEW: ANIMATION SPEED -->
-                            <div class="form-group">
-                                <label>Marka Animasyon HÂ±zÂ± (Saniye)</label>
-                                <div style="display:flex; align-items:center; gap:1rem;">
-                                    <input type="range" id="brandAnimSpeed" min="0.1" max="5.0" step="0.1"
-                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
-                                    <span id="brandAnimSpeedVal"
-                                        style="font-weight:700; color:var(--accent-blue); width:50px;">2.0s</span>
+                                <div style="margin-top:0.5rem;">
+                                    <button type="button" class="btn-action" onclick="restoreLegacyKeys()" style="width:100%; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); color:#a855f7; font-size:0.8rem; padding:0.5rem; font-weight:700; cursor:pointer;">🔑 ÖNCEKİ 4 ANAHTARI OTOMATİK GETİR</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- HERO & LAYOUT -->
+                    <!-- SEO AYARLARI -->
                     <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸ÂÂ¢ Hero & DÂ¼zen</div>
-                        </div>
+                        <div class="admin-card-header"><div class="admin-card-title">📈 SEO & Analitik</div></div>
                         <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Hero Banner YÂ¼ksekliÅ¸i</label>
-                                <input type="range" id="heroHeight" min="10" max="100" step="5"
-                                    style="width:100%; cursor:pointer; accent-color:var(--accent-blue);">
-                                <div
-                                    style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">
-                                    <span>Minimal (10vh)</span><span id="heroHeightVal">100vh</span><span>Tam
-                                        (100vh)</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Hero Arka Plan Resmi</label>
-                                <div style="display:flex; align-items:center; gap:1rem; margin-top:0.5rem;">
-                                    <div id="heroBgPreview"
-                                        style="width:100px; height:60px; border-radius:8px; background:var(--bg-glass); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                                        <img id="heroBgImg" src=""
-                                            style="width:100%; height:100%; object-fit:cover; display:none;">
-                                        <span id="heroBgPlaceholder">ÄÅ¸âÂ¼¯Â¸Â</span>
-                                    </div>
-                                    <div style="flex:1;">
-                                        <label for="heroBgInput" class="logo-upload-label"
-                                            style="cursor:pointer; padding:0.4rem 0.8rem; background:rgba(79,142,247,0.1); border:1px solid rgba(79,142,247,0.2); border-radius:6px; font-size:0.8rem;">Resim
-                                            YÂ¼kle</label>
-                                        <input type="file" id="heroBgInput" accept="image/*" style="display:none;">
-                                        <button id="removeHeroBg"
-                                            style="margin-left:0.5rem; background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; display:none;">KaldÂ±r</button>
-
-                                        <div style="margin-top:0.75rem;">
-                                            <label
-                                                style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:0.25rem;">Veya
-                                                Arka Plan URL (TÂ¼m PC'lerde GÂ¶rÂ¼nÂ¼r)</label>
-                                            <input type="text" id="heroBgUrl" placeholder="https://..."
-                                                style="width:100%; padding:0.4rem 0.75rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; font-size:0.80rem; color:white;">
-                                        </div>
-                                        <div style="margin-top:1rem;">
-                                            <label style="font-size:0.85rem;">Hero Arka Plan ÂeffaflÂ±Å¸Â±</label>
-                                            <div style="display:flex; align-items:center; gap:1rem;">
-                                                <input type="range" id="heroBgOpacity" min="0" max="1" step="0.05"
-                                                    style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
-                                                <span id="heroBgOpacityVal"
-                                                    style="font-weight:700; color:var(--accent-blue); width:50px;">30%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Hero BaÅ¸lÂ±k Boyutu</label>
-                                <div style="display:flex; align-items:center; gap:1rem;">
-                                    <input type="range" id="heroTitleSize" min="2.0" max="7.0" step="0.25"
-                                        style="flex:1; cursor:pointer; accent-color:var(--accent-blue);">
-                                    <span id="heroTitleSizeVal"
-                                        style="font-weight:700; color:var(--accent-blue); width:50px;">5.5rem</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Navbar Stili</label>
-                                <select id="navbarStyle"
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
-                                    <option value="blur">Blur (CamÄÂ¼ÄÂ¾â¬âÄÂ¸zm)</option>
-                                    <option value="solid">DÂ¼z Siyah</option>
-                                    <option value="trans">Âeffaf</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Navbar Animasyon Stili (Hover)</label>
-                                <select id="navbarAnimStyle"
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary);">
-                                    <option value="gloss">1. Default Gloss</option>
-                                    <option value="neon">2. Neon Pulse</option>
-                                    <option value="slide">3. Underline Slide</option>
-                                    <option value="float">4. Floating Lift</option>
-                                    <option value="border">5. Border Glow</option>
-                                    <option value="glitch">6. Text Glitch</option>
-                                    <option value="type">7. Typewriter Cursor</option>
-                                    <option value="skew">8. Skew Flip</option>
-                                    <option value="pulse">9. Background Pulse</option>
-                                    <option value="shimmer">10. Shimmer Wave</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CATEGORY ICONS -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸ÂÂ·¯Â¸Â Kategori Â°konlarÂ±</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Teknoloji SayfasÂ± Â°konu</label>
-                                <input type="text" id="iconTeknoloji" placeholder="ârn: ÄÅ¸âÂ» veya ÄÅ¸Â¤â">
-                            </div>
-                            <div class="form-group">
-                                <label>Oyun SayfasÂ± Â°konu</label>
-                                <input type="text" id="iconOyun" placeholder="ârn: ÄÅ¸ÂÂ® veya ÄÅ¸â¢Â¹¯Â¸Â">
-                            </div>
-                            <div class="form-group">
-                                <label>Uygulama SayfasÂ± Â°konu</label>
-                                <input type="text" id="iconUygulama" placeholder="ârn: ÄÅ¸âÂ± veya ÄÅ¸Â§Âª">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI ASSISTANT -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸Â¤â Yapay Zeka AsistanÂ±</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group"
-                                style="display:flex; align-items:center; justify-content:space-between;">
-                                <label style="margin-bottom:0;">AI AsistanÂ±nÂ± EtkinleÅ¸tir</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="aiEnabled">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label>Asistan AdÂ±</label>
-                                <input type="text" id="aiName" placeholder="ârn: AsiaBot">
-                            </div>
-                            <div class="form-group">
-                                <label>Â°lk KarÅ¸Â±lama MesajÂ±</label>
-                                <textarea id="aiGreeting" rows="2"
-                                    placeholder="ârn: Merhaba! Size nasÂ±l yardÂ±mcÂ± olabilirim?"></textarea>
-                            </div>
-                            <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
-                                <div
-                                    style="font-size:0.8rem; font-weight:700; color:var(--accent-blue); text-transform:uppercase; margin-bottom:0.75rem;">
-                                    ÄÅ¸Å¡â¬ CanlÂ± AI (Gemini) AyarlarÂ±</div>
-                                <div class="form-group">
-                                    <label>Gemini API AnahtarÂ±</label>
-                                    <input type="password" id="geminiApiKey"
-                                        placeholder="AI Studio'dan aldÂ±Å¸Â±nÂ±z anahtar" style="font-family:monospace;">
-                                </div>
-                                <div
-                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(79,142,247,0.06); border:1px solid rgba(79,142,247,0.2); border-radius:8px;">
-                                    ÄÅ¸âÂ¡ <strong>Åcretsiz anahtar almak Â§ok kolay:</strong><br>
-                                    <a href="https://aistudio.google.com/app/apikey" target="_blank"
-                                        style="color:var(--accent-blue);">Google AI Studio</a>'ya gidin ve "Create API
-                                    Key" butonuna basÂ±n.
-                                </div>
-                                <div class="form-group" style="margin-top:0.75rem;">
-                                    <label>Groq API Anahtarları (Havuz Sistemi)</label>
-                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
-                                        <input type="password" id="groqApiKey" placeholder="Anahtar 1" style="font-family:monospace; font-size:0.8rem;">
-                                        <input type="password" id="groqApiKey2" placeholder="Anahtar 2" style="font-family:monospace; font-size:0.8rem;">
-                                        <input type="password" id="groqApiKey3" placeholder="Anahtar 3" style="font-family:monospace; font-size:0.8rem;">
-                                        <input type="password" id="groqApiKey4" placeholder="Anahtar 4" style="font-family:monospace; font-size:0.8rem;">
-                                    </div>
-                                </div>
-                                <div
-                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(79,142,247,0.06); border:1px solid rgba(79,142,247,0.2); border-radius:8px;">
-                                    💡 <strong>Kota Sorununa Son:</strong> 4 farklı anahtar girerseniz, sistem kota dolduğunda otomatik diğerine geçer.
-                                </div>
-                                <div class="form-group" style="margin-top:0.75rem;">
-                                    <label>OpenRouter API AnahtarÂ± <span
-                                            style="font-size:0.75rem; color:var(--text-muted);">(3. Yedek
-                                            AI)</span></label>
-                                    <input type="password" id="openrouterApiKey"
-                                        placeholder="OpenRouter'dan aldÂ±Å¸Â±nÂ±z anahtar" style="font-family:monospace;">
-                                </div>
-                                <div
-                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">
-                                    ÄÅ¸âÂ¡ Gemini ve Groq baÅ¸arÂ±sÂ±z olursa <strong>OpenRouter (Llama 4 Åcretsiz)</strong>
-                                    devreye girer.<br>
-                                    <a href="https://openrouter.ai/keys" target="_blank"
-                                        style="color:#10b981;">openrouter.ai/keys</a>'den Â¼cretsiz anahtar alÂ±n.
-                                </div>
-                                <div class="form-group" style="margin-top:0.75rem;">
-                                    <label>Mistral API AnahtarÂ± <span
-                                            style="font-size:0.75rem; color:var(--text-muted);">(4. Yedek
-                                            AI)</span></label>
-                                    <input type="password" id="mistralApiKey"
-                                        placeholder="Mistral'den aldÂ±Å¸Â±nÂ±z anahtar" style="font-family:monospace;">
-                                </div>
-                                <div
-                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.2); border-radius:8px;">
-                                    ÄÅ¸âÂ¡ DiÅ¸er tÂ¼m AI'lar baÅ¸arÂ±sÂ±z olursa <strong>Mistral</strong> son Â§are olarak
-                                    devreye girer.<br>
-                                    <a href="https://console.mistral.ai/api-keys" target="_blank"
-                                        style="color:#f97316;">console.mistral.ai</a>'den Â¼cretsiz anahtar alÂ±n.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- THEME SETTINGS -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸ÂÂ¨ Tema & Renk</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>HazÂ±r Tema SeÂ§imi</label>
-                                <select id="activeTheme"
-                                    style="width:100%; padding:0.75rem 1rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); margin-bottom:1rem;">
-                                    <option value="custom">âzel (Kendi Renklerimi Belirle)</option>
-                                    <option value="cyberpunk">Cyberpunk (Neon Pembe & Turkuaz)</option>
-                                    <option value="matrix">Matrix (Hacker YeÅ¸ili & Siyah)</option>
-                                    <option value="space">Space Odyssey (Galaksi Mavisi & GÂ¼mÂ¼Å¸)</option>
-                                    <option value="code">Code Knight (YazÂ±lÂ±mcÂ± Mavisi & Slate)</option>
-                                    <option value="aurora">Aurora (Kuzey IÅ¸Â±klarÂ± - Mor/Teal)</option>
-                                    <option value="volcano">Volcano (Lav KÂ±rmÂ±zÂ±sÂ± & Turuncu)</option>
-                                    <option value="titanium">Titanium (EndÂ¼striyel Gri & Beyaz)</option>
-                                    <option value="synthwave">Synthwave (Retro Pembe & Violet)</option>
-                                    <option value="forest">Forest (ZÂ¼mrÂ¼t YeÅ¸ili & Orman)</option>
-                                    <option value="cloud">Cloud Tech (Modern AÂ§Â±k Tema)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Ana Vurgu Rengi</label>
-                                <input type="color" id="accentColor"
-                                    style="width:100%; height:42px; padding:4px; cursor:pointer; background:var(--bg-glass); border:1px solid var(--border); border-radius:8px;">
-                            </div>
-                            <div class="form-group">
-                                <label>HazÂ±r Renkler</label>
-                                <div class="color-swatches">
-                                    <div class="swatch" title="Mavi" style="background:#4f8ef7;" data-color="#4f8ef7">
-                                    </div>
-                                    <div class="swatch" title="Mor" style="background:#a855f7;" data-color="#a855f7">
-                                    </div>
-                                    <div class="swatch" title="YeÅ¸il" style="background:#10b981;" data-color="#10b981">
-                                    </div>
-                                    <div class="swatch" title="KÂ±rmÂ±zÂ±" style="background:#ef4444;"
-                                        data-color="#ef4444"></div>
-                                    <div class="swatch" title="Turuncu" style="background:#f97316;"
-                                        data-color="#f97316"></div>
-                                    <div class="swatch" title="Pembe" style="background:#ec4899;" data-color="#ec4899">
-                                    </div>
-                                    <div class="swatch" title="SarÂ±" style="background:#f59e0b;" data-color="#f59e0b">
-                                    </div>
-                                    <div class="swatch" title="Turkuaz" style="background:#06b6d4;"
-                                        data-color="#06b6d4"></div>
-                                </div>
-                            </div>
-                            <div
-                                style="padding:1rem; background:rgba(79,142,247,0.08); border:1px solid rgba(79,142,247,0.2); border-radius:8px; font-size:0.85rem; color:var(--text-secondary);">
-                                ÄÅ¸âÂ¡ Renk deÅ¸iÅ¸ikliÅ¸i kaydedildiÅ¸inde tÂ¼m sayfalara uygulanÂ±r.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SOCIAL MEDIA -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸ââ Sosyal Medya</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Twitter / X URL</label>
-                                <input type="url" id="socialTwitter" placeholder="https://twitter.com/...">
-                            </div>
-                            <div class="form-group">
-                                <label>GitHub URL</label>
-                                <input type="url" id="socialGithub" placeholder="https://github.com/...">
-                            </div>
-                            <div class="form-group">
-                                <label>YouTube URL</label>
-                                <input type="url" id="socialYoutube" placeholder="https://youtube.com/...">
-                            </div>
-                            <div class="form-group">
-                                <label>Discord URL</label>
-                                <input type="url" id="socialDiscord" placeholder="https://discord.gg/...">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEO SETTINGS -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸âÂ SEO & Analitik</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Meta AÂ§Â±klama</label>
-                                <textarea id="metaDesc" placeholder="Site aÂ§Â±klamasÂ±..." rows="3"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Google Analytics ID</label>
-                                <input type="text" id="gaId" placeholder="G-XXXXXXXXXX">
-                            </div>
-                            <div class="form-group">
-                                <label>Anahtar Kelimeler</label>
-                                <input type="text" id="metaKeywords" placeholder="teknoloji, oyun, uygulama...">
-                            </div>
-                            <div
-                                style="padding:1rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:8px; font-size:0.85rem; color:var(--text-secondary);">
-                                ¢Åâ¦ SEO ayarlarÂ± kaydedildiÅ¸inde tÂ¼m sayfalarÂ± etkiler.
-                            </div>
+                            <div class="form-group"><label>Meta Açıklama</label><textarea id="metaDesc" rows="3"></textarea></div>
+                            <div class="form-group"><label>Google Analytics ID</label><input type="text" id="gaId" placeholder="G-XXXXXXXXXX"></div>
+                            <div class="form-group"><label>Anahtar Kelimeler</label><input type="text" id="metaKeywords" placeholder="teknoloji, oyun..."></div>
                         </div>
                     </div>
 
                 </div>
-
-                <!-- ===== NEW SETTINGS ROW 2 ===== -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:1.5rem;">
-
-                    <!-- ANNOUNCEMENT TICKER -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸âÂ¢ Duyuru BandÂ±</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label style="display:flex; align-items:center; justify-content:space-between;">
-                                    Duyuru BandÂ±
-                                    <label class="toggle-switch"
-                                        style="cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
-                                        <input type="checkbox" id="tickerEnabled" style="width:auto;">
-                                        <span style="font-size:0.8rem; color:var(--text-muted);">Aktif</span>
-                                    </label>
-                                </label>
-                                <textarea id="tickerText"
-                                    placeholder="Duyuru metni... | Birden fazla mesaj | Dikey Â§ubuk ile ayÂ±rÂ±n"
-                                    rows="3"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Bant Rengi</label>
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-                                    <div>
-                                        <label style="font-size:0.78rem; color:var(--text-muted);">Arka Plan</label>
-                                        <input type="color" id="tickerBg" value="#4f8ef7"
-                                            style="width:100%; height:36px; padding:2px; background:var(--bg-glass); border:1px solid var(--border); border-radius:6px;">
-                                    </div>
-                                    <div>
-                                        <label style="font-size:0.78rem; color:var(--text-muted);">Metin Rengi</label>
-                                        <input type="color" id="tickerColor" value="#ffffff"
-                                            style="width:100%; height:36px; padding:2px; background:var(--bg-glass); border:1px solid var(--border); border-radius:6px;">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>HÂ±z</label>
-                                <select id="tickerSpeed">
-                                    <option value="slow">ÄÅ¸ÂÂ¢ YavaÅ¸</option>
-                                    <option value="normal" selected>¢Å¡Â¡ Normal</option>
-                                    <option value="fast">ÄÅ¸Å¡â¬ HÂ±zlÂ±</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FONT SIZE & TYPOGRAPHY -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸âÂ¤ YazÂ± Boyutu & Tipografi</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Temel YazÂ± Boyutu</label>
-                                <select id="baseFontSize">
-                                    <option value="14px">14px ¢â¬â KÂ¼Â§Â¼k</option>
-                                    <option value="15px">15px ¢â¬â Standart</option>
-                                    <option value="16px" selected>16px ¢â¬â VarsayÂ±lan</option>
-                                    <option value="17px">17px ¢â¬â BÂ¼yÂ¼k</option>
-                                    <option value="18px">18px ¢â¬â â¡ok BÂ¼yÂ¼k</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>BaÅ¸lÂ±k YazÂ± Boyutu</label>
-                                <select id="headingScale">
-                                    <option value="0.9">0.9â ¢â¬â Kompakt</option>
-                                    <option value="1.0" selected>1.0â ¢â¬â Normal</option>
-                                    <option value="1.1">1.1â ¢â¬â GeniÅ¸</option>
-                                    <option value="1.2">1.2â ¢â¬â BÂ¼yÂ¼k</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>SatÂ±r AralÂ±Å¸Â±</label>
-                                <select id="lineHeight">
-                                    <option value="1.5">1.5 ¢â¬â SÂ±kÂ±Å¸Â±k</option>
-                                    <option value="1.6" selected>1.6 ¢â¬â Normal</option>
-                                    <option value="1.75">1.75 ¢â¬â Rahat</option>
-                                    <option value="1.9">1.9 ¢â¬â GeniÅ¸</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>YazÂ± Tipi</label>
-                                <select id="fontFamily">
-                                    <option value="Inter, system-ui, sans-serif" selected>Inter (VarsayÂ±lan)</option>
-                                    <option value="'Roboto', sans-serif">Roboto</option>
-                                    <option value="'Poppins', sans-serif">Poppins</option>
-                                    <option value="'Outfit', sans-serif">Outfit</option>
-                                    <option value="system-ui, sans-serif">Sistem YazÂ± Tipi</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- ===== NEW SETTINGS ROW 3 ===== -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:1.5rem;">
-
-                    <!-- BANNER SETTINGS -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">ÄÅ¸âÂ¼¯Â¸Â Banner YÂ¶netimi</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label style="display:flex; align-items:center; justify-content:space-between;">
-                                    Hero Banner
-                                    <label style="cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
-                                        <input type="checkbox" id="bannerEnabled" checked style="width:auto;">
-                                        <span style="font-size:0.8rem; color:var(--text-muted);">GÂ¶ster</span>
-                                    </label>
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label>Banner BaÅ¸lÂ±Å¸Â±</label>
-                                <input type="text" id="bannerTitle" placeholder="Teknolojinin Kalbinde">
-                            </div>
-                            <div class="form-group">
-                                <label>Banner Alt BaÅ¸lÂ±Å¸Â±</label>
-                                <input type="text" id="bannerSubtitle"
-                                    placeholder="Teknoloji, Oyun ve Uygulama DÂ¼nyasÂ±na KapÂ±nÂ±z">
-                            </div>
-                            <div class="form-group">
-                                <label>Birinci Buton Metni</label>
-                                <input type="text" id="bannerBtn1" placeholder="ÄÅ¸Å¡â¬ Haberleri KeÅ¸fet">
-                            </div>
-                            <div class="form-group">
-                                <label>Â°kinci Buton Metni</label>
-                                <input type="text" id="bannerBtn2" placeholder="ÄÅ¸âÂ¬ Foruma KatÂ±l">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CONTENT SETTINGS & GOOGLE OAUTH -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="admin-card-title">¢Å¡â¢¯Â¸Â Â°Â§erik & Google OAuth</div>
-                        </div>
-                        <div style="padding:1.5rem;">
-                            <div class="form-group">
-                                <label>Ana Sayfada Makale SayÂ±sÂ±</label>
-                                <select id="homeArticleCount">
-                                    <option value="3">3 makale</option>
-                                    <option value="6" selected>6 makale</option>
-                                    <option value="9">9 makale</option>
-                                    <option value="12">12 makale</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Ana Sayfada Forum Konusu</label>
-                                <select id="homeForumCount">
-                                    <option value="3">3 konu</option>
-                                    <option value="4" selected>4 konu</option>
-                                    <option value="6">6 konu</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Forum Moderasyonu</label>
-                                <select id="forumModMode">
-                                    <option value="manual" selected>Manuel (Admin onayÂ± gerekli)</option>
-                                    <option value="auto">Otomatik (Hemen yayÂ±nla)</option>
-                                </select>
-                            </div>
-                            <div style="margin:1rem 0; border-top:1px solid var(--border); padding-top:1rem;">
-                                <div
-                                    style="font-size:0.82rem; font-weight:700; color:#a855f7; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
-                                    ÄÅ¸ââ Google OAuth</div>
-                                <div class="form-group">
-                                    <label>Google Client ID</label>
-                                    <input type="text" id="googleClientId"
-                                        placeholder="xxxxx.apps.googleusercontent.com"
-                                        style="font-family:monospace; font-size:0.78rem;">
-                                </div>
-                                <div
-                                    style="font-size:0.78rem; color:var(--text-muted); padding:0.65rem; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:8px;">
-                                    ÄÅ¸âÂ¡ <a href="https://console.cloud.google.com" target="_blank"
-                                        style="color:#a855f7;">Google Cloud Console</a>'dan alÂ±n ¢â â APIs &amp; Services ¢â â
-                                    Credentials
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- DANGER ZONE -->
-                <div class="admin-card" style="margin-top:1.5rem; border-color:rgba(239,68,68,0.3);">
-                    <div class="admin-card-header" style="border-bottom-color:rgba(239,68,68,0.2);">
-                        <div class="admin-card-title" style="color:#ef4444;">¢Å¡Â ¯Â¸Â Tehlikeli BÂ¶lge</div>
-                    </div>
-                    <div style="padding:1.5rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-                        <div style="flex:1;">
-                            <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.25rem;">TÂ¼m Â°Â§erikleri
-                                SÂ±fÂ±rla</div>
-                            <div style="font-size:0.85rem; color:var(--text-secondary);">TÂ¼m makaleler, forum konularÂ±
-                                ve Â¼ye verileri silinir. Bu iÅ¸lem geri alÂ±namaz!</div>
-                        </div>
-                        <button class="btn-action btn-delete" id="resetAllBtn"
-                            style="padding:0.5rem 1rem; font-size:0.875rem;">ÄÅ¸ââ¯Â¸Â Her Âeyi SÂ±fÂ±rla</button>
-                    </div>
-                </div>
-
-                <!-- ADMIN PASSWORD CHANGE -->
-                <div class="admin-card" style="margin-top:1.5rem; border-color:rgba(168,85,247,0.3);">
-                    <div class="admin-card-header" style="border-bottom-color:rgba(168,85,247,0.2);">
-                        <div class="admin-card-title" style="color:#a855f7;">ÄÅ¸âÂ Admin Âifresi DeÅ¸iÅ¸tir</div>
-                    </div>
-                    <div
-                        style="padding:1.5rem; display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; align-items:end;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Mevcut Admin Âifresi</label>
-                            <input type="password" id="oldAdminPass" placeholder="Mevcut Å¸ifreniz">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Yeni Âifre</label>
-                            <input type="password" id="newAdminPass" placeholder="Yeni Å¸ifre (min 6)">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Yeni Âifre (Tekrar)</label>
-                            <input type="password" id="newAdminPassConfirm" placeholder="Yeni Å¸ifreyi tekrar girin">
-                        </div>
-                    </div>
-                    <div style="padding:0 1.5rem 1.5rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-                        <button class="topbar-btn" id="changePassBtn"
-                            style="background:linear-gradient(135deg,#a855f7,#6366f1);">ÄÅ¸âÂ Âifreyi DeÅ¸iÅ¸tir</button>
-                        <div id="passMsg" style="font-size:0.85rem;"></div>
-                    </div>
-                </div>
-
-                <!-- ===== MEMBERSHIP TIERS MANAGEMENT ===== -->
-                <div class="admin-card" style="margin-top:1.5rem;">
-                    <div class="admin-card-header"
-                        style="display:flex; justify-content:space-between; align-items:center;">
-                        <div class="admin-card-title">ÄÅ¸âÂ Åyelik Seviyesi YÂ¶netimi</div>
-                        <button class="topbar-btn" onclick="openTierModal()">¢Ââ¢ Yeni Seviye Ekle</button>
-                    </div>
-                    <div style="padding:1.5rem;">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Â°kon</th>
-                                    <th>Seviye AdÂ±</th>
-                                    <th>Renk</th>
-                                    <th>âzellikler</th>
-                                    <th>Â°Å¸lemler</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tiersTableBody">
-                                <!-- Tiers will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
             </div>
         </main>
     </div>
 
-    <!-- TIER MODAL -->
-    <div class="modal-overlay" id="tierModal" style="display:none; z-index:1000;">
-        <div class="modal">
-            <button class="modal-close" onclick="closeModal('tierModal')">¢Åâ¢</button>
-            <div class="modal-title" id="tierModalTitle">ÄÅ¸âÂ Åyelik Seviyesi</div>
-            <input type="hidden" id="editTierId">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Seviye AdÂ±</label>
-                    <input type="text" id="tierName" placeholder="ârn: Pro Member">
-                </div>
-                <div class="form-group">
-                    <label>Sistem KimliÅ¸i (Slug)</label>
-                    <input type="text" id="tierId" placeholder="ârn: pro (sadece harf)">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Â°kon / Emoji</label>
-                    <input type="text" id="tierIcon" placeholder="ÄÅ¸âºÂ¡¯Â¸Â">
-                </div>
-                <div class="form-group">
-                    <label>Renk (Hex veya CSS Var)</label>
-                    <input type="text" id="tierColor" placeholder="#4f8ef7">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>AyrÂ±calÂ±klar (Her satÂ±ra bir tane)</label>
-                <textarea id="tierPerks" rows="5" placeholder="SÂ±nÂ±rsÂ±z proje izleme&#10;âzel rozet&#10;..."></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="topbar-btn secondary" onclick="closeModal('tierModal')">Â°ptal</button>
-                <button class="topbar-btn" onclick="saveTier()">ÄÅ¸âÂ¾ Seviyeyi Kaydet</button>
-            </div>
-        </div>
-    </div>
-
     <script src="../js/firebase.js"></script>
-    <script src="../js/main.js?v=4.2"></script>
+    <script src="../js/main.js"></script>
     <script src="../js/admin.js"></script>
     <script>
-        
-        // SHA-256 hash helper
-        async function hashAdminPass(password) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password + '_tc_admin_salt');
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        function restoreLegacyKeys() {
+            try {
+                const k1 = atob("Z3NrX1JzTVJsY0JkdFZQbkJ1TjZ6d28xV0dyeWJyM0ZZRDN4Qjg1QUxLcHhQWE1NRGh5OUJvZUh5");
+                const k2 = atob("Z3NrXzQ3STRUdkdWM2JibmMzT3NSeHo2V0dyeWJyM0ZYeExmQ0R0dW9ZV1BLQ1JHcnRIQTNOdnVo");
+                const k3 = atob("Z3NrX3dBaWg0VlFKT2hTRG5lTjJIeTdOV0dyeWJyM0ZZMVF4RTMxSFdrSjhEWnZJa2RvNER1Q0ln");
+                const k4 = atob("Z3NrXzczU1J4UUI1cmp2SDFrcVUsdEZ2V0dyeWJyM0ZZTHdYSnVkRkw3NjMwN1c4RjNmVzY=");
+                document.getElementById('groqApiKey').value = k1;
+                document.getElementById('groqApiKey2').value = k2;
+                document.getElementById('groqApiKey3').value = k3;
+                document.getElementById('groqApiKey4').value = k4;
+                alert('🚀 4 Anahtar yüklendi! Lütfen "Kaydet" butonuna basmayı unutmayın.');
+            } catch(e) { alert('Hata: Anahtarlar yüklenemedi.'); }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load existing settings
-            const s = DB.get('settings') || {};
+        function loadSettings() {
+            const s = DB.get('tc_settings') || {};
             document.getElementById('siteName').value = s.siteName || 'AsiaConsole';
             document.getElementById('siteSlogan').value = s.siteSlogan || '';
             document.getElementById('footerText').value = s.footerText || '';
-            document.getElementById('accentColor').value = s.accentColor || '#4f8ef7';
-            document.getElementById('socialTwitter').value = s.socialTwitter || '';
-            document.getElementById('socialGithub').value = s.socialGithub || '';
-            document.getElementById('socialYoutube').value = s.socialYoutube || '';
-            document.getElementById('socialDiscord').value = s.socialDiscord || '';
-            document.getElementById('logoUrl').value = s.logoUrl || '';
-            document.getElementById('heroBgUrl').value = s.heroBgUrl || '';
-
-            // Load logo if exists
-            MediaDB.get('site_logo').then(savedLogo => {
-                if (savedLogo) {
-                    document.getElementById('logoPreviewImg').src = savedLogo;
-                    document.getElementById('logoPreviewImg').style.display = 'block';
-                    document.getElementById('logoPlaceholder').style.display = 'none';
-                    document.getElementById('logoRemoveRow').style.display = 'block';
-                } else if (DB.get('site_logo')) { // Legacy support
-                    const legacyLogo = DB.get('site_logo');
-                    document.getElementById('logoPreviewImg').src = legacyLogo;
-                    document.getElementById('logoPreviewImg').style.display = 'block';
-                    document.getElementById('logoPlaceholder').style.display = 'none';
-                    document.getElementById('logoRemoveRow').style.display = 'block';
-                }
-            });
-
-            // Logo file input handler
-            document.getElementById('logoFileInput').addEventListener('change', function () {
-                const file = this.files[0];
-                if (!file) return;
-                if (file.size > 5 * 1024 * 1024) {
-                    showAdminToast('Logo 5MB\'dan bÂ¼yÂ¼k olamaz!', 'error');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = async function (e) {
-                    const base64 = e.target.result;
-                    // Save to local IndexedDB for fast local access
-                    await MediaDB.set('site_logo', base64);
-                    // Crucial fix: Trigger Firebase Sync by saving Base64 to a specific key
-                    DB.set('site_logo_base64', base64);
-
-                    document.getElementById('logoPreviewImg').src = base64;
-                    document.getElementById('logoPreviewImg').style.display = 'block';
-                    document.getElementById('logoPlaceholder').style.display = 'none';
-                    document.getElementById('logoRemoveRow').style.display = 'block';
-                    showAdminToast('¢Åâ¦ Logo kaydedildi ve senkronize ediliyor!', 'success');
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Logo remove
-            document.getElementById('logoRemoveBtn').addEventListener('click', async () => {
-                await MediaDB.set('site_logo', null);
-                DB.set('site_logo_base64', null); // Trigger Firebase delete
-                DB.set('site_logo', null);
-                document.getElementById('logoPreviewImg').style.display = 'none';
-                document.getElementById('logoPlaceholder').style.display = 'block';
-                document.getElementById('logoRemoveRow').style.display = 'none';
-                document.getElementById('logoFileInput').value = '';
-                showAdminToast('Logo kaldÂ±rÂ±ldÂ±.', 'error');
-            });
-
-            // Color swatches
-            document.querySelectorAll('.swatch').forEach(sw => {
-                sw.addEventListener('click', () => {
-                    document.getElementById('accentColor').value = sw.dataset.color;
-                    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
-                    sw.classList.add('selected');
-                });
-                if (sw.dataset.color === (s.accentColor || '#4f8ef7')) sw.classList.add('selected');
-            });
-
-            // Load new settings fields
-            document.getElementById('brandAnim').value = s.brandAnim || 'none';
-            document.getElementById('brandAnimSpeed').value = s.brandAnimSpeed || 2.0;
-            document.getElementById('navbarStyle').value = s.navbarStyle || 'blur';
-            document.getElementById('aiEnabled').checked = !!s.aiEnabled;
-            document.getElementById('aiName').value = s.aiName || 'AsiaBot';
-            document.getElementById('aiGreeting').value = s.aiGreeting || 'Merhaba! Size nasÂ±l yardÂ±mcÂ± olabilirim?';
+            document.getElementById('contactEmail').value = s.contactEmail || '';
+            document.getElementById('aiEnabled').checked = s.aiEnabled !== false;
             document.getElementById('geminiApiKey').value = s.geminiApiKey || '';
             document.getElementById('groqApiKey').value = s.groqApiKey || '';
             document.getElementById('groqApiKey2').value = s.groqApiKey2 || '';
             document.getElementById('groqApiKey3').value = s.groqApiKey3 || '';
             document.getElementById('groqApiKey4').value = s.groqApiKey4 || '';
-            document.getElementById('groqApiKey2').value = s.groqApiKey2 || '';
-            document.getElementById('groqApiKey3').value = s.groqApiKey3 || '';
-            document.getElementById('groqApiKey4').value = s.groqApiKey4 || '';
-            document.getElementById('openrouterApiKey').value = s.openrouterApiKey || '';
-            document.getElementById('mistralApiKey').value = s.mistralApiKey || '';
-
-            document.getElementById('tickerEnabled').checked = !!s.tickerEnabled;
-            document.getElementById('tickerText').value = s.tickerText || '';
-            document.getElementById('tickerBg').value = s.tickerBg || '#4f8ef7';
-            document.getElementById('tickerColor').value = s.tickerColor || '#ffffff';
-            document.getElementById('tickerSpeed').value = s.tickerSpeed || 'normal';
-
-            document.getElementById('activeTheme').value = s.activeTheme || 'custom';
-            document.getElementById('baseFontSize').value = s.baseFontSize || '16px';
-            document.getElementById('headingScale').value = s.headingScale || '1.0';
-            document.getElementById('lineHeight').value = s.lineHeight || '1.6';
-            document.getElementById('fontFamily').value = s.fontFamily || 'Inter, system-ui, sans-serif';
-
-            document.getElementById('bannerEnabled').checked = s.bannerEnabled !== false;
-            document.getElementById('bannerTitle').value = s.bannerTitle || '';
-            document.getElementById('bannerSubtitle').value = s.bannerSubtitle || '';
-            document.getElementById('bannerBtn1').value = s.bannerBtn1 || '';
-            document.getElementById('bannerBtn2').value = s.bannerBtn2 || '';
-
-            document.getElementById('homeArticleCount').value = s.homeArticleCount || '6';
-            document.getElementById('homeForumCount').value = s.homeForumCount || '4';
-            document.getElementById('navbarAnimStyle').value = s.navbarAnimStyle || 'neon';
-
-            // Load Hero BG if exists
-            MediaDB.get('heroBg').then(savedBg => {
-                if (savedBg) {
-                    document.getElementById('heroBgImg').src = savedBg;
-                    document.getElementById('heroBgImg').style.display = 'block';
-                    document.getElementById('heroBgPlaceholder').style.display = 'none';
-                    document.getElementById('removeHeroBg').style.display = 'inline-block';
-                }
-            });
-
-            // Hero BG upload
-            document.getElementById('heroBgInput').addEventListener('change', function () {
-                const file = this.files[0];
-                if (!file) return;
-
-                if (file.size > 5 * 1024 * 1024) {
-                    showAdminToast('Arka plan resmi 5MB\'dan bÂ¼yÂ¼k olamaz!', 'error');
-                    this.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = async function (e) {
-                    const base64 = e.target.result;
-                    await MediaDB.set('heroBg', base64);
-                    document.getElementById('heroBgImg').src = base64;
-                    document.getElementById('heroBgImg').style.display = 'block';
-                    document.getElementById('heroBgPlaceholder').style.display = 'none';
-                    document.getElementById('removeHeroBg').style.display = 'inline-block';
-                    showAdminToast('¢Åâ¦ Arka plan kaydedildi!', 'success');
-                };
-                reader.readAsDataURL(file);
-            });
-
-            document.getElementById('removeHeroBg').addEventListener('click', async () => {
-                await MediaDB.set('heroBg', null);
-                document.getElementById('heroBgImg').src = '';
-                document.getElementById('heroBgImg').style.display = 'none';
-                document.getElementById('heroBgPlaceholder').style.display = 'block';
-                document.getElementById('removeHeroBg').style.display = 'none';
-                document.getElementById('heroBgInput').value = '';
-                showAdminToast('Arka plan kaldÂ±rÂ±ldÂ±.', 'error');
-            });
-            document.getElementById('forumModMode').value = s.forumModMode || 'manual';
-            document.getElementById('googleClientId').value = s.googleClientId || '367594063152-0kagipiibbmh7t8ti3c8chjufe335l0j.apps.googleusercontent.com';
-            document.getElementById('contactEmail').value = s.contactEmail || '';
             document.getElementById('metaDesc').value = s.metaDesc || '';
-            document.getElementById('metaKeywords').value = s.metaKeywords || '';
             document.getElementById('gaId').value = s.gaId || '';
-
-            // Load category icons
-            document.getElementById('iconTeknoloji').value = s.iconTeknoloji || 'ÄÅ¸âÂ»';
-            document.getElementById('iconOyun').value = s.iconOyun || 'ÄÅ¸ÂÂ®';
-            document.getElementById('iconUygulama').value = s.iconUygulama || 'ÄÅ¸âÂ±';
-
-            // Design size sliders
-            function initSlider(id, valId, savedVal, def, unit) {
-                const el = document.getElementById(id);
-                const lbl = document.getElementById(valId);
-                if (!el || !lbl) return;
-                el.value = savedVal || def;
-                lbl.textContent = el.value + unit;
-                el.addEventListener('input', () => { lbl.textContent = el.value + unit; });
-            }
-            initSlider('logoSize', 'logoSizeVal', s.logoSize, 36, 'px');
-            initSlider('siteNameSize', 'siteNameSizeVal', s.siteNameSize, 1.4, 'rem');
-            initSlider('brandAnimSpeed', 'brandAnimSpeedVal', s.brandAnimSpeed, 2.0, 's');
-            initSlider('heroHeight', 'heroHeightVal', s.heroHeight, 100, 'vh');
-            initSlider('heroTitleSize', 'heroTitleSizeVal', s.heroTitleSize, 5.5, 'rem');
-            initSlider('heroBgOpacity', 'heroBgOpacityVal', s.heroBgOpacity, 0.3, '');
-            // Convert decimal to percentage for display
-            if (s.heroBgOpacity !== undefined) {
-                document.getElementById('heroBgOpacityVal').textContent = Math.round(s.heroBgOpacity * 100) + '%';
-            }
-            document.getElementById('heroBgOpacity').addEventListener('input', function () {
-                document.getElementById('heroBgOpacityVal').textContent = Math.round(this.value * 100) + '%';
-            });
-
-            // Save all
-            document.getElementById('saveAllBtn').addEventListener('click', () => {
-                const currentSettings = DB.get('settings') || {};
-                const newSettings = {
-                    ...currentSettings,
-                    siteName: document.getElementById('siteName').value.trim() || 'AsiaConsole',
-                    siteSlogan: document.getElementById('siteSlogan').value.trim(),
-                    footerText: document.getElementById('footerText').value.trim(),
-                    accentColor: document.getElementById('accentColor').value,
-                    contactEmail: document.getElementById('contactEmail').value.trim(),
-                    socialTwitter: document.getElementById('socialTwitter').value.trim() || '#',
-                    socialGithub: document.getElementById('socialGithub').value.trim() || '#',
-                    socialYoutube: document.getElementById('socialYoutube').value.trim() || '#',
-                    socialDiscord: document.getElementById('socialDiscord').value.trim() || '#',
-                    metaDesc: document.getElementById('metaDesc').value.trim(),
-                    metaKeywords: document.getElementById('metaKeywords').value.trim(),
-                    gaId: document.getElementById('gaId').value.trim(),
-                    // New settings
-                    tickerEnabled: document.getElementById('tickerEnabled').checked,
-                    tickerText: document.getElementById('tickerText').value.trim(),
-                    tickerBg: document.getElementById('tickerBg').value,
-                    tickerColor: document.getElementById('tickerColor').value,
-                    tickerSpeed: document.getElementById('tickerSpeed').value,
-                    siteFont: document.getElementById('siteFont').value,
-                    brandAnim: document.getElementById('brandAnim').value,
-                    navbarStyle: document.getElementById('navbarStyle').value,
-                    aiEnabled: document.getElementById('aiEnabled').checked,
-                    aiName: document.getElementById('aiName').value.trim(),
-                    aiGreeting: document.getElementById('aiGreeting').value.trim(),
-                    geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
-                    groqApiKey: document.getElementById('groqApiKey').value.trim(),
-                    groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
-                    groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
-                    groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
-                    groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
-                    groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
-                    groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
-                    openrouterApiKey: document.getElementById('openrouterApiKey').value.trim(),
-                    mistralApiKey: document.getElementById('mistralApiKey').value.trim(),
-                    bannerEnabled: document.getElementById('bannerEnabled').checked,
-                    bannerTitle: document.getElementById('bannerTitle').value.trim(),
-                    bannerSubtitle: document.getElementById('bannerSubtitle').value.trim(),
-                    bannerBtn1: document.getElementById('bannerBtn1').value.trim(),
-                    bannerBtn2: document.getElementById('bannerBtn2').value.trim(),
-                    homeArticleCount: document.getElementById('homeArticleCount').value,
-                    homeForumCount: document.getElementById('homeForumCount').value,
-                    forumModMode: document.getElementById('forumModMode').value,
-                    googleClientId: document.getElementById('googleClientId').value.trim(),
-                    // Theme settings
-                    activeTheme: document.getElementById('activeTheme').value,
-                    // Typography settings
-                    baseFontSize: document.getElementById('baseFontSize').value,
-                    headingScale: document.getElementById('headingScale').value,
-                    lineHeight: document.getElementById('lineHeight').value,
-                    fontFamily: document.getElementById('fontFamily').value,
-                    // Design sizes
-                    logoSize: document.getElementById('logoSize').value,
-                    siteNameSize: document.getElementById('siteNameSize').value,
-                    brandAnimSpeed: document.getElementById('brandAnimSpeed').value,
-                    heroHeight: document.getElementById('heroHeight').value,
-                    heroTitleSize: document.getElementById('heroTitleSize').value,
-                    heroBgOpacity: parseFloat(document.getElementById('heroBgOpacity').value),
-                    // Category icons
-                    iconTeknoloji: document.getElementById('iconTeknoloji').value.trim() || 'ÄÅ¸âÂ»',
-                    iconOyun: document.getElementById('iconOyun').value.trim() || 'ÄÅ¸ÂÂ®',
-                    iconUygulama: document.getElementById('iconUygulama').value.trim() || 'ÄÅ¸âÂ±',
-                    navbarAnimStyle: document.getElementById('navbarAnimStyle').value,
-                    logoUrl: document.getElementById('logoUrl').value.trim(),
-                    heroBgUrl: document.getElementById('heroBgUrl').value.trim()
-                };
-                DB.set('settings', newSettings);
-                showAdminToast('¢Åâ¦ TÂ¼m ayarlar kaydedildi ve senkronize edildi!', 'success');
-
-                document.documentElement.style.setProperty('--accent-blue', newSettings.accentColor);
-
-            });
-
-            // Admin password change
-            document.getElementById('changePassBtn').addEventListener('click', async () => {
-                const oldPass = document.getElementById('oldAdminPass').value;
-                const newPass = document.getElementById('newAdminPass').value;
-                const newPass2 = document.getElementById('newAdminPassConfirm').value;
-                const msgEl = document.getElementById('passMsg');
-
-                if (!oldPass || !newPass || !newPass2) {
-                    msgEl.style.color = '#ef4444';
-                    msgEl.textContent = '⚠️ Tüm alanları doldurun.';
-                    return;
-                }
-
-                if (newPass.length < 6) {
-                    msgEl.style.color = '#ef4444';
-                    msgEl.textContent = '⚠️ Yeni şifre en az 6 karakter olmalı.';
-                    return;
-                }
-
-                if (newPass !== newPass2) {
-                    msgEl.style.color = '#ef4444';
-                    msgEl.textContent = '⚠️ Şifreler eşleşmiyor!';
-                    return;
-                }
-
-                const hashedOld = await hashAdminPass(oldPass);
-                const hashedNew = await hashAdminPass(newPass);
-
-                // Get current hash from localStorage or fallback to default AsiaAdmin2026! hash
-                let currentHash = localStorage.getItem('tc_admin_password_hash');
-                if (!currentHash) {
-                    currentHash = await hashAdminPass('AsiaAdmin2026!');
-                }
-
-                // Also check legacy plaintext for backward compatibility
-                const legacyPass = localStorage.getItem('tc_admin_password');
-
-                if (hashedOld !== currentHash && (oldPass !== legacyPass || !legacyPass)) {
-                    msgEl.style.color = '#ef4444';
-                    msgEl.textContent = '❌ Mevcut şifre hatalı!';
-                    return;
-                }
-
-                // Success: Update both localStorage and Firebase
-                localStorage.setItem('tc_admin_password_hash', hashedNew);
-                localStorage.removeItem('tc_admin_password'); // Remove legacy plaintext
-
-                if (typeof FirebaseDB !== 'undefined') {
-                    FirebaseDB.onReady(() => {
-                        FirebaseDB.set('site_data', 'admin_config', {
-                            passwordHash: hashedNew,
-                            lastUpdated: Date.now()
-                        }).then(() => {
-                            console.log('[Admin] Remote password hash updated');
-                        });
-                    });
-                }
-
-                msgEl.style.color = '#10b981';
-                msgEl.textContent = '✅ Şifre başarıyla değiştirildi ve senkronize edildi!';
-                document.getElementById('oldAdminPass').value = '';
-                document.getElementById('newAdminPass').value = '';
-                document.getElementById('newAdminPassConfirm').value = '';
-                showAdminToast('🚀 Admin şifresi güncellendi!', 'success');
-                setTimeout(() => { msgEl.textContent = ''; }, 4000);
-            });
-
-            // Reset all (Factory Reset)
-            document.getElementById('resetAllBtn').addEventListener('click', () => {
-                if (window.confirm('¢Å¡Â ¯Â¸Â DÂ°KKAT: TÂ¼m iÂ§erikler (Makaleler hariÂ§), kullanÂ±cÂ±lar (Admin hariÂ§) ve forum verileri silinecek. Åye kayÂ±tlarÂ± sÂ±fÂ±rlanacaktÂ±r. Bu iÅ¸lem GERÂ° ALINAMAZ! Devam etmek istiyor musunuz?')) {
-                    // Keep Admin user
-                    const users = DB.get('users') || [];
-                    const adminUser = users.find(u => u.username.toLowerCase() === 'admin' || u.id === 1);
-
-                    DB.set('users', adminUser ? [adminUser] : []);
-                    DB.set('forum_posts', []);
-                    DB.set('user_projects', []);
-                    DB.set('project_reviews', []);
-                    // Articles optional: User wants "site content" reset, usually means users/posts
-                    // If they want to keep default articles, we leave them.
-
-                    localStorage.removeItem('tc_user_session'); // Log everyone out
-                    showAdminToast('ÄÅ¸âÂ£ Site baÅ¸arÂ±yla sÂ±fÂ±rlandÂ±! YÂ¶nlendiriliyorsunuz...', 'error');
-                    setTimeout(() => location.reload(), 2000);
-                }
-            });
-            // TIER MANAGEMENT LOGIC
-            function renderTiers() {
-                const tiers = DB.get('user_tiers') || {};
-                const tbody = document.getElementById('tiersTableBody');
-                if (!tbody) return;
-
-                tbody.innerHTML = Object.keys(tiers).map(id => {
-                    const t = tiers[id];
-                    return `
-                        <tr>
-                            <td style="font-size:1.5rem;">${t.icon || 'ÄÅ¸âÂ¤'}</td>
-                            <td><strong style="color:${t.color}">${t.name}</strong> <small style="color:var(--text-muted)">(${id})</small></td>
-                            <td><code>${t.color}</code></td>
-                            <td style="font-size:0.8rem; color:var(--text-secondary);">${t.perks ? t.perks.join(', ') : '-'}</td>
-                            <td>
-                                <div style="display:flex; gap:0.5rem;">
-                                    <button class="btn-action btn-edit" onclick="editTier('${id}')">¢ÅÂ¯Â¸Â</button>
-                                    <button class="btn-action btn-delete" onclick="deleteTier('${id}')" ${id === 'standart' ? 'disabled' : ''}>ÄÅ¸ââ¯Â¸Â</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            window.openTierModal = function () {
-                document.getElementById('tierModalTitle').textContent = 'ÄÅ¸âÂ Yeni Åyelik Seviyesi';
-                document.getElementById('editTierId').value = '';
-                document.getElementById('tierId').readOnly = false;
-                document.getElementById('tierId').value = '';
-                document.getElementById('tierName').value = '';
-                document.getElementById('tierIcon').value = '';
-                document.getElementById('tierColor').value = '';
-                document.getElementById('tierPerks').value = '';
-                openModal('tierModal');
-            };
-
-            window.editTier = function (id) {
-                const tiers = DB.get('user_tiers') || {};
-                const t = tiers[id];
-                if (!t) return;
-
-                document.getElementById('tierModalTitle').textContent = '¢ÅÂ¯Â¸Â Seviyeyi DÂ¼zenle';
-                document.getElementById('editTierId').value = id;
-                document.getElementById('tierId').value = id;
-                document.getElementById('tierId').readOnly = true;
-                document.getElementById('tierName').value = t.name;
-                document.getElementById('tierIcon').value = t.icon || '';
-                document.getElementById('tierColor').value = t.color || '';
-                document.getElementById('tierPerks').value = t.perks ? t.perks.join('\n') : '';
-                openModal('tierModal');
-            };
-
-            window.deleteTier = function (id) {
-                if (id === 'standart') return;
-                if (!confirm(`'${id}' seviyesini silmek istediÅ¸inizden emin misiniz?`)) return;
-
-                const tiers = DB.get('user_tiers') || {};
-                delete tiers[id];
-                DB.set('user_tiers', tiers);
-                renderTiers();
-                showAdminToast('Åyelik seviyesi silindi.', 'error');
-            };
-
-            window.saveTier = function () {
-                const id = document.getElementById('tierId').value.trim().toLowerCase().replace(/\s+/g, '_');
-                const name = document.getElementById('tierName').value.trim();
-                const icon = document.getElementById('tierIcon').value.trim();
-                const color = document.getElementById('tierColor').value.trim();
-                const perks = document.getElementById('tierPerks').value.split('\n').map(p => p.trim()).filter(p => p);
-
-                if (!id || !name) {
-                    showAdminToast('ID ve Â°sim alanlarÂ± zorunludur!', 'error');
-                    return;
-                }
-
-                const tiers = DB.get('user_tiers') || {};
-                tiers[id] = { name, icon, color, perks, bg: color.startsWith('#') ? hexToRgba(color, 0.1) : 'rgba(255,255,255,0.05)' };
-
-                DB.set('user_tiers', tiers);
-                closeModal('tierModal');
-                renderTiers();
-                showAdminToast('¢Åâ¦ Åyelik seviyesi kaydedildi!', 'success');
-            };
-
-            function hexToRgba(hex, alpha) {
-                try {
-                    const r = parseInt(hex.slice(1, 3), 16);
-                    const g = parseInt(hex.slice(3, 5), 16);
-                    const b = parseInt(hex.slice(5, 7), 16);
-                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-                } catch (e) { return 'rgba(255,255,255,0.05)'; }
-            }
-
-            renderTiers();
-        });
-    </script>
-
-<script>
-        function restoreLegacyKeys() {
-            const k1 = atob("Z3NrX1JzTVJsY0JkdFZQbkJ1TjZ6d28xV0dyeWJyM0ZZRDN4Qjg1QUxLcHhQWE1NRGh5OUJvZUh5");
-            const k2 = atob("Z3NrXzQ3STRUdkdWM2JibmMzT3NSeHo2V0dyeWJyM0ZYeExmQ0R0dW9ZV1BLQ1JHcnRIQTNOdnVo");
-            const k3 = atob("Z3NrX3dBaWg0VlFKT2hTRG5lTjJIeTdOV0dyeWJyM0ZZMVF4RTMxSFdrSjhEWnZJa2RvNER1Q0ln");
-            const k4 = atob("Z3NrXzczU1J4UUI1cmp2SDFrcVUsdEZ2V0dyeWJyM0ZZTHdYSnVkRkw3NjMwN1c4RjNmVzY=");
-            document.getElementById('groqApiKey').value = k1;
-            document.getElementById('groqApiKey2').value = k2;
-            document.getElementById('groqApiKey3').value = k3;
-            document.getElementById('groqApiKey4').value = k4;
-            alert('🚀 4 Anahtar yüklendi! Lütfen "Kaydet" butonuna basarak kalıcı hale getirin.');
+            document.getElementById('metaKeywords').value = s.metaKeywords || '';
+            if (s.activeTheme) document.getElementById('activeTheme').value = s.activeTheme;
+            if (s.accentColor) document.getElementById('accentColor').value = s.accentColor;
+            if (s.googleFont) document.getElementById('googleFont').value = s.googleFont;
         }
+
+        async function saveSettings() {
+            const btn = document.getElementById('saveAllBtn');
+            btn.textContent = '⏳ Kaydediliyor...';
+            btn.disabled = true;
+            const settings = {
+                siteName: document.getElementById('siteName').value.trim(),
+                siteSlogan: document.getElementById('siteSlogan').value.trim(),
+                footerText: document.getElementById('footerText').value.trim(),
+                contactEmail: document.getElementById('contactEmail').value.trim(),
+                aiEnabled: document.getElementById('aiEnabled').checked,
+                geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
+                groqApiKey: document.getElementById('groqApiKey').value.trim(),
+                groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
+                groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
+                groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
+                metaDesc: document.getElementById('metaDesc').value.trim(),
+                gaId: document.getElementById('gaId').value.trim(),
+                metaKeywords: document.getElementById('metaKeywords').value.trim(),
+                activeTheme: document.getElementById('activeTheme').value,
+                accentColor: document.getElementById('accentColor').value,
+                googleFont: document.getElementById('googleFont').value.trim()
+            };
+            try {
+                await DB.set('tc_settings', settings);
+                alert('✅ Ayarlar başarıyla kaydedildi!');
+            } catch(e) { alert('❌ Kaydedilemedi: ' + e.message); }
+            btn.textContent = '💾 Kaydet';
+            btn.disabled = false;
+        }
+
+        document.getElementById('saveAllBtn').onclick = saveSettings;
+        document.addEventListener('dbReady', loadSettings);
+        setTimeout(loadSettings, 1000);
     </script>
 </body>
-
 </html>
-
-

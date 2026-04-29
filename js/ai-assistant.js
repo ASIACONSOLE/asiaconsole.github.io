@@ -622,7 +622,7 @@ Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı b
         }
     };
 
-    return { init, generateGame, rewriteArticle };
+    return { init, generateGame, rewriteArticle, ask: fetchGeminiResponse };
 })();
 
 // Auto-init on load if scripts are ready

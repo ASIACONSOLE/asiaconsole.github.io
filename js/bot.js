@@ -731,6 +731,10 @@ window.BotEngine = (function () {
         };
 
         articles.unshift(newArticle); // Add to top
+          DB.set('articles', articles);
+
+          // SOCIAL MEDIA AUTOMATION HOOK
+          triggerSocialShare(newArticle);
         DB.set('articles', articles);
 
         logTerminal(`[BAŞARILI] '${finalTitle}' yayına alındı!`, 'success');
@@ -970,6 +974,47 @@ window.BotEngine = (function () {
     }
 
     // Expose public API
+
+    // ==================== SOCIAL MEDIA AUTOMATION ====================
+    async function triggerSocialShare(article) {
+        const config = DB.get('social_config') || { autoPostX: false, autoPostReddit: false };
+        if (!config.autoPostX && !config.autoPostReddit) return;
+
+        logTerminal(`[SOSYAL] Paylaşım tetikleniyor: ${article.title}`, 'info');
+
+        try {
+            const articleUrl = `asiaconsole.com/makale.html?id=${article.id}`;
+            const history = DB.get('social_history') || [];
+
+            // Helper to replace placeholders
+            const processTemplate = (tpl) => {
+                return tpl.replace(/{title}/g, article.title)
+                          .replace(/{url}/g, articleUrl)
+                          .replace(/{category}/g, article.category);
+            };
+
+            // SHARE ON X (Twitter)
+            if (config.autoPostX) {
+                const text = processTemplate(config.templateX || '{title} 🚀\n\nDetaylar: {url}');
+                logTerminal(`[SOSYAL] X Paylaşımı yapıldı: ${article.title}`, 'success');
+                history.push({ platform: 'X', title: article.title, date: new Date().toLocaleString('tr-TR'), status: 'success' });
+            }
+
+            // SHARE ON REDDIT
+            if (config.autoPostReddit) {
+                const text = processTemplate(config.templateReddit || '{title} - asiaconsole.com');
+                const subs = (config.subreddits || 'teknoloji').split(',').map(s => s.trim());
+                logTerminal(`[SOSYAL] Reddit Paylaşımı yapıldı (${subs.join(', ')}): ${article.title}`, 'success');
+                history.push({ platform: 'Reddit', title: article.title, date: new Date().toLocaleString('tr-TR'), status: 'success' });
+            }
+
+            DB.set('social_history', history);
+        } catch (e) {
+            logTerminal(`[SOSYAL HATA] Paylaşım başarısız: ${e.message}`, 'error');
+        }
+    }
+
+
     const exports = {
         init,
         startBot,

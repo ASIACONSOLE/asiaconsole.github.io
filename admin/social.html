@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sosyal Medya Otomasyonu - AsiaConsole</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        .social-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .platform-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #374151;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #3b82f6;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
+
+        .template-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            min-height: 80px;
+            margin-top: 0.5rem;
+            outline: none;
+            width: 100%;
+            resize: vertical;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">🏠</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu</a>
+                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
+                <a href="social.html" class="sidebar-link active"><span class="icon">📱</span> Sosyal Medya</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <a href="visitors.html" class="sidebar-link"><span class="icon">📊</span> Ziyaretçi Analitiği</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">⚙️</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="logoutBtn">🚪 Güvenli Çıkış</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle"><span></span><span></span><span></span></div>
+                    <div class="topbar-title">📱 Sosyal Medya Otomasyonu</div>
+                </div>
+                <div class="topbar-actions">
+                    <span id="cloudSyncStatus">🔄 Senkronize...</span>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                    
+                    <!-- X (Twitter) Config -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="platform-header">
+                                <div class="platform-icon" style="color:#1DA1F2;">𝕏</div>
+                                <div class="admin-card-title">X (Twitter) Otomasyonu</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoPostX">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <label style="font-size:0.8rem; color:var(--text-muted);">Paylaşım Şablonu (AI Destekli)</label>
+                            <textarea id="templateX" class="template-box" placeholder="Örn: {title} 🚀
+
+Yeni rehberimiz yayında! Detaylar için tıklayın 👇
+{url}
+
+#AsiaConsole #Teknoloji"></textarea>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
+                                Değişkenler: {title}, {url}, {category}
+                            </p>
+                            <button class="btn-primary" style="margin-top:1rem; width:100%;" onclick="saveSocialConfig()">💾 Ayarları Kaydet</button>
+                        </div>
+                    </div>
+
+                    <!-- Reddit Config -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="platform-header">
+                                <div class="platform-icon" style="color:#FF4500;">🌐</div>
+                                <div class="admin-card-title">Reddit Otomasyonu</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoPostReddit">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <label style="font-size:0.8rem; color:var(--text-muted);">Hedef Subredditler (Virgülle ayırın)</label>
+                            <input type="text" id="subreddits" class="template-box" style="min-height:auto;" placeholder="turkey, teknoloji, oyun">
+                            
+                            <label style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem; display:block;">Paylaşım Şablonu</label>
+                            <textarea id="templateReddit" class="template-box" placeholder="{title} - asiaconsole.com"></textarea>
+                            
+                            <button class="btn-primary" style="margin-top:1rem; width:100%;" onclick="saveSocialConfig()">💾 Ayarları Kaydet</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Preview & Manual Share -->
+                    <div class="admin-card" style="grid-column: span 2;">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">✨ AI Sosyal Medya İçerik Oluşturucu</div>
+                        </div>
+                        <div style="padding: 1.5rem; display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                            <div>
+                                <label style="font-size:0.8rem; color:var(--text-muted);">Son Makalelerden Seç</label>
+                                <select id="articleSelect" class="template-box" style="min-height:auto; margin-bottom:1rem;"></select>
+                                <button class="btn-primary" style="width:100%;" id="generateAIBtn">🪄 AI ile Paylaşım Metni Oluştur</button>
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; color:var(--text-muted);">Önerilen Paylaşım Metni</label>
+                                <div id="aiPreview" style="padding:1rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; font-size:0.9rem; min-height:100px; white-space: pre-wrap;"></div>
+                                <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                                    <button class="btn-secondary" style="flex:1;" onclick="copyToClipboard()">📋 Kopyala</button>
+                                    <button class="btn-primary" style="flex:1;" onclick="shareDirectly()">🔗 Şimdi Paylaş</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div class="admin-card" style="grid-column: span 2;">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">📜 Paylaşım Geçmişi</div>
+                        </div>
+                        <div id="socialHistory" style="padding:0.5rem;">
+                            <!-- History items will be loaded here -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/ai-assistant.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSocialConfig();
+            loadRecentArticles();
+            renderHistory();
+
+            document.getElementById('generateAIBtn').addEventListener('click', generateAIPost);
+        });
+
+        function loadSocialConfig() {
+            const config = DB.get('social_config') || {
+                autoPostX: false,
+                autoPostReddit: false,
+                templateX: '{title} 🚀\\n\\nDetaylar: {url}\\n\\n#AsiaConsole #Teknoloji',
+                templateReddit: '{title} - asiaconsole.com',
+                subreddits: 'teknoloji, oyun'
+            };
+
+            document.getElementById('autoPostX').checked = config.autoPostX;
+            document.getElementById('autoPostReddit').checked = config.autoPostReddit;
+            document.getElementById('templateX').value = config.templateX;
+            document.getElementById('templateReddit').value = config.templateReddit;
+            document.getElementById('subreddits').value = config.subreddits;
+        }
+
+        function saveSocialConfig() {
+            const config = {
+                autoPostX: document.getElementById('autoPostX').checked,
+                autoPostReddit: document.getElementById('autoPostReddit').checked,
+                templateX: document.getElementById('templateX').value,
+                templateReddit: document.getElementById('templateReddit').value,
+                subreddits: document.getElementById('subreddits').value
+            };
+            DB.set('social_config', config);
+            showAdminToast('✅ Sosyal medya ayarları kaydedildi!', 'success');
+        }
+
+        function loadRecentArticles() {
+            const articles = DB.get('articles') || [];
+            const select = document.getElementById('articleSelect');
+            select.innerHTML = articles.slice(0, 10).map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+        }
+
+        async function generateAIPost() {
+            const id = document.getElementById('articleSelect').value;
+            const articles = DB.get('articles') || [];
+            const article = articles.find(a => a.id == id);
+            if (!article) return;
+
+            const preview = document.getElementById('aiPreview');
+            preview.textContent = '🪄 AI post oluşturuyor...';
+
+            try {
+                // Use the AI Assistant to generate a viral social post
+                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde viral olabilecek, merak uyandırıcı ve emoji dolu bir paylaşım metni oluştur. Makale Başlığı: ${article.title}. Özet: ${article.content.substring(0, 200)}. URL: asiaconsole.com/makale.html?id=${article.id}`;
+                
+                // Assuming AIAssistant.ask is available
+                if (typeof AIAssistant !== 'undefined') {
+                    const response = await AIAssistant.ask(prompt);
+                    preview.textContent = response;
+                } else {
+                    preview.textContent = "AI Servisi şu an ulaşılamaz durumda.";
+                }
+            } catch (e) {
+                preview.textContent = 'Hata oluştu: ' + e.message;
+            }
+        }
+
+        function renderHistory() {
+            const history = DB.get('social_history') || [];
+            const container = document.getElementById('socialHistory');
+            if (history.length === 0) {
+                container.innerHTML = '<p style="padding:1rem; color:var(--text-muted); text-align:center;">Henüz paylaşım yapılmadı.</p>';
+                return;
+            }
+            container.innerHTML = history.reverse().map(h => `
+                <div class="history-item">
+                    <div>
+                        <span style="color:var(--accent-blue); font-weight:600;">[${h.platform}]</span> 
+                        ${h.title}
+                    </div>
+                    <div style="color:var(--text-muted);">${h.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('aiPreview').textContent;
+            navigator.clipboard.writeText(text);
+            showAdminToast('📋 Metin kopyalandı!', 'success');
+        }
+
+        function shareDirectly() {
+            const text = document.getElementById('aiPreview').textContent;
+            const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+            window.open(url, '_blank');
+        }
+
+        function showAdminToast(msg, type) {
+            alert(msg); // Placeholder for a real toast
+        }
+    </script>
+</body>
+
+</html>

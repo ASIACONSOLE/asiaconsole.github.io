@@ -438,14 +438,9 @@
             btn.style.opacity = '0.5';
 
             try {
-                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL olabilecek, bol emojili bir paylaşım metni hazırla. 
+                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde VİRAL, bol emojili ve HASHTAGLİ bir paylaşım metni hazırla. 
 
-                DİZİLİM ŞÖYLE OLMALI:
-                1. Haber metni (Giriş ve gelişme)
-                2. Boşluk bırak ve sadece [LINK] yazısı koy (Oraya link gelecek)
-                3. En sona içerikle alakalı 5-6 adet HASHTAG ekle.
-
-                Sadece paylaşım metnini ver.
+                KURAL: Önce haberi yaz, sonra [LINK] yaz, en sona MUTLAKA en az 6-7 tane popüler hashtag ekle (#Teknoloji #Haber vb.). Hashtagleri asla unutma!
 
                 Başlık: ${article.title}\nÖzet: ${article.desc}`;
                 
@@ -453,12 +448,21 @@
                     let response = await AIAssistant.ask(prompt);
                     if (response) {
                         const articleUrl = `https://asiaconsole.com/makale-detay.html?id=${article.id}`;
-                        // AI'nın koyduğu [LINK] alanını gerçek linkle değiştir
+                        
+                        // Link Yerleşimi
                         if (response.includes('[LINK]')) {
                             response = response.replace('[LINK]', articleUrl);
                         } else {
                             response += "\n\n" + articleUrl;
                         }
+
+                        // HASHTAG YEDEK MOTORU (AI Unutursa)
+                        if (!response.includes('#')) {
+                            const tags = ["#Teknoloji", "#Haber", "#Gündem", "#AsiaConsole", "#HızlıHaber"];
+                            if (article.category) tags.push("#" + article.category);
+                            response += "\n\n" + tags.join(' ');
+                        }
+
                         preview.textContent = response;
                     } else {
                         preview.textContent = "AI yanıt vermedi. Lütfen Site Ayarları sayfasından Gemini API anahtarınızı kontrol edin.";

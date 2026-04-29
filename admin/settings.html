@@ -148,7 +148,7 @@
         }
 
         function loadSettings() {
-            const s = DB.get('site_settings') || {};
+            const s = DB.get('tc_settings') || {};
             document.getElementById('siteName').value = s.siteName || 'AsiaConsole';
             document.getElementById('siteSlogan').value = s.siteSlogan || '';
             document.getElementById('footerText').value = s.footerText || '';
@@ -198,7 +198,7 @@
             };
 
             try {
-                await DB.set('site_settings', settings);
+                await DB.set('tc_settings', settings);
                 alert('✅ Ayarlar başarıyla kaydedildi!');
             } catch(e) { alert('❌ Kaydedilemedi: ' + e.message); }
             

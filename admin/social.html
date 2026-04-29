@@ -385,6 +385,7 @@
             console.log('[Social] AI Butonuna Basıldı!');
             const select = document.getElementById('articleSelect');
             const id = select.value;
+            const title = select.options[select.selectedIndex]?.text;
             
             if (!id) {
                 alert('Lütfen listeden bir makale seçin.');
@@ -392,23 +393,29 @@
             }
 
             const articles = DB.get('articles') || [];
-            const article = articles.find(a => String(a.id) === String(id));
+            
+            // 1. Önce ID ile ara (En sağlamı)
+            let article = articles.find(a => String(a.id) === String(id));
+            
+            // 2. ID ile bulamazsa Başlık ile ara (Yedek plan)
+            if (!article && title) {
+                console.log('[Social] ID ile bulunamadı, başlık ile aranıyor:', title);
+                article = articles.find(a => a.title === title);
+            }
             
             if (!article) {
-                // Son bir kez veriyi tazeleyip aramayı dene
+                // Eğer hala yoksa, her ihtimale karşı listeyi yenileyip son bir kez bak
                 loadRecentArticles();
                 const freshArticles = DB.get('articles') || [];
-                const freshArticle = freshArticles.find(a => String(a.id) === String(id));
-                
-                if (!freshArticle) {
-                    alert('Makale verisi henüz tam senkronize olmadı. Lütfen 2 saniye bekleyip tekrar deneyin.');
-                    return;
-                }
-                // Eğer bulduysak devam et
-                processArticle(freshArticle);
-            } else {
-                processArticle(article);
+                article = freshArticles.find(a => String(a.id) === String(id) || a.title === title);
             }
+
+            if (!article) {
+                alert('Seçilen makale veritabanında bulunamadı. Lütfen sayfayı yenileyip farklı bir makale deneyin.');
+                return;
+            }
+
+            processArticle(article);
         }
 
         async function processArticle(article) {

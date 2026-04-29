@@ -56,37 +56,115 @@
         </div>
     </div>
 
+    <script src="../js/firebase.js"></script>
     <script>
         // If already logged in, go to dashboard
         if (localStorage.getItem('tc_admin_session')) {
             window.location.href = 'dashboard.html';
         }
 
-        function doLogin() {
+        // SHA-256 hash helper (same as main.js)
+        async function hashAdminPass(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + '_tc_admin_salt');
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function doLogin() {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value;
             const errEl = document.getElementById('loginError');
-
-            const savedPass = localStorage.getItem('tc_admin_password');
-            if (!savedPass) { document.getElementById('loginError').textContent = '⚠️ İlk kurulum: Admin paneli → Ayarlar bölümünden şifre belirleyin.'; document.getElementById('loginError').style.display = 'block'; return; }
-            const targetPass = savedPass;
             const targetUser = 'ASIA';
 
-            if (String(user || '').toUpperCase() === targetUser && pass === targetPass) {
+            if (!user || !pass) {
+                errEl.textContent = '⚠️ Lütfen kullanıcı adı ve şifre girin.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            const hashedInput = await hashAdminPass(pass);
+
+            // 1. Try localStorage first (fastest)
+            let savedHash = localStorage.getItem('tc_admin_password_hash');
+
+            // 2. If not in localStorage, try Firebase
+            if (!savedHash && typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
+                try {
+                    const remote = await FirebaseDB.get('site_data', 'admin_config');
+                    if (remote && remote.passwordHash) {
+                        savedHash = remote.passwordHash;
+                        // Cache locally for next time
+                        localStorage.setItem('tc_admin_password_hash', savedHash);
+                    }
+                } catch (e) { console.warn('[Admin] Firebase read failed:', e); }
+            }
+
+            // 3. If still no hash anywhere, accept initial setup password
+            if (!savedHash) {
+                // First-time setup: default password is "AsiaAdmin2026!"
+                const defaultHash = await hashAdminPass('AsiaAdmin2026!');
+                if (String(user || '').toUpperCase() === targetUser && hashedInput === defaultHash) {
+                    // Save to both localStorage and Firebase
+                    localStorage.setItem('tc_admin_password_hash', defaultHash);
+                    if (typeof FirebaseDB !== 'undefined') {
+                        FirebaseDB.onReady(() => {
+                            FirebaseDB.set('site_data', 'admin_config', {
+                                passwordHash: defaultHash,
+                                lastUpdated: Date.now()
+                            });
+                        });
+                    }
+                    localStorage.setItem('tc_admin_session', JSON.stringify({ user: targetUser, time: Date.now() }));
+                    errEl.textContent = '✅ İlk kurulum şifresi ile giriş yapıldı. Lütfen Ayarlar bölümünden şifrenizi değiştirin!';
+                    errEl.style.color = '#f59e0b';
+                    errEl.style.background = 'rgba(245,158,11,0.1)';
+                    errEl.style.borderColor = 'rgba(245,158,11,0.3)';
+                    errEl.style.display = 'block';
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+                    return;
+                } else {
+                    errEl.textContent = '⚠️ İlk kurulum: Kullanıcı adı "ASIA", şifre "AsiaAdmin2026!" ile giriş yapın.';
+                    errEl.style.display = 'block';
+                    return;
+                }
+            }
+
+            // Normal login: compare hashes
+            if (String(user || '').toUpperCase() === targetUser && hashedInput === savedHash) {
                 localStorage.setItem('tc_admin_session', JSON.stringify({ user: targetUser, time: Date.now() }));
-
-                // Session established successfully
-
                 window.location.href = 'dashboard.html';
             } else {
+                // Also check legacy plaintext password (backward compat)
+                const legacyPass = localStorage.getItem('tc_admin_password');
+                if (legacyPass && pass === legacyPass && String(user || '').toUpperCase() === targetUser) {
+                    // Migrate to hash
+                    localStorage.setItem('tc_admin_password_hash', hashedInput);
+                    localStorage.removeItem('tc_admin_password');
+                    if (typeof FirebaseDB !== 'undefined') {
+                        FirebaseDB.onReady(() => {
+                            FirebaseDB.set('site_data', 'admin_config', {
+                                passwordHash: hashedInput,
+                                lastUpdated: Date.now()
+                            });
+                        });
+                    }
+                    localStorage.setItem('tc_admin_session', JSON.stringify({ user: targetUser, time: Date.now() }));
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                errEl.textContent = '❌ Kullanıcı adı veya şifre hatalı.';
                 errEl.style.display = 'block';
                 document.getElementById('adminPass').value = '';
             }
         }
 
+        // Wait for Firebase to be ready before enabling login
         document.getElementById('loginBtn').addEventListener('click', doLogin);
         document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
     </script>
+
 </body>
 
 </html>

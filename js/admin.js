@@ -6,19 +6,49 @@
 const ADMIN_SESSION_KEY = 'tc_admin_session';
 
 const Admin = {
-    login(user, pass) {
-        const savedPass = localStorage.getItem('tc_admin_password');
-        // SECURITY: No fallback password — must be set via admin panel
-        if (!savedPass) return false;
-        const targetPass = savedPass;
-        const targetUser = 'ASIA';
+    async login(user, pass) {
+        // SHA-256 hash helper
+        async function hashAdminPass(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + '_tc_admin_salt');
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-        if (String(user || '').toUpperCase() === targetUser && pass === targetPass) {
+        const targetUser = 'ASIA';
+        const hashedInput = await hashAdminPass(pass);
+
+        // Check localStorage hash, then Firebase, then legacy plaintext
+        let savedHash = localStorage.getItem('tc_admin_password_hash');
+
+        if (!savedHash && typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
+            try {
+                const remote = await FirebaseDB.get('site_data', 'admin_config');
+                if (remote && remote.passwordHash) {
+                    savedHash = remote.passwordHash;
+                    localStorage.setItem('tc_admin_password_hash', savedHash);
+                }
+            } catch (e) {}
+        }
+
+        if (savedHash && String(user || '').toUpperCase() === targetUser && hashedInput === savedHash) {
             localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user: targetUser, time: Date.now() }));
             return true;
         }
+
+        // Legacy plaintext fallback
+        const legacyPass = localStorage.getItem('tc_admin_password');
+        if (legacyPass && pass === legacyPass && String(user || '').toUpperCase() === targetUser) {
+            localStorage.setItem('tc_admin_password_hash', hashedInput);
+            localStorage.removeItem('tc_admin_password');
+            localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user: targetUser, time: Date.now() }));
+            return true;
+        }
+
         return false;
     },
+
     logout() {
         localStorage.removeItem(ADMIN_SESSION_KEY);
         window.location.href = 'index.html';

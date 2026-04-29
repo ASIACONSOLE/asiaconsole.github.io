@@ -80,15 +80,30 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 1rem;
+            padding: 0.75rem;
             font-family: 'Inter', sans-serif;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            min-height: 80px;
-            margin-top: 0.5rem;
-            outline: none;
+            color: var(--text-primary);
+            font-size: 0.85rem;
             width: 100%;
+            outline: none;
+            box-sizing: border-box;
+            margin-top: 0.25rem;
+        }
+
+        textarea.template-box {
+            min-height: 80px;
             resize: vertical;
+        }
+
+        .api-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
         .history-item {
@@ -101,6 +116,25 @@
 
         .history-item:last-child {
             border-bottom: none;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .setup-guide {
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .setup-guide:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -146,14 +180,14 @@
             </div>
 
             <div class="admin-content">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                <div style="display:grid; grid-template-columns: 1fr; gap:1.5rem;">
                     
-                    <!-- X (Twitter) Config -->
+                    <!-- X (Twitter) CONFIG -->
                     <div class="admin-card">
                         <div class="admin-card-header">
                             <div class="platform-header">
                                 <div class="platform-icon" style="color:#1DA1F2;">𝕏</div>
-                                <div class="admin-card-title">X (Twitter) Otomasyonu</div>
+                                <div class="admin-card-title">X (Twitter) Otomasyon Ayarları</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="autoPostX">
@@ -161,26 +195,42 @@
                             </label>
                         </div>
                         <div style="padding: 1.5rem;">
-                            <label style="font-size:0.8rem; color:var(--text-muted);">Paylaşım Şablonu (AI Destekli)</label>
-                            <textarea id="templateX" class="template-box" placeholder="Örn: {title} 🚀
+                            <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" class="setup-guide">💡 X Developer Panelinden Anahtarları Al</a>
+                            
+                            <div class="api-input-group">
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">API Key (Consumer Key)</label>
+                                    <input type="text" id="xApiKey" class="template-box" value="8kdt0RpsFKx4CKqkpFX0TKJDX">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">API Secret (Consumer Secret)</label>
+                                    <input type="password" id="xApiSecret" class="template-box" value="twUJee1yr8IR6GF0otkZZfHsaycx737mze12TUyOMPWMmTNmjjH">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Access Token</label>
+                                    <input type="text" id="xAccessToken" class="template-box" placeholder="Access Token buraya">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Access Token Secret</label>
+                                    <input type="password" id="xAccessTokenSecret" class="template-box" placeholder="Access Token Secret buraya">
+                                </div>
+                            </div>
 
-Yeni rehberimiz yayında! Detaylar için tıklayın 👇
-{url}
-
-#AsiaConsole #Teknoloji"></textarea>
-                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
-                                Değişkenler: {title}, {url}, {category}
-                            </p>
-                            <button class="btn-primary" style="margin-top:1rem; width:100%;" onclick="saveSocialConfig()">💾 Ayarları Kaydet</button>
+                            <div style="margin-top:1.5rem;">
+                                <label style="font-size:0.8rem; color:var(--text-muted);">Paylaşım Şablonu (AI Destekli)</label>
+                                <textarea id="templateX" class="template-box" placeholder="{title} 🚀\n\nDetaylar: {url}\n\n#AsiaConsole"></textarea>
+                            </div>
+                            
+                            <button class="btn-primary" style="margin-top:1.5rem; width:100%;" onclick="saveSocialConfig()">💾 X Ayarlarını Kaydet</button>
                         </div>
                     </div>
 
-                    <!-- Reddit Config -->
+                    <!-- REDDIT CONFIG -->
                     <div class="admin-card">
                         <div class="admin-card-header">
                             <div class="platform-header">
                                 <div class="platform-icon" style="color:#FF4500;">🌐</div>
-                                <div class="admin-card-title">Reddit Otomasyonu</div>
+                                <div class="admin-card-title">Reddit Otomasyon Ayarları</div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="autoPostReddit">
@@ -188,25 +238,45 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
                             </label>
                         </div>
                         <div style="padding: 1.5rem;">
-                            <label style="font-size:0.8rem; color:var(--text-muted);">Hedef Subredditler (Virgülle ayırın)</label>
-                            <input type="text" id="subreddits" class="template-box" style="min-height:auto;" placeholder="turkey, teknoloji, oyun">
+                            <a href="https://www.reddit.com/prefs/apps" target="_blank" class="setup-guide">💡 Reddit Developer Panelinden Anahtarları Al</a>
                             
-                            <label style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem; display:block;">Paylaşım Şablonu</label>
-                            <textarea id="templateReddit" class="template-box" placeholder="{title} - asiaconsole.com"></textarea>
+                            <div class="api-input-group">
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Reddit Client ID</label>
+                                    <input type="text" id="redditClientId" class="template-box">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Reddit Secret</label>
+                                    <input type="password" id="redditSecret" class="template-box">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Username</label>
+                                    <input type="text" id="redditUser" class="template-box">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Password</label>
+                                    <input type="password" id="redditPass" class="template-box">
+                                </div>
+                            </div>
+
+                            <div style="margin-top:1.5rem;">
+                                <label style="font-size:0.8rem; color:var(--text-muted);">Hedef Subredditler (Virgülle ayırın)</label>
+                                <input type="text" id="subreddits" class="template-box" placeholder="turkey, teknoloji, oyun">
+                            </div>
                             
-                            <button class="btn-primary" style="margin-top:1rem; width:100%;" onclick="saveSocialConfig()">💾 Ayarları Kaydet</button>
+                            <button class="btn-primary" style="margin-top:1.5rem; width:100%;" onclick="saveSocialConfig()">💾 Reddit Ayarlarını Kaydet</button>
                         </div>
                     </div>
 
                     <!-- AI Preview & Manual Share -->
-                    <div class="admin-card" style="grid-column: span 2;">
+                    <div class="admin-card">
                         <div class="admin-card-header">
                             <div class="admin-card-title">✨ AI Sosyal Medya İçerik Oluşturucu</div>
                         </div>
                         <div style="padding: 1.5rem; display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                             <div>
                                 <label style="font-size:0.8rem; color:var(--text-muted);">Son Makalelerden Seç</label>
-                                <select id="articleSelect" class="template-box" style="min-height:auto; margin-bottom:1rem;"></select>
+                                <select id="articleSelect" class="template-box" style="margin-bottom:1rem;"></select>
                                 <button class="btn-primary" style="width:100%;" id="generateAIBtn">🪄 AI ile Paylaşım Metni Oluştur</button>
                             </div>
                             <div>
@@ -214,20 +284,18 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
                                 <div id="aiPreview" style="padding:1rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; font-size:0.9rem; min-height:100px; white-space: pre-wrap;"></div>
                                 <div style="display:flex; gap:0.5rem; margin-top:1rem;">
                                     <button class="btn-secondary" style="flex:1;" onclick="copyToClipboard()">📋 Kopyala</button>
-                                    <button class="btn-primary" style="flex:1;" onclick="shareDirectly()">🔗 Şimdi Paylaş</button>
+                                    <button class="btn-primary" style="flex:1;" onclick="shareDirectly()">🔗 Şimdi Paylaş (X)</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- History -->
-                    <div class="admin-card" style="grid-column: span 2;">
+                    <div class="admin-card">
                         <div class="admin-card-header">
                             <div class="admin-card-title">📜 Paylaşım Geçmişi</div>
                         </div>
-                        <div id="socialHistory" style="padding:0.5rem;">
-                            <!-- History items will be loaded here -->
-                        </div>
+                        <div id="socialHistory" style="padding:0.5rem;"></div>
                     </div>
 
                 </div>
@@ -247,20 +315,32 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
             document.getElementById('generateAIBtn').addEventListener('click', generateAIPost);
         });
 
-        function loadSocialConfig() {
-            const config = DB.get('social_config') || {
-                autoPostX: false,
-                autoPostReddit: false,
-                templateX: '{title} 🚀\\n\\nDetaylar: {url}\\n\\n#AsiaConsole #Teknoloji',
-                templateReddit: '{title} - asiaconsole.com',
-                subreddits: 'teknoloji, oyun'
-            };
+        // OBFUSCATION HELPERS
+        const _k = "AsiaSocialSecret";
+        function _obs(s) { if(!s) return ""; return btoa(s.split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join("")); }
+        function _deobs(s) { if(!s) return ""; try { return atob(s).split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join(""); } catch(e){return s;} }
 
-            document.getElementById('autoPostX').checked = config.autoPostX;
-            document.getElementById('autoPostReddit').checked = config.autoPostReddit;
-            document.getElementById('templateX').value = config.templateX;
-            document.getElementById('templateReddit').value = config.templateReddit;
-            document.getElementById('subreddits').value = config.subreddits;
+        function loadSocialConfig() {
+            const config = DB.get('social_config') || {};
+            
+            document.getElementById('autoPostX').checked = !!config.autoPostX;
+            document.getElementById('autoPostReddit').checked = !!config.autoPostReddit;
+            document.getElementById('templateX').value = config.templateX || '{title} 🚀\\n\\nDetaylar: {url}\\n\\n#AsiaConsole';
+            document.getElementById('subreddits').value = config.subreddits || 'teknoloji, oyun';
+
+            // X Keys (Use default if first time, then deobs from storage)
+            const xKey = _deobs(config.xApiKey);
+            const xSec = _deobs(config.xApiSecret);
+            if (xKey) document.getElementById('xApiKey').value = xKey;
+            if (xSec) document.getElementById('xApiSecret').value = xSec;
+            document.getElementById('xAccessToken').value = _deobs(config.xAccessToken);
+            document.getElementById('xAccessTokenSecret').value = _deobs(config.xAccessTokenSecret);
+
+            // Reddit Keys
+            document.getElementById('redditClientId').value = _deobs(config.redditClientId);
+            document.getElementById('redditSecret').value = _deobs(config.redditSecret);
+            document.getElementById('redditUser').value = _deobs(config.redditUser);
+            document.getElementById('redditPass').value = _deobs(config.redditPass);
         }
 
         function saveSocialConfig() {
@@ -268,17 +348,27 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
                 autoPostX: document.getElementById('autoPostX').checked,
                 autoPostReddit: document.getElementById('autoPostReddit').checked,
                 templateX: document.getElementById('templateX').value,
-                templateReddit: document.getElementById('templateReddit').value,
-                subreddits: document.getElementById('subreddits').value
+                subreddits: document.getElementById('subreddits').value,
+                
+                // Obfuscate
+                xApiKey: _obs(document.getElementById('xApiKey').value),
+                xApiSecret: _obs(document.getElementById('xApiSecret').value),
+                xAccessToken: _obs(document.getElementById('xAccessToken').value),
+                xAccessTokenSecret: _obs(document.getElementById('xAccessTokenSecret').value),
+                
+                redditClientId: _obs(document.getElementById('redditClientId').value),
+                redditSecret: _obs(document.getElementById('redditSecret').value),
+                redditUser: _obs(document.getElementById('redditUser').value),
+                redditPass: _obs(document.getElementById('redditPass').value)
             };
             DB.set('social_config', config);
-            showAdminToast('✅ Sosyal medya ayarları kaydedildi!', 'success');
+            alert('✅ Tüm sosyal medya ayarları başarıyla kaydedildi!');
         }
 
         function loadRecentArticles() {
             const articles = DB.get('articles') || [];
             const select = document.getElementById('articleSelect');
-            select.innerHTML = articles.slice(0, 10).map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+            select.innerHTML = articles.slice(0, 15).map(a => `<option value="${a.id}">${a.title}</option>`).join('');
         }
 
         async function generateAIPost() {
@@ -291,19 +381,14 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
             preview.textContent = '🪄 AI post oluşturuyor...';
 
             try {
-                // Use the AI Assistant to generate a viral social post
-                const prompt = `Aşağıdaki makale için X (Twitter) üzerinde viral olabilecek, merak uyandırıcı ve emoji dolu bir paylaşım metni oluştur. Makale Başlığı: ${article.title}. Özet: ${article.content.substring(0, 200)}. URL: asiaconsole.com/makale.html?id=${article.id}`;
-                
-                // Assuming AIAssistant.ask is available
-                if (typeof AIAssistant !== 'undefined') {
+                const prompt = `Makale Başlığı: ${article.title}\nÖzet: ${article.desc}\n\nBu makale için X (Twitter) üzerinde viral olabilecek bir paylaşım metni hazırla.`;
+                if (typeof AIAssistant !== 'undefined' && AIAssistant.ask) {
                     const response = await AIAssistant.ask(prompt);
-                    preview.textContent = response;
+                    preview.textContent = response + "\n\n🔗 https://asiaconsole.com/makale.html?id=" + article.id;
                 } else {
-                    preview.textContent = "AI Servisi şu an ulaşılamaz durumda.";
+                    preview.textContent = "AI Servisi aktif değil.";
                 }
-            } catch (e) {
-                preview.textContent = 'Hata oluştu: ' + e.message;
-            }
+            } catch (e) { preview.textContent = 'Hata: ' + e.message; }
         }
 
         function renderHistory() {
@@ -313,13 +398,13 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
                 container.innerHTML = '<p style="padding:1rem; color:var(--text-muted); text-align:center;">Henüz paylaşım yapılmadı.</p>';
                 return;
             }
-            container.innerHTML = history.reverse().map(h => `
+            container.innerHTML = history.reverse().slice(0, 10).map(h => `
                 <div class="history-item">
                     <div>
-                        <span style="color:var(--accent-blue); font-weight:600;">[${h.platform}]</span> 
+                        <span class="status-badge" style="background:rgba(59,130,246,0.1); color:var(--accent-blue);">${h.platform}</span> 
                         ${h.title}
                     </div>
-                    <div style="color:var(--text-muted);">${h.date}</div>
+                    <div style="color:var(--text-muted); font-size:0.75rem;">${h.date}</div>
                 </div>
             `).join('');
         }
@@ -327,17 +412,12 @@ Yeni rehberimiz yayında! Detaylar için tıklayın 👇
         function copyToClipboard() {
             const text = document.getElementById('aiPreview').textContent;
             navigator.clipboard.writeText(text);
-            showAdminToast('📋 Metin kopyalandı!', 'success');
+            alert('📋 Kopyalandı!');
         }
 
         function shareDirectly() {
             const text = document.getElementById('aiPreview').textContent;
-            const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
-            window.open(url, '_blank');
-        }
-
-        function showAdminToast(msg, type) {
-            alert(msg); // Placeholder for a real toast
+            window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text), '_blank');
         }
     </script>
 </body>

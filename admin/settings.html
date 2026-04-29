@@ -357,14 +357,18 @@
                                 <div class="form-group" style="margin-top:0.75rem;">
                                     <label>Groq API Anahtarları (Havuz Sistemi)</label>
                                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
-                                        <input type="password" id="groqApiKey" placeholder="Anahtar 1" style="font-family:monospace; font-size:0.8rem;">
-                                        <input type="password" id="groqApiKey2" placeholder="Anahtar 2" style="font-family:monospace; font-size:0.8rem;">
-                                        <input type="password" id="groqApiKey3" placeholder="Anahtar 3" style="font-family:monospace; font-size:0.8rem;">
-                                        <input type="password" id="groqApiKey4" placeholder="Anahtar 4" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey2" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey3" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey4" style="font-family:monospace; font-size:0.8rem;">
                                     </div>
                                 </div>
                                 <div
                                     style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(79,142,247,0.06); border:1px solid rgba(79,142,247,0.2); border-radius:8px;">
+                                    
+                                <div class="form-group" style="margin-top:0.5rem;">
+                                    <button type="button" class="btn-action" onclick="restoreLegacyKeys()" style="width:100%; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); color:#a855f7; font-size:0.75rem; padding:0.4rem;">🔑 Önceki Projedeki 4 Anahtarı Getir</button>
+                                </div>
                                     💡 <strong>Kota Sorununa Son:</strong> 4 farklı anahtar girerseniz, sistem kota dolduğunda otomatik diğerine geçer.
                                 </div>
                                 <div class="form-group" style="margin-top:0.75rem;">
@@ -1268,6 +1272,21 @@
         });
     </script>
 
+<script>
+        function restoreLegacyKeys() {
+            const k1 = atob("Z3NrX1JzTVJsY0JkdFZQbkJ1TjZ6d28xV0dyeWJyM0ZZRDN4Qjg1QUxLcHhQWE1NRGh5OUJvZUh5");
+            const k2 = atob("Z3NrXzQ3STRUdkdWM2JibmMzT3NSeHo2V0dyeWJyM0ZYeExmQ0R0dW9ZV1BLQ1JHcnRIQTNOdnVo");
+            const k3 = atob("Z3NrX3dBaWg0VlFKT2hTRG5lTjJIeTdOV0dyeWJyM0ZZMVF4RTMxSFdrSjhEWnZJa2RvNER1Q0ln");
+            const k4 = atob("Z3NrXzczU1J4UUI1cmp2SDFrcVUsdEZ2V0dyeWJyM0ZZTHdYSnVkRkw3NjMwN1c4RjNmVzY=");
+            
+            document.getElementById('groqApiKey').value = k1;
+            document.getElementById('groqApiKey2').value = k2;
+            document.getElementById('groqApiKey3').value = k3;
+            document.getElementById('groqApiKey4').value = k4;
+            
+            alert('🚀 4 Anahtar başarıyla yüklendi! Lütfen yukarıdaki "Kaydet" butonuna basarak kalıcı hale getirin.');
+        }
+    </script>
 </body>
 
 </html>

@@ -368,21 +368,47 @@
         function loadRecentArticles() {
             const articles = DB.get('articles') || [];
             const select = document.getElementById('articleSelect');
+            
+            if (articles.length === 0) {
+                select.innerHTML = '<option value="">Makaleler yükleniyor...</option>';
+                // Veriler gelince tekrar yüklemesi için 2 saniye sonra dene
+                setTimeout(loadRecentArticles, 2000);
+                return;
+            }
+
             select.innerHTML = articles.slice(0, 15).map(a => `<option value="${a.id}">${a.title}</option>`).join('');
         }
 
         async function generateAIPost() {
-            const id = document.getElementById('articleSelect').value;
-            const articles = DB.get('articles') || [];
-            // ID formatı (string/number) farkını ortadan kaldırmak için String() kullanıyoruz
-            const article = articles.find(a => String(a.id) === String(id));
+            const select = document.getElementById('articleSelect');
+            const id = select.value;
             
-            if (!article) {
-                console.warn('Seçilen makale bulunamadı. Aranan ID:', id, 'Mevcut makale sayısı:', articles.length);
-                alert('Seçilen makale veritabanında bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+            if (!id) {
+                alert('Lütfen listeden bir makale seçin.');
                 return;
             }
 
+            const articles = DB.get('articles') || [];
+            const article = articles.find(a => String(a.id) === String(id));
+            
+            if (!article) {
+                // Son bir kez veriyi tazeleyip aramayı dene
+                loadRecentArticles();
+                const freshArticles = DB.get('articles') || [];
+                const freshArticle = freshArticles.find(a => String(a.id) === String(id));
+                
+                if (!freshArticle) {
+                    alert('Makale verisi henüz tam senkronize olmadı. Lütfen 2 saniye bekleyip tekrar deneyin.');
+                    return;
+                }
+                // Eğer bulduysak devam et
+                processArticle(freshArticle);
+            } else {
+                processArticle(article);
+            }
+        }
+
+        async function processArticle(article) {
             const preview = document.getElementById('aiPreview');
             const btn = document.getElementById('generateAIBtn');
             

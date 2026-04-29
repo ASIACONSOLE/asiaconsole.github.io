@@ -287,8 +287,8 @@
                                 <div id="aiPreview" style="padding:1rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; font-size:0.9rem; min-height:100px; white-space: pre-wrap;"></div>
                                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem;">
                                     <button class="btn-secondary" style="flex:1;" onclick="copyToClipboard()">📋 Metni Kopyala</button>
-                                    <button class="btn-secondary" style="flex:1;" onclick="downloadPreviewImg()">🖼️ Resmi İndir</button>
-                                    <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="shareDirectly()">🚀 X'te Paylaş (Resimli Kart)</button>
+                                    <button class="btn-secondary" style="flex:1;" onclick="copyImageToClipboard()">🖼️ Resmi Kopyala</button>
+                                    <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="shareDirectly()">🚀 X'te Paylaş (Açılan Ekrana CTRL+V Yapın)</button>
                                 </div>
                             </div>
                         </div>
@@ -484,18 +484,20 @@
             alert('📋 Kopyalandı!');
         }
 
-        function downloadPreviewImg() {
+        async function copyImageToClipboard() {
             const img = document.getElementById('previewImg');
-            if (!img.src || img.src.includes('data:')) {
-                alert('İndirilecek resim bulunamadı.');
-                return;
+            if (!img.src) { alert('Kopyalanacak resim bulunamadı.'); return; }
+            
+            try {
+                const response = await fetch(img.src);
+                const blob = await response.blob();
+                const item = new ClipboardItem({ [blob.type]: blob });
+                await navigator.clipboard.write([item]);
+                alert('🖼️ Resim kopyalandı! X ekranında CTRL+V yaparak yapıştırabilirsiniz.');
+            } catch (err) {
+                console.error('Kopyalama hatası:', err);
+                alert('Resim doğrudan kopyalanamadı. Lütfen resme sağ tıklayıp "Resmi Kopyala" deyin veya indir butonunu kullanın.');
             }
-            const a = document.createElement('a');
-            a.href = img.src;
-            a.download = 'asiaconsole-social-share.jpg';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         }
 
         function shareDirectly() {
@@ -503,8 +505,6 @@
             const select = document.getElementById('articleSelect');
             const id = select.value;
             const url = `https://asiaconsole.com/makale-detay.html?id=${id}`;
-            
-            // X Intent with text AND url to trigger image card
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
         }
     </script>

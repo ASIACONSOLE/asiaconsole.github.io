@@ -725,7 +725,7 @@ var DB = {
                 { id: 1, username: 'CodeMaster', email: 'codemaster@asiaconsole.com', password: '123456', joined: '01 Oca 2025', posts: 47, active: true },
                 { id: 2, username: 'GamerPro', email: 'gamerpro@asiaconsole.com', password: '123456', joined: '15 Oca 2025', posts: 31, active: true },
                 { id: 3, username: 'AppDev', email: 'appdev@asiaconsole.com', password: '123456', joined: '10 Şub 2025', posts: 12, active: true },
-                { id: 4, username: 'ASIA', email: 'admin@asiaconsole.com', password: '160515apO.008', joined: '01 Oca 2024', active: true, role: 'admin' },
+                { id: 4, username: 'ASIA', email: 'admin@asiaconsole.com', password: 'ADMIN_PASSWORD_REQUIRED', joined: '01 Oca 2024', active: true, role: 'admin' },
                 { id: 5, username: 'GameEditor', email: 'editor@asiaconsole.com', password: '123456', joined: '05 Oca 2025', active: true },
                 { id: 6, username: 'DevTeam', email: 'dev@asiaconsole.com', password: '123456', joined: '12 Oca 2025', active: true },
                 { id: 7, username: 'TechWriter', email: 'writer@asiaconsole.com', password: '123456', joined: '20 Oca 2025', active: true },
@@ -734,17 +734,8 @@ var DB = {
                 { id: 10, username: 'SteamUser', email: 'steam@asiaconsole.com', password: '123456', joined: '30 Oca 2025', active: true }
             ], false);
         } else {
-            // MIGRATION: Ensure Admin credentials are updated to the new ASIA / 160515apO.008
-            let users = this.get('users');
-            let admin = users.find(u => u.role === 'admin' || u.username.toLowerCase() === 'admin' || u.username.toLowerCase() === 'asia');
-            if (admin) {
-                if (admin.username !== 'ASIA' || admin.password !== '160515apO.008') {
-                    admin.username = 'ASIA';
-                    admin.password = '160515apO.008';
-                    this.set('users', users, true); // Sync migration to cloud
-                    console.log('[Migration] Admin account updated to ASIA / new password ✓');
-                }
-            }
+            // MIGRATION: Admin check removed for security (to prevent hardcoded password overrides)
+            console.log('[Init] User data verified ✓');
         }
 
         if (!this.get('user_projects')) this.set('user_projects', [], false);

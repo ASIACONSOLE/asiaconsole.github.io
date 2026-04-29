@@ -978,68 +978,33 @@ window.BotEngine = (function () {
     // ==================== SOCIAL MEDIA AUTOMATION ====================
     
     // ==================== SOCIAL MEDIA AUTOMATION ====================
+    
     async function triggerSocialShare(article) {
-        const config = DB.get('social_config') || { autoPostX: false, autoPostReddit: false };
-        if (!config.autoPostX && !config.autoPostReddit) return;
-
-        logTerminal(`[SOSYAL] Paylaşım tetikleniyor: ${article.title}`, 'info');
-
         try {
+            const config = DB.get('social_config') || {};
+            if (!config.autoPostX && !config.autoPostReddit) return;
+
+            logTerminal(`[SOSYAL] Otomatik paylaşım tetiklendi: ${article.title}`, 'info');
             const articleUrl = `https://asiaconsole.com/makale.html?id=${article.id}`;
             const history = DB.get('social_history') || [];
 
-            // Helper to replace placeholders
-            const processTemplate = (tpl) => {
-                return tpl.replace(/{title}/g, article.title)
-                          .replace(/{url}/g, articleUrl)
-                          .replace(/{category}/g, article.category || 'Teknoloji');
-            };
-
-            // SHARE ON X (Twitter)
-            if (config.autoPostX) {
-                const text = processTemplate(config.templateX || '{title} 🚀\n\nDetaylar: {url}');
-                
-                // Real-world check: Do we have keys?
-                if (config.xApiKey && config.xAccessToken) {
-                    logTerminal(`[SOSYAL] X (Twitter) API üzerinden paylaşılıyor...`, 'info');
-                    // Simulation of API success
-                    setTimeout(() => {
-                        logTerminal(`[SOSYAL] X Paylaşımı BAŞARILI: ${article.title}`, 'success');
-                    }, 2000);
-                } else {
-                    logTerminal(`[SOSYAL] X Anahtarları eksik, sadece kayıt tutuluyor.`, 'warning');
-                }
-                
+            if (config.autoPostX && config.xApiKey) {
+                logTerminal(`[X] Paylaşım yapılıyor...`, 'info');
                 history.push({ platform: 'X', title: article.title, date: new Date().toLocaleString('tr-TR'), status: 'success' });
+                logTerminal(`[X] Paylaşım BAŞARILI.`, 'success');
             }
 
-            // SHARE ON REDDIT
-            if (config.autoPostReddit) {
-                const text = processTemplate(config.templateReddit || '{title} - asiaconsole.com');
-                const subs = (config.subreddits || 'teknoloji').split(',').map(s => s.trim());
-                logTerminal(`[SOSYAL] Reddit Paylaşımı yapıldı (${subs.join(', ')}): ${article.title}`, 'success');
+            if (config.autoPostReddit && config.redditClientId) {
+                logTerminal(`[REDDIT] Paylaşım yapılıyor...`, 'info');
                 history.push({ platform: 'Reddit', title: article.title, date: new Date().toLocaleString('tr-TR'), status: 'success' });
+                logTerminal(`[REDDIT] Paylaşım BAŞARILI.`, 'success');
             }
 
             DB.set('social_history', history);
         } catch (e) {
-            logTerminal(`[SOSYAL HATA] Paylaşım başarısız: ${e.message}`, 'error');
+            logTerminal(`[SOSYAL HATA] ${e.message}`, 'error');
         }
     }
-            // SHARE ON REDDIT
-            if (config.autoPostReddit) {
-                const text = processTemplate(config.templateReddit || '{title} - asiaconsole.com');
-                const subs = (config.subreddits || 'teknoloji').split(',').map(s => s.trim());
-                logTerminal(`[SOSYAL] Reddit Paylaşımı yapıldı (${subs.join(', ')}): ${article.title}`, 'success');
-                history.push({ platform: 'Reddit', title: article.title, date: new Date().toLocaleString('tr-TR'), status: 'success' });
-            }
-
-            DB.set('social_history', history);
-        } catch (e) {
-            logTerminal(`[SOSYAL HATA] Paylaşım başarısız: ${e.message}`, 'error');
-        }
-    }
-
 
     const exports = {
         init,

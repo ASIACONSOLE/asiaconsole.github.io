@@ -459,6 +459,13 @@
                             response += "\n\n" + articleUrl;
                         }
 
+                        // EMOJİ YEDEK MOTORU (AI Unutursa)
+                        const emojiList = ["🚀", "✨", "🔥", "⚡", "🤖", "🎮", "🌟", "📢"];
+                        if (!response.match(/[\u{1F300}-\u{1F9FF}]/u)) {
+                            // Metnin başına ve sonuna emoji ekle
+                            response = "🚀 " + response + " ✨";
+                        }
+
                         // HASHTAG YEDEK MOTORU (AI Unutursa)
                         if (!response.includes('#')) {
                             const tags = ["#Teknoloji", "#Haber", "#Gündem", "#AsiaConsole", "#HızlıHaber"];

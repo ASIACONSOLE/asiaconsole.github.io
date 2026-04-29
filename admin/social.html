@@ -277,7 +277,7 @@
                             <div>
                                 <label style="font-size:0.8rem; color:var(--text-muted);">Son Makalelerden Seç</label>
                                 <select id="articleSelect" class="template-box" style="margin-bottom:1rem;"></select>
-                                <button class="btn-primary" style="width:100%;" id="generateAIBtn">🪄 AI ile Paylaşım Metni Oluştur</button>
+                                <button class="btn-primary" style="width:100%;" id="generateAIBtn" onclick="generateAIPost()">🪄 AI ile Paylaşım Metni Oluştur</button>
                             </div>
                             <div>
                                 <label style="font-size:0.8rem; color:var(--text-muted);">Önerilen Paylaşım Metni</label>
@@ -314,8 +314,6 @@
             loadSocialConfig();
             loadRecentArticles();
             renderHistory();
-
-            document.getElementById('generateAIBtn').addEventListener('click', generateAIPost);
         });
 
         // OBFUSCATION HELPERS
@@ -324,6 +322,7 @@
         function _deobs(s) { if(!s) return ""; try { return atob(s).split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join(""); } catch(e){return s;} }
 
         function loadSocialConfig() {
+            console.log('[Social] Ayarlar yükleniyor...');
             const config = DB.get('social_config') || {};
             
             document.getElementById('autoPostX').checked = !!config.autoPostX;
@@ -383,6 +382,7 @@
         }
 
         async function generateAIPost() {
+            console.log('[Social] AI Butonuna Basıldı!');
             const select = document.getElementById('articleSelect');
             const id = select.value;
             

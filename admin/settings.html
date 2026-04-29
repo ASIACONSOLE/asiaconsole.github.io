@@ -1,4 +1,4 @@
-﻿ï»¿<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -355,18 +355,17 @@
                                     Key" butonuna basÃÂ±n.
                                 </div>
                                 <div class="form-group" style="margin-top:0.75rem;">
-                                    <label>Groq API AnahtarÃÂ± <span
-                                            style="font-size:0.75rem; color:var(--text-muted);">(Yedek
-                                            AI)</span></label>
-                                    <input type="password" id="groqApiKey"
-                                        placeholder="Groq Console'dan aldÃÂ±ÃÅ¸ÃÂ±nÃÂ±z anahtar" style="font-family:monospace;">
+                                    <label>Groq API Anahtarları (Havuz Sistemi)</label>
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                                        <input type="password" id="groqApiKey" placeholder="Anahtar 1" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey2" placeholder="Anahtar 2" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey3" placeholder="Anahtar 3" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="password" id="groqApiKey4" placeholder="Anahtar 4" style="font-family:monospace; font-size:0.8rem;">
+                                    </div>
                                 </div>
                                 <div
-                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:8px;">
-                                    ÄÅ¸âÂ¡ Gemini kotasÃÂ± dolduÃÅ¸unda <strong>Groq (Llama 3)</strong> otomatik devreye
-                                    girer.<br>
-                                    <a href="https://console.groq.com" target="_blank"
-                                        style="color:#a855f7;">console.groq.com</a>'dan ÃÂ¼cretsiz anahtar alÃÂ±n.
+                                    style="font-size:0.75rem; color:var(--text-muted); padding:0.65rem; background:rgba(79,142,247,0.06); border:1px solid rgba(79,142,247,0.2); border-radius:8px;">
+                                    💡 <strong>Kota Sorununa Son:</strong> 4 farklı anahtar girerseniz, sistem kota dolduğunda otomatik diğerine geçer.
                                 </div>
                                 <div class="form-group" style="margin-top:0.75rem;">
                                     <label>OpenRouter API AnahtarÃÂ± <span
@@ -905,6 +904,9 @@
             document.getElementById('aiGreeting').value = s.aiGreeting || 'Merhaba! Size nasÃÂ±l yardÃÂ±mcÃÂ± olabilirim?';
             document.getElementById('geminiApiKey').value = s.geminiApiKey || '';
             document.getElementById('groqApiKey').value = s.groqApiKey || '';
+            document.getElementById('groqApiKey2').value = s.groqApiKey2 || '';
+            document.getElementById('groqApiKey3').value = s.groqApiKey3 || '';
+            document.getElementById('groqApiKey4').value = s.groqApiKey4 || '';
             document.getElementById('openrouterApiKey').value = s.openrouterApiKey || '';
             document.getElementById('mistralApiKey').value = s.mistralApiKey || '';
 
@@ -1039,6 +1041,9 @@
                     aiGreeting: document.getElementById('aiGreeting').value.trim(),
                     geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
                     groqApiKey: document.getElementById('groqApiKey').value.trim(),
+                    groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
+                    groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
+                    groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
                     openrouterApiKey: document.getElementById('openrouterApiKey').value.trim(),
                     mistralApiKey: document.getElementById('mistralApiKey').value.trim(),
                     bannerEnabled: document.getElementById('bannerEnabled').checked,

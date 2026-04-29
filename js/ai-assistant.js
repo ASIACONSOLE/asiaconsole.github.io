@@ -348,25 +348,37 @@ const AIAssistant = (() => {
                 console.warn('[AsiaBot] Gemini 429, trying Groq...');
             }
 
-            // Try Groq as fallback
-            if (s.groqApiKey) {
-                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
-                    body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
-                        messages: [
-                            { role: 'system', content: siteContext },
-                            { role: 'user', content: userText }
-                        ],
-                        temperature: 0.7, max_tokens: 1024
-                    })
-                });
+            // Try Groq as fallback with rotation
+            const groqKeys = [s.groqApiKey, s.groqApiKey2, s.groqApiKey3, s.groqApiKey4].filter(k => k && k.length > 10);
+            
+            if (groqKeys.length > 0) {
+                for (const key of groqKeys) {
+                    try {
+                        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                            body: JSON.stringify({
+                                model: 'llama-3.3-70b-versatile',
+                                messages: [
+                                    { role: 'system', content: siteContext },
+                                    { role: 'user', content: userText }
+                                ],
+                                temperature: 0.7, max_tokens: 1024
+                            })
+                        });
 
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.choices && data.choices[0]) {
-                        return data.choices[0].message.content;
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            if (data.choices && data.choices[0]) {
+                                return data.choices[0].message.content;
+                            }
+                        } else if (resp.status === 429) {
+                            console.warn(`[AsiaBot] Groq Key Kota Dolu, sonrakine geçiliyor...`);
+                            continue; // Try next key
+                        }
+                    } catch (e) {
+                        console.warn(`[AsiaBot] Groq Key Hatası, sonrakine geçiliyor:`, e.message);
+                        continue;
                     }
                 }
             }
@@ -418,27 +430,39 @@ const AIAssistant = (() => {
                 console.warn('[AsiaBot] Gemini 429, trying Groq...');
             }
 
-            // Try Groq as fallback
-            if (s.groqApiKey) {
-                if (onProgress) onProgress('Groq üzerinden kod üretiliyor (Yedek motor)...');
-                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.groqApiKey}` },
-                    body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user', content: userPrompt }
-                        ],
-                        temperature: 0.7, max_tokens: 3000
-                    })
-                });
+            // Try Groq as fallback with rotation
+            const groqKeys = [s.groqApiKey, s.groqApiKey2, s.groqApiKey3, s.groqApiKey4].filter(k => k && k.length > 10);
 
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.choices && data.choices[0]) {
-                        let code = data.choices[0].message.content;
-                        return cleanCodeOutput(code);
+            if (groqKeys.length > 0) {
+                if (onProgress) onProgress('Groq API havuzu üzerinden kod üretiliyor (Yedek motor)...');
+                for (const key of groqKeys) {
+                    try {
+                        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                            body: JSON.stringify({
+                                model: 'llama-3.3-70b-versatile',
+                                messages: [
+                                    { role: 'system', content: systemPrompt },
+                                    { role: 'user', content: userPrompt }
+                                ],
+                                temperature: 0.7, max_tokens: 3000
+                            })
+                        });
+
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            if (data.choices && data.choices[0]) {
+                                let code = data.choices[0].message.content;
+                                return cleanCodeOutput(code);
+                            }
+                        } else if (resp.status === 429) {
+                            console.warn('[AsiaBot] Groq Key 429 (Game), sonrakine geçiliyor...');
+                            continue;
+                        }
+                    } catch (e) {
+                        console.warn('[AsiaBot] Groq Game Error, sonrakine geçiliyor:', e.message);
+                        continue;
                     }
                 }
             }
@@ -573,19 +597,30 @@ Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı b
                 } catch (e) { console.warn('[AsiaBot] Gemini failed:', e.message); }
             }
 
-            // ===== 2. TRY GROQ (with smaller content to avoid 413) =====
-            if (s.groqApiKey) {
-                try {
-                    if (onProgress) onProgress('Groq API ile makale özgünleştiriliyor...');
-                    const groqContent = truncateContent(articleData.content, 6000); // Groq has smaller limits
-                    const groqUserPrompt = `HABER BAŞLIĞI: ${articleData.title}\n${mediaContext}\nHABER İÇERİĞİ:\n${groqContent}\n\nYukarıdaki haberi profesyonel bir editör olarak SIFIRDAN yeniden yaz. Medyaları [RESiM-X] formatında dağıt.`;
-                    const result = await callOpenAICompatible(
-                        'https://api.groq.com/openai/v1/chat/completions',
-                        s.groqApiKey, 'llama-3.3-70b-versatile',
-                        systemPrompt, groqUserPrompt, 4000
-                    );
-                    return result;
-                } catch (e) { console.warn('[AsiaBot] Groq failed:', e.message); }
+            // ===== 2. TRY GROQ (with rotation) =====
+            const groqKeys = [s.groqApiKey, s.groqApiKey2, s.groqApiKey3, s.groqApiKey4].filter(k => k && k.length > 10);
+            
+            if (groqKeys.length > 0) {
+                if (onProgress) onProgress('Groq API havuzu ile makale özgünleştiriliyor...');
+                const groqContent = truncateContent(articleData.content, 6000); // Groq has smaller limits
+                const groqUserPrompt = `HABER BAŞLIĞI: ${articleData.title}\n${mediaContext}\nHABER İÇERİĞİ:\n${groqContent}\n\nYukarıdaki haberi profesyonel bir editör olarak SIFIRDAN yeniden yaz. Medyaları [RESiM-X] formatında dağıt.`;
+
+                for (const key of groqKeys) {
+                    try {
+                        const result = await callOpenAICompatible(
+                            'https://api.groq.com/openai/v1/chat/completions',
+                            key, 'llama-3.3-70b-versatile',
+                            systemPrompt, groqUserPrompt, 4000
+                        );
+                        if (result) return result;
+                    } catch (e) {
+                        if (e.message.includes('429')) {
+                            console.warn('[AsiaBot] Groq Key 429, sonrakine geçiliyor...');
+                            continue;
+                        }
+                        console.warn('[AsiaBot] Groq error:', e.message);
+                    }
+                }
             }
 
             // ===== 3. TRY OPENROUTER =====

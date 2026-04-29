@@ -64,9 +64,10 @@ window.BotEngine = (function () {
 
     function decodeHTML(html) {
         if (!html) return '';
-        const txt = document.createElement('textarea');
-        txt.innerHTML = html;
-        return txt.value;
+        // SECURITY FIX: Use DOMParser to decode entities safely without risk of script execution (XSS prevention)
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        return doc.documentElement.textContent;
     }
 
     // SECURITY FIX: Robust HTML tag stripping to prevent "Incomplete multi-character sanitization" (CodeQL js/missing-multi-character-sanitization)

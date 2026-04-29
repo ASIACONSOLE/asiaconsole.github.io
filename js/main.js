@@ -1386,17 +1386,13 @@ const ProfileData = {
    ARTICLE COMMENTS SYSTEM
    ================================================ */
 const Comments = {
-    // SECURITY: Helper to escape HTML characters
+    // SECURITY: Helper to escape HTML characters safely
     escapeHTML(str) {
         if (!str) return "";
-        // First, decode any existing entities safely using a textarea
-        const txt = document.createElement("textarea");
-        txt.innerHTML = str;
-        const decoded = txt.value;
-        
-        // Then, escape properly to prevent XSS using textContent
+        // SECURITY FIX: Use textContent to escape text to prevent XSS (CodeQL js/xss-through-dom)
+        // This avoids reinterpreting text as HTML.
         const div = document.createElement('div');
-        div.textContent = decoded;
+        div.textContent = str;
         return div.innerHTML;
     },
     getAll() {

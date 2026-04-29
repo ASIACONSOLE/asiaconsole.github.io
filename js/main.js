@@ -536,7 +536,7 @@ var DB = {
     async syncToCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = [
-            'settings', 'articles', 'users', 'forum_posts', 'user_projects',
+            'settings', 'articles', 'users', 'forum_posts', 'user_projects', 'social_config', 'social_history',
             'user_tiers', 'profiles', 'custom_pages', 'article_comments',
             'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
             'pending_articles', 'bot_queue', 'bot_drafts'
@@ -551,7 +551,7 @@ var DB = {
     async loadFromCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = [
-            'settings', 'articles', 'users', 'forum_posts', 'user_projects',
+            'settings', 'articles', 'users', 'forum_posts', 'user_projects', 'social_config', 'social_history',
             'user_tiers', 'profiles', 'custom_pages', 'article_comments',
             'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
             'pending_articles', 'bot_queue', 'bot_drafts'
@@ -1502,7 +1502,7 @@ if (typeof FirebaseDB !== 'undefined') {
         }
 
         const syncKeys = [
-            'settings', 'articles', 'users', 'forum_posts', 'user_projects',
+            'settings', 'articles', 'users', 'forum_posts', 'user_projects', 'social_config', 'social_history',
             'user_tiers', 'profiles', 'custom_pages', 'article_comments',
             'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
             'pending_articles', 'bot_queue', 'bot_drafts', 'visitor_logs'

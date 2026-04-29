@@ -336,7 +336,13 @@ var DB = {
             }
 
             // 2. FALLBACK TO LOCAL STORAGE
-            let local = JSON.parse(localStorage.getItem('tc_' + key));
+            let rawLocal = localStorage.getItem('tc_' + key);
+            if (rawLocal && this._sensitiveKeys && this._sensitiveKeys.includes(key)) {
+                const deob = this._deobfuscate(rawLocal);
+                if (deob) rawLocal = deob;
+            }
+            let local = null;
+            try { local = JSON.parse(rawLocal); } catch(e) {}
 
             // 3. FINAL FALLBACK FOR OTHER CACHED KEYS
             let finalVal = local;
@@ -412,9 +418,15 @@ var DB = {
             MediaDB.set(key, cleanVal);
             localStorage.removeItem('tc_' + key);
         } else {
+            // SECURITY: Obfuscate sensitive data before saving to localStorage
+            let storageVal = newVal;
+            if (this._sensitiveKeys.includes(key)) {
+                storageVal = this._obfuscate(newVal);
+            }
+
             // Save to local for instant access if space permits
             try {
-                localStorage.setItem('tc_' + key, newVal);
+                localStorage.setItem('tc_' + key, storageVal);
             } catch (e) {
                 // Only log QuotaExceeded as a warning if we don't have a cache fallback
                 if (e.name === 'QuotaExceededError' || e.code === 22) {
@@ -564,6 +576,35 @@ var DB = {
             }
         }
     },
+    // SECURITY: Sensitive keys that should be obfuscated in localStorage
+    _sensitiveKeys: ['users', 'user_session', 'messages', 'profiles', 'bot_config'],
+
+    _obfuscate(str) {
+        if (!str) return "";
+        // Simple XOR + Base64 to prevent clear-text storage of passwords/tokens
+        const key = "tc_secret_key";
+        let out = "";
+        for (let i = 0; i < str.length; i++) {
+            out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return btoa(unescape(encodeURIComponent(out)));
+    },
+
+    _deobfuscate(str) {
+        if (!str) return null;
+        try {
+            const decoded = decodeURIComponent(escape(atob(str)));
+            const key = "tc_secret_key";
+            let out = "";
+            for (let i = 0; i < decoded.length; i++) {
+                out += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return out;
+        } catch (e) {
+            return null;
+        }
+    },
+
     init() {
         // Default settings
         const defaultSettings = {

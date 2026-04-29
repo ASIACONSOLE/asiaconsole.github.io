@@ -443,7 +443,7 @@
                 if (typeof AIAssistant !== 'undefined' && AIAssistant.ask) {
                     const response = await AIAssistant.ask(prompt);
                     if (response) {
-                        preview.textContent = response + "\n\n🔗 https://asiaconsole.com/makale.html?id=" + article.id;
+                        preview.textContent = response + "\n\n🔗 https://asiaconsole.com/makale-detay.html?id=" + article.id;
                     } else {
                         preview.textContent = "AI yanıt vermedi. Lütfen Site Ayarları sayfasından Gemini API anahtarınızı kontrol edin.";
                     }
@@ -501,7 +501,7 @@
             const text = document.getElementById('aiPreview').textContent;
             const select = document.getElementById('articleSelect');
             const id = select.value;
-            const url = `https://asiaconsole.com/makale.html?id=${id}`;
+            const url = `https://asiaconsole.com/makale-detay.html?id=${id}`;
             
             // X Intent with text AND url to trigger image card
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');

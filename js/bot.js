@@ -985,7 +985,7 @@ window.BotEngine = (function () {
             if (!config.autoPostX && !config.autoPostReddit) return;
 
             logTerminal(`[SOSYAL] Otomatik paylaşım tetiklendi: ${article.title}`, 'info');
-            const articleUrl = `https://asiaconsole.com/makale.html?id=${article.id}`;
+            const articleUrl = `https://asiaconsole.com/makale-detay.html?id=${article.id}`;
             const history = DB.get('social_history') || [];
 
             if (config.autoPostX && config.xApiKey) {

@@ -1654,18 +1654,6 @@ window.DB = DB;
         if (window.DB) {
             await window.DB.preLoadLargeKeys();
             
-            const initDB = () => {
-                if (!window.DB._isInitialized) {
-                    window.DB.init();
-                    window.DB._isInitialized = true;
-                    if (typeof applySettings === 'function') applySettings();
-                    // Visitor Tracking
-                    if (typeof VisitorTracker !== 'undefined') VisitorTracker.track();
-                    // Dispatch a custom event that DB is fully ready
-                    document.dispatchEvent(new CustomEvent('dbReady'));
-                }
-            };
-
             const VisitorTracker = {
                 async track() {
                     // Only track once per session
@@ -1692,6 +1680,18 @@ window.DB = DB;
                     } catch (e) {
                         console.warn('[Tracker] Failed:', e);
                     }
+                }
+            };
+
+            const initDB = () => {
+                if (!window.DB._isInitialized) {
+                    window.DB.init();
+                    window.DB._isInitialized = true;
+                    if (typeof applySettings === 'function') applySettings();
+                    // Visitor Tracking
+                    VisitorTracker.track();
+                    // Dispatch a custom event that DB is fully ready
+                    document.dispatchEvent(new CustomEvent('dbReady'));
                 }
             };
 

@@ -1396,7 +1396,7 @@
             if (!raw) return "";
             let clean = raw.trim();
             // Remove markdown format if AI included it
-            if (clean.startsWith('```json')) clean = clean.slice(7);
+                        if (clean.startsWith('```json')) clean = clean.slice(7);
             else if (clean.startsWith('```')) clean = clean.slice(3);
             if (clean.endsWith('```')) clean = clean.slice(0, -3);
             clean = clean.trim();
@@ -1407,14 +1407,11 @@
 
             clean = clean.substring(startIdx, endIdx + 1);
 
-            // ESCAPE BAD CONTROL CHARACTERS: 
-            // JSON.parse fails if there are raw newlines, tabs etc. INSIDE string literals.
-            // This regex finds content inside double quotes and escapes special chars within them.
-            return clean.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, function (match, capture) {
+            return clean.replace(/"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/g, function (match, capture) {
                 return '"' + capture
-                    .replace(/\n/g, '\\n')
-                    .replace(/\r/g, '\\r')
-                    .replace(/\t/g, '\\t') + '"';
+                    .replace(/\\n/g, '\\\\n')
+                    .replace(/\\r/g, '\\\\r')
+                    .replace(/\\t/g, '\\\\t') + '"';
             });
         }
 
@@ -1448,27 +1445,10 @@
                     return;
                 }
 
-                // AI PRE-PROCESSING: Extract data similar to Bot
+                // AI PRE-PROCESSING
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(rawHtml.includes('<html') ? rawHtml : `<html><body>${rawHtml}
-    <!-- PREMIUM MOBILE BOTTOM NAV -->
-    <div class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item" id="nav-dash"><i>📊</i><span>Özet</span></a>
-        <a href="pages.html" class="mobile-nav-item" id="nav-pages"><i>📝</i><span>İçerik</span></a>
-        <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
-        <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
-    </div>
-    <script>
-        // Set active nav item
-        const p = window.location.pathname;
-        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
-        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
-        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
-        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
-    </script>
-
-</body></html>`, "text/html");
-                const baseObj = new URL(url);
+                const doc = parser.parseFromString(rawHtml.includes('<html') ? rawHtml : '<html><body>' + rawHtml + '</body></html>', "text/html");
+const baseObj = new URL(url);
 
                 let originalImage = '';
                 const ogImg = doc.querySelector('meta[property="og:image"]');

@@ -137,6 +137,7 @@
             text-decoration: underline;
         }
     </style>
+    <link rel="stylesheet" href="../css/admin-mobile.css">
 </head>
 
 <body>
@@ -174,7 +175,7 @@
                     <div class="menu-toggle"><span></span><span></span><span></span></div>
                     <div class="topbar-title">📱 Sosyal Medya Otomasyonu</div>
                 </div>
-                <div class="topbar-actions">
+                <div class="topbar-actions mobile-stack">
                     <span id="cloudSyncStatus">🔄 Senkronize...</span>
                 </div>
             </div>
@@ -578,6 +579,23 @@
             }
         }
     </script>
+
+    <!-- PREMIUM MOBILE BOTTOM NAV -->
+    <div class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item" id="nav-dash"><i>📊</i><span>Özet</span></a>
+        <a href="pages.html" class="mobile-nav-item" id="nav-pages"><i>📝</i><span>İçerik</span></a>
+        <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
+        <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
+    </div>
+    <script>
+        // Set active nav item
+        const p = window.location.pathname;
+        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
+        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
+        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
+        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
+    </script>
+
 </body>
 
 </html>

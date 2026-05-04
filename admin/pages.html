@@ -18,6 +18,7 @@
     <title>Sayfa Yönetimi - AsiaConsole Admin</title>
     <link rel="icon" href="../favicon.png" type="image/png">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-mobile.css">
 </head>
 
 <body>
@@ -66,7 +67,7 @@
                     </div>
                     <div class="topbar-title">📄 Sayfa & İçerik Yönetimi</div>
                 </div>
-                <div class="topbar-actions">
+                <div class="topbar-actions mobile-stack">
                     <span id="cloudSyncStatus" style="margin-right:0.5rem;">◌ Bağlanıyor...</span>
                     <button class="topbar-btn" id="newArticleBtn">➕ Yeni Makale</button>
                     <button class="topbar-btn secondary" id="fetchUrlBtn"
@@ -297,7 +298,7 @@
             <div class="modal-title" id="customPageModalTitle">✨ Yeni Özel Sayfa</div>
             <input type="hidden" id="editCustomId">
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+            <div class="admin-grid">
                 <!-- Edit Area -->
                 <div>
                     <div class="form-row">
@@ -903,18 +904,15 @@
                 const views = a.views || 0;
                 return `
     <tr>
-      <td style="font-size:1.4rem;">${a.image || '📄'}</td>
-      <td>
-        <div style="font-weight:600; font-size:0.875rem; max-width:280px;">${Comments.escapeHTML(a.title)}</div>
+      <td data-label="İkon" style="font-size:1.4rem;">${a.image || "📄"}</td>
+      <td data-label="Başlık"><div style="font-weight:600; font-size:0.875rem; max-width:280px;">${Comments.escapeHTML(a.title)}</div>
         <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${Comments.escapeHTML(desc.slice(0, 60))}${desc.length > 60 ? '...' : ''}</div>
       </td>
-      <td>${catBadge[a.category] || a.category}</td>
-      <td style="color:var(--text-secondary); font-size:0.85rem;">@${Comments.escapeHTML(a.author)}</td>
-      <td style="color:var(--text-muted); font-size:0.8rem;">${a.date}</td>
-      <td style="color:var(--text-secondary); font-size:0.85rem;">👁️ ${views.toLocaleString('tr-TR')}</td>
-      <td>
-        <div style="display:flex; gap:0.4rem;">
-          <button class="btn-action btn-edit" onclick="editArticle('${a.id}')">✏️ Düzenle</button>
+      <td data-label="Kategori">${catBadge[a.category] || a.category}</td>
+      <td data-label="Yazar" style="color:var(--text-secondary); font-size:0.85rem;">@${Comments.escapeHTML(a.author)}</td>
+      <td data-label="Tarih" style="color:var(--text-muted); font-size:0.8rem;">${a.date}</td>
+      <td data-label="İstatistik" style="color:var(--text-secondary); font-size:0.85rem;">👁️ ${views.toLocaleString("tr-TR")}</td>
+      <td data-label="İşlemler"><div style="display:flex; gap:0.4rem;"><button class="btn-action btn-edit" onclick="editArticle('${a.id}')">✏️ Düzenle</button>
           <button class="btn-action btn-delete" onclick="deleteArticle('${a.id}')">🗑️ Sil</button>
         </div>
       </td>
@@ -991,11 +989,11 @@
             ];
             document.getElementById('staticPagesBody').innerHTML = pages.map(p => `
                 <tr>
-                    <td><strong>${p.name}</strong></td>
-                    <td style="font-size:1.5rem;">${p.icon}</td>
-                    <td><div style="font-size:0.85rem; max-width:200px;">${p.title}</div></td>
-                    <td><div style="font-size:0.8rem; color:var(--text-secondary); max-width:250px;">${p.sub}</div></td>
-                    <td><button class="btn-action btn-edit" onclick="editStaticPage('${p.id}')">✏️ Düzenle</button></td>
+                    <td data-label="Sayfa"><strong>${p.name}</strong></td>
+                    <td data-label="İkon" style="font-size:1.5rem;">${p.icon}</td>
+                    <td data-label="Başlık"><div style="font-size:0.85rem; max-width:200px;">${p.title}</div></td>
+                    <td data-label="Alt Başlık"><div style="font-size:0.8rem; color:var(--text-secondary); max-width:250px;">${p.sub}</div></td>
+                    <td data-label="İşlem"><button class="btn-action btn-edit" onclick="editStaticPage('${p.id}')">✏️ Düzenle</button></td>
                 </tr>
             `).join('');
         }
@@ -1040,12 +1038,10 @@
             }
             tbody.innerHTML = pages.map(p => `
                 <tr>
-                    <td><strong>${p.title}</strong></td>
-                    <td style="font-family:monospace;">/sayfa.html?slug=${p.slug}</td>
-                    <td>${p.inNavbar ? '✅ Evet' : '❌ Hayır'}</td>
-                    <td>
-                        <div style="display:flex; gap:0.4rem;">
-                            <button class="btn-action btn-edit" onclick="editCustomPage(${p.id})">✏️</button>
+                    <td data-label="Başlık"><strong>${p.title}</strong></td>
+                    <td data-label="URL" style="font-family:monospace;">/sayfa.html?slug=${p.slug}</td>
+                    <td data-label="Navbar">${p.inNavbar ? "✅ Evet" : "❌ Hayır"}</td>
+                    <td data-label="İşlemler"><div style="display:flex; gap:0.4rem;"><button class="btn-action btn-edit" onclick="editCustomPage(${p.id})">✏️</button>
                             <button class="btn-action btn-delete" onclick="deleteCustomPage(${p.id})">🗑️</button>
                         </div>
                     </td>
@@ -1454,7 +1450,24 @@
 
                 // AI PRE-PROCESSING: Extract data similar to Bot
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(rawHtml.includes('<html') ? rawHtml : `<html><body>${rawHtml}</body></html>`, "text/html");
+                const doc = parser.parseFromString(rawHtml.includes('<html') ? rawHtml : `<html><body>${rawHtml}
+    <!-- PREMIUM MOBILE BOTTOM NAV -->
+    <div class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item" id="nav-dash"><i>📊</i><span>Özet</span></a>
+        <a href="pages.html" class="mobile-nav-item" id="nav-pages"><i>📝</i><span>İçerik</span></a>
+        <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
+        <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
+    </div>
+    <script>
+        // Set active nav item
+        const p = window.location.pathname;
+        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
+        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
+        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
+        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
+    </script>
+
+</body></html>`, "text/html");
                 const baseObj = new URL(url);
 
                 let originalImage = '';

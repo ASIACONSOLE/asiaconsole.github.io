@@ -17,6 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Girişi - AsiaConsole</title>
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-mobile.css">
 </head>
 
 <body>
@@ -163,6 +164,23 @@
         // Wait for Firebase to be ready before enabling login
         document.getElementById('loginBtn').addEventListener('click', doLogin);
         document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    </script>
+
+
+    <!-- PREMIUM MOBILE BOTTOM NAV -->
+    <div class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item" id="nav-dash"><i>📊</i><span>Özet</span></a>
+        <a href="pages.html" class="mobile-nav-item" id="nav-pages"><i>📝</i><span>İçerik</span></a>
+        <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
+        <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
+    </div>
+    <script>
+        // Set active nav item
+        const p = window.location.pathname;
+        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
+        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
+        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
+        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
     </script>
 
 </body>

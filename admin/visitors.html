@@ -38,6 +38,7 @@
             letter-spacing: 0.5px;
         }
     </style>
+    <link rel="stylesheet" href="../css/admin-mobile.css">
 </head>
 
 <body>
@@ -75,7 +76,7 @@
         <main class="admin-main">
             <div class="admin-topbar">
                 <div class="topbar-title">👁️ Ziyaretçi Analitiği</div>
-                <div class="topbar-actions">
+                <div class="topbar-actions mobile-stack">
                     <button class="topbar-btn secondary" onclick="clearLogs()">🗑️ Logları Temizle</button>
                 </div>
             </div>
@@ -179,6 +180,23 @@
             if (e.detail.all || e.detail.key === 'visitor_logs') renderVisitors();
         });
     </script>
+
+    <!-- PREMIUM MOBILE BOTTOM NAV -->
+    <div class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item" id="nav-dash"><i>📊</i><span>Özet</span></a>
+        <a href="pages.html" class="mobile-nav-item" id="nav-pages"><i>📝</i><span>İçerik</span></a>
+        <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
+        <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
+    </div>
+    <script>
+        // Set active nav item
+        const p = window.location.pathname;
+        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
+        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
+        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
+        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
+    </script>
+
 </body>
 
 </html>

@@ -334,7 +334,7 @@
         function _obs(s) { if(!s) return ""; return btoa(s.split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join("")); }
         function _deobs(s) { if(!s) return ""; try { return atob(s).split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join(""); } catch(e){return s;} }
 
-        function loadSocialConfig() {
+                function loadSocialConfig() {
             console.log('[Social] Ayarlar yükleniyor...');
             const config = DB.get('social_config') || {};
             
@@ -343,24 +343,37 @@
             document.getElementById('templateX').value = config.templateX || '{title} 🚀\\n\\nDetaylar: {url}\\n\\n#AsiaConsole';
             document.getElementById('subreddits').value = config.subreddits || 'teknoloji, oyun';
 
-            // X Keys (Use default if first time, then deobs from storage)
+            // X Keys - Only overwrite if we have a value in DB
             const xKey = _deobs(config.xApiKey);
             const xSec = _deobs(config.xApiSecret);
+            const xAcc = _deobs(config.xAccessToken);
+            const xAccSec = _deobs(config.xAccessTokenSecret);
+            const xBearer = _deobs(config.xBearerToken);
+            const xCliId = _deobs(config.xClientId);
+            const xCliSec = _deobs(config.xClientSecret);
+
             if (xKey) document.getElementById('xApiKey').value = xKey;
             if (xSec) document.getElementById('xApiSecret').value = xSec;
-            document.getElementById('xAccessToken').value = _deobs(config.xAccessToken);
-            document.getElementById('xAccessTokenSecret').value = _deobs(config.xAccessTokenSecret);
-            document.getElementById('xBearerToken').value = _deobs(config.xBearerToken);
-            document.getElementById('xClientId').value = _deobs(config.xClientId);
-            document.getElementById('xClientSecret').value = _deobs(config.xClientSecret);
+            if (xAcc) document.getElementById('xAccessToken').value = xAcc;
+            if (xAccSec) document.getElementById('xAccessTokenSecret').value = xAccSec;
+            if (xBearer) document.getElementById('xBearerToken').value = xBearer;
+            if (xCliId) document.getElementById('xClientId').value = xCliId;
+            if (xCliSec) document.getElementById('xClientSecret').value = xCliSec;
 
             // Reddit Keys
-            document.getElementById('redditClientId').value = _deobs(config.redditClientId);
-            document.getElementById('redditSecret').value = _deobs(config.redditSecret);
-            document.getElementById('redditUser').value = _deobs(config.redditUser);
-            document.getElementById('redditPass').value = _deobs(config.redditPass);
-            document.getElementById('redditUserAgent').value = _deobs(config.redditUserAgent);
-            document.getElementById('redditAppName').value = _deobs(config.redditAppName);
+            const rCli = _deobs(config.redditClientId);
+            const rSec = _deobs(config.redditSecret);
+            const rUser = _deobs(config.redditUser);
+            const rPass = _deobs(config.redditPass);
+            const rUA = _deobs(config.redditUserAgent);
+            const rApp = _deobs(config.redditAppName);
+
+            if (rCli) document.getElementById('redditClientId').value = rCli;
+            if (rSec) document.getElementById('redditSecret').value = rSec;
+            if (rUser) document.getElementById('redditUser').value = rUser;
+            if (rPass) document.getElementById('redditPass').value = rPass;
+            if (rUA) document.getElementById('redditUserAgent').value = rUA;
+            if (rApp) document.getElementById('redditAppName').value = rApp;
         }
 
         function saveSocialConfig() {

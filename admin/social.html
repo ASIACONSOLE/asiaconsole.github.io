@@ -268,99 +268,6 @@
                         </div>
                     </div>
 
-                                        <!-- INSTAGRAM CONFIG -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="platform-header">
-                                <div class="platform-icon" style="color:#E1306C;">📸</div>
-                                <div class="admin-card-title">Instagram Otomasyon Ayarları</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="autoPostInstagram">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div style="padding: 1.5rem;">
-                            <div class="api-input-group">
-                                <div>
-                                    <label style="font-size:0.8rem; color:var(--text-muted);">Instagram Username</label>
-                                    <input type="text" id="instaUser" class="template-box">
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; color:var(--text-muted);">Password / API Token</label>
-                                    <input type="password" id="instaPass" class="template-box">
-                                </div>
-                            </div>
-                            <div style="margin-top:1.5rem;">
-                                <label style="font-size:0.8rem; color:var(--text-muted);">Paylaşım Şablonu</label>
-                                <textarea id="templateInsta" class="template-box" placeholder="{title} 🚀
-
-#AsiaConsole"></textarea>
-                            </div>
-                            <button class="btn-primary" style="margin-top:1.5rem; width:100%;" onclick="saveSocialConfig()">💾 Instagram Ayarlarını Kaydet</button>
-                        </div>
-                    </div>
-
-                    <!-- TIKTOK CONFIG -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="platform-header">
-                                <div class="platform-icon" style="color:#000000; border:1px solid #fff;">🎵</div>
-                                <div class="admin-card-title">TikTok Otomasyon Ayarları</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="autoPostTiktok">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div style="padding: 1.5rem;">
-                            <div class="api-input-group">
-                                <div>
-                                    <label style="font-size:0.8rem; color:var(--text-muted);">TikTok Client Key</label>
-                                    <input type="text" id="tiktokKey" class="template-box">
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; color:var(--text-muted);">Secret Key</label>
-                                    <input type="password" id="tiktokSecret" class="template-box">
-                                </div>
-                            </div>
-                            <button class="btn-primary" style="margin-top:1.5rem; width:100%;" onclick="saveSocialConfig()">💾 TikTok Ayarlarını Kaydet</button>
-                        </div>
-                    </div>
-
-                    <!-- TELEGRAM CONFIG -->
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <div class="platform-header">
-                                <div class="platform-icon" style="color:#0088cc;">✈️</div>
-                                <div class="admin-card-title">Telegram Kanal Otomasyonu</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="autoPostTelegram">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div style="padding: 1.5rem;">
-                            <div class="api-input-group">
-                                <div>
-                                    <label style="font-size:0.8rem; color:var(--text-muted);">Bot Token (BotFather)</label>
-                                    <input type="password" id="tgToken" class="template-box" placeholder="123456:ABC-DEF...">
-                                </div>
-                                <div>
-                                    <label style="font-size:0.8rem; color:var(--text-muted);">Kanal ID (Chat ID)</label>
-                                    <input type="text" id="tgChatId" class="template-box" placeholder="@kanaladi veya -100...">
-                                </div>
-                            </div>
-                            <div style="margin-top:1.5rem;">
-                                <label style="font-size:0.8rem; color:var(--text-muted);">Mesaj Şablonu</label>
-                                <textarea id="templateTelegram" class="template-box" placeholder="📣 {title}
-
-🔗 {url}"></textarea>
-                            </div>
-                            <button class="btn-primary" style="margin-top:1.5rem; width:100%;" onclick="saveSocialConfig()">💾 Telegram Ayarlarını Kaydet</button>
-                        </div>
-                    </div>
-
                     <!-- AI Preview & Manual Share -->
                     <div class="admin-card">
                         <div class="admin-card-header">
@@ -419,37 +326,31 @@
             console.log('[Social] Ayarlar yükleniyor...');
             const config = DB.get('social_config') || {};
             
-                        document.getElementById('autoPostX').checked = !!config.autoPostX;
+            document.getElementById('autoPostX').checked = !!config.autoPostX;
             document.getElementById('autoPostReddit').checked = !!config.autoPostReddit;
-            document.getElementById('autoPostInstagram').checked = !!config.autoPostInstagram;
-            document.getElementById('autoPostTiktok').checked = !!config.autoPostTiktok;
-            document.getElementById('autoPostTelegram').checked = !!config.autoPostTelegram;
-            
             document.getElementById('templateX').value = config.templateX || '{title} 🚀\\n\\nDetaylar: {url}\\n\\n#AsiaConsole';
-            document.getElementById('templateInsta').value = config.templateInsta || '{title} 🚀\\n\\n#AsiaConsole';
-            document.getElementById('templateTelegram').value = config.templateTelegram || '📣 {title}\\n\\n🔗 {url}';
             document.getElementById('subreddits').value = config.subreddits || 'teknoloji, oyun';
 
-            // Instagram & Others
-            document.getElementById('instaUser').value = _deobs(config.instaUser);
-            document.getElementById('instaPass').value = _deobs(config.instaPass);
-            document.getElementById('tiktokKey').value = _deobs(config.tiktokKey);
-            document.getElementById('tiktokSecret').value = _deobs(config.tiktokSecret);
-            document.getElementById('tgToken').value = _deobs(config.tgToken);
-            document.getElementById('tgChatId').value = _deobs(config.tgChatId);
+            // X Keys (Use default if first time, then deobs from storage)
+            const xKey = _deobs(config.xApiKey);
+            const xSec = _deobs(config.xApiSecret);
+            if (xKey) document.getElementById('xApiKey').value = xKey;
+            if (xSec) document.getElementById('xApiSecret').value = xSec;
+            document.getElementById('xAccessToken').value = _deobs(config.xAccessToken);
+            document.getElementById('xAccessTokenSecret').value = _deobs(config.xAccessTokenSecret);
+
+            // Reddit Keys
+            document.getElementById('redditClientId').value = _deobs(config.redditClientId);
+            document.getElementById('redditSecret').value = _deobs(config.redditSecret);
+            document.getElementById('redditUser').value = _deobs(config.redditUser);
+            document.getElementById('redditPass').value = _deobs(config.redditPass);
         }
 
         function saveSocialConfig() {
-                        const config = {
+            const config = {
                 autoPostX: document.getElementById('autoPostX').checked,
                 autoPostReddit: document.getElementById('autoPostReddit').checked,
-                autoPostInstagram: document.getElementById('autoPostInstagram').checked,
-                autoPostTiktok: document.getElementById('autoPostTiktok').checked,
-                autoPostTelegram: document.getElementById('autoPostTelegram').checked,
-                
                 templateX: document.getElementById('templateX').value,
-                templateInsta: document.getElementById('templateInsta').value,
-                templateTelegram: document.getElementById('templateTelegram').value,
                 subreddits: document.getElementById('subreddits').value,
                 
                 // Obfuscate
@@ -461,14 +362,7 @@
                 redditClientId: _obs(document.getElementById('redditClientId').value),
                 redditSecret: _obs(document.getElementById('redditSecret').value),
                 redditUser: _obs(document.getElementById('redditUser').value),
-                redditPass: _obs(document.getElementById('redditPass').value),
-
-                instaUser: _obs(document.getElementById('instaUser').value),
-                instaPass: _obs(document.getElementById('instaPass').value),
-                tiktokKey: _obs(document.getElementById('tiktokKey').value),
-                tiktokSecret: _obs(document.getElementById('tiktokSecret').value),
-                tgToken: _obs(document.getElementById('tgToken').value),
-                tgChatId: _obs(document.getElementById('tgChatId').value)
+                redditPass: _obs(document.getElementById('redditPass').value)
             };
             DB.set('social_config', config);
             alert('✅ Tüm sosyal medya ayarları başarıyla kaydedildi!');

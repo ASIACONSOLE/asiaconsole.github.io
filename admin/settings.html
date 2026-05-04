@@ -1028,6 +1028,10 @@
                     aiGreeting: document.getElementById('aiGreeting').value.trim(),
                     geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
                     groqApiKey: document.getElementById('groqApiKey').value.trim(),
+                    groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
+                    groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
+                    groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
+                    groqApiKey5: document.getElementById('groqApiKey5').value.trim(),
                     openrouterApiKey: document.getElementById('openrouterApiKey').value.trim(),
                     mistralApiKey: document.getElementById('mistralApiKey').value.trim(),
                     bannerEnabled: document.getElementById('bannerEnabled').checked,
@@ -1187,7 +1191,16 @@
                 const tiers = DB.get('user_tiers') || {};
                 delete tiers[id];
                 DB.set('user_tiers', tiers);
-                renderTiers();
+                function restoreLegacyKeys() {
+                document.getElementById('groqApiKey2').value = 'gsk_V6F7v8W9x0Y1z2A3B4C5D6E7F8G9H0I1J2K3L4M5N6O7P8Q9R0S';
+                document.getElementById('groqApiKey3').value = 'gsk_X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W';
+                document.getElementById('groqApiKey4').value = 'gsk_A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z';
+                document.getElementById('groqApiKey5').value = 'gsk_M1N2O3P4Q5R6S7T8U9V0W1X2Y3Z4A5B6C7D8E9F0G1H2I3J4K5L';
+                showAdminToast('✅ 4 adet yedek anahtar kutucuklara dolduruldu! Kaydetmeyi unutmayın.', 'success');
+            }
+            window.restoreLegacyKeys = restoreLegacyKeys;
+
+            renderTiers();
                 showAdminToast('Üyelik seviyesi silindi.', 'error');
             };
 

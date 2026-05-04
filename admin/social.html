@@ -347,6 +347,8 @@
             document.getElementById('redditSecret').value = _deobs(config.redditSecret);
             document.getElementById('redditUser').value = _deobs(config.redditUser);
             document.getElementById('redditPass').value = _deobs(config.redditPass);
+            document.getElementById('redditUserAgent').value = _deobs(config.redditUserAgent);
+            document.getElementById('redditAppName').value = _deobs(config.redditAppName);
         }
 
         function saveSocialConfig() {
@@ -368,7 +370,9 @@
                 redditClientId: _obs(document.getElementById('redditClientId').value),
                 redditSecret: _obs(document.getElementById('redditSecret').value),
                 redditUser: _obs(document.getElementById('redditUser').value),
-                redditPass: _obs(document.getElementById('redditPass').value)
+                redditPass: _obs(document.getElementById('redditPass').value),
+                redditUserAgent: _obs(document.getElementById('redditUserAgent').value),
+                redditAppName: _obs(document.getElementById('redditAppName').value)
             };
             DB.set('social_config', config);
             alert('✅ Tüm sosyal medya ayarları başarıyla kaydedildi!');

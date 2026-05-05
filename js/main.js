@@ -529,7 +529,7 @@ var DB = {
                     console.error('[Firebase] Serialization failed for ' + key, e);
                 }
             });
-            }, 1000);
+            }, 200); // 1000ms'den 200ms'ye çekilerek Ultra Hızlı Gerçek Zamanlı senkronizasyon sağlandı
         }
     },
     // NEW: Sync all local data to cloud (Force Sync)

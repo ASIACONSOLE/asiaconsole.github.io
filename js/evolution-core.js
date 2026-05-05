@@ -189,11 +189,25 @@ const EvolutionEngine = (() => {
                 priority: 'Yüksek'
             });
             addSuggestion({
-                type: 'feature',
-                title: 'Kişiselleştirilmiş Öneriler (For You)',
-                desc: 'Kullanıcı geçmişine göre kişiye özel makale öneri motoru.',
-                impact: 'UX / Bağlılık',
+                type: 'seo',
+                title: 'JSON-LD Şema Entegrasyonu',
+                desc: 'Google rich snippets için makale ve forum sayfalarına yapılandırılmış veri şeması eklenmesi.',
+                impact: 'SEO / Görünürlük',
+                priority: 'Yüksek'
+            });
+            addSuggestion({
+                type: 'seo',
+                title: 'Akıllı Görsel Alt-Text Üretici',
+                desc: 'Sitedeki açıklamasız görsellere otonom olarak açıklama etiketleri eklenerek görsel aramalarında yükselme.',
+                impact: 'SEO / Trafik',
                 priority: 'Orta'
+            });
+            addSuggestion({
+                type: 'seo',
+                title: 'Dinamik Meta Başlık Optimizasyonu',
+                desc: 'Tıklama oranını artırmak için sayfa başlıklarının AI ile daha çekici hale getirilmesi.',
+                impact: 'SEO / CTR',
+                priority: 'Yüksek'
             });
             saveLocal();
         }

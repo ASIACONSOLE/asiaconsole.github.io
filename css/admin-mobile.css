@@ -22,9 +22,44 @@
         overflow-x: hidden !important;
     }
 
-    /* HIDE SIDEBARS */
-    .admin-sidebar, aside, .sidebar-nav {
-        display: none !important;
+    /* SIDEBAR MOBILE SYSTEM */
+    .admin-sidebar, aside {
+        display: block !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: -280px !important;
+        width: 280px !important;
+        height: 100vh !important;
+        z-index: 10001 !important;
+        background: var(--m-bg) !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-right: 1px solid var(--m-border) !important;
+        box-shadow: 20px 0 50px rgba(0,0,0,0.5) !important;
+        overflow-y: auto !important;
+    }
+
+    body.sidebar-open .admin-sidebar, 
+    body.sidebar-open aside {
+        transform: translateX(280px) !important;
+    }
+
+    .sidebar-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0,0,0,0.7) !important;
+        backdrop-filter: blur(4px) !important;
+        z-index: 10000 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: all 0.3s !important;
+    }
+
+    body.sidebar-open .sidebar-overlay {
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     /* MAIN CONTENT WRAPPER */
@@ -56,7 +91,29 @@
     .admin-topbar > div {
         width: 100% !important;
         display: flex !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 1rem !important;
+    }
+
+    .menu-toggle {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        width: 40px !important;
+        height: 40px !important;
+        cursor: pointer !important;
+        z-index: 10010 !important;
+    }
+
+    .menu-toggle span {
+        display: block !important;
+        width: 25px !important;
+        height: 2px !important;
+        background: var(--m-text) !important;
+        transition: 0.3s !important;
+        border-radius: 2px !important;
     }
 
     .topbar-actions {

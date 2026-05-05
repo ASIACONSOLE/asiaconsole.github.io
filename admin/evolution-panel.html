@@ -326,9 +326,12 @@
         }
 
         function approveSugg(id) {
+            console.log('[UI] Öneri onaylama isteği:', id);
             if(window.EvolutionEngine) {
                 EvolutionEngine.approveSuggestion(id);
                 showAdminToast('⚙️ AI Entegrasyonu başladı... Lütfen bekleyin.', 'info');
+            } else {
+                console.error('[UI] EvolutionEngine bulunamadı!');
             }
         }
 

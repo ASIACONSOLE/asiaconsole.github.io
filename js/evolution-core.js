@@ -230,4 +230,7 @@ const EvolutionEngine = (() => {
     return { init, logEvent, state, addSuggestion, addAccomplishment, approveSuggestion };
 })();
 
+// Attach to window to ensure global access from HTML onclick handlers
+window.EvolutionEngine = EvolutionEngine;
+
 EvolutionEngine.init();

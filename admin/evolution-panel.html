@@ -114,57 +114,99 @@
     <link rel="stylesheet" href="../css/admin-mobile.css">
 </head>
 <body>
-    <div class="header">
-        <div class="title">🧠 Evolution Neural Dashboard</div>
-        <div>
-            <button class="btn" onclick="syncNow()">Force Sync</button>
-            <button class="btn" style="background:rgba(255,255,255,0.1)" onclick="location.href='../index.html'">Geri Dön</button>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <div class="card-title">Sinirsel Seviye (Level)</div>
-            <div class="stat" id="lvl-val">1</div>
-            <div class="progress-container">
-                <div class="progress-bar" id="lvl-progress"></div>
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Admin Panel</span>
+                </div>
             </div>
-            <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Site şu an öğrenme ve adaptasyon sürecinin başlangıcında.</p>
-        </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Ana Menü</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
+                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu</a>
+                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
+                <a href="evolution-panel.html" class="sidebar-link active"><span class="icon">🧠</span> Evolution Engine</a>
+                <a href="social.html" class="sidebar-link"><span class="icon">📱</span> Sosyal Medya</a>
+                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
+                <a href="visitors.html" class="sidebar-link"><span class="icon">👁️</span> Ziyaretçiler</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
+            </nav>
+        </aside>
 
-        <div class="card">
-            <div class="card-title">Toplam Deneyim (EXP)</div>
-            <div class="stat" id="exp-val">0</div>
-            <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Her etkileşim ve her hata siteyi daha akıllı hale getirir.</p>
-        </div>
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="topbar-title">🧠 Evolution Neural Dashboard</div>
+                </div>
+                <div class="topbar-actions mobile-stack">
+                    <button class="topbar-btn" onclick="syncNow()">Force Sync</button>
+                    <a href="../index.html" class="topbar-btn secondary">Geri Dön</a>
+                </div>
+            </div>
 
-        <div class="card">
-            <div class="card-title">Aktif Yamalar (Patches)</div>
-            <div class="stat" id="patch-count">0</div>
-            <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Yapay zeka tarafından üretilen aktif iyileştirme sayısı.</p>
-        </div>
+            <div class="admin-content">
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Sinirsel Seviye (Level)</div>
+                        <div class="stat" id="lvl-val">1</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="lvl-progress"></div>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Site şu an öğrenme ve adaptasyon sürecinin başlangıcında.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Toplam Deneyim (EXP)</div>
+                        <div class="stat" id="exp-val">0</div>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Her etkileşim ve her hata siteyi daha akıllı hale getirir.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Aktif Yamalar (Patches)</div>
+                        <div class="stat" id="patch-count">0</div>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Yapay zeka tarafından üretilen aktif iyileştirme sayısı.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:1.5rem;">
+                    <div class="card-title">Son Sinirsel Aktiviteler (Logs)</div>
+                    <div class="log-list" id="log-list">
+                        <div class="log-item">Veriler bekleniyor...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <div class="card">
-        <div class="card-title">Son Sinirsel Aktiviteler (Logs)</div>
-        <div class="log-list" id="log-list">
-            <div class="log-item">Veriler bekleniyor...</div>
-        </div>
-    </div>
-
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
     <script>
         function updateDashboard() {
             const state = JSON.parse(localStorage.getItem('tc_evolution_state') || '{}');
-            const localLogs = JSON.parse(localStorage.getItem('tc_evolution_logs') || '[]'); // This would need to be saved in evolution-core.js too
+            const localLogs = JSON.parse(localStorage.getItem('tc_evolution_logs') || '[]');
             
             document.getElementById('lvl-val').innerText = state.level || 1;
             document.getElementById('exp-val').innerText = state.experience || 0;
             
             const progress = ((state.experience || 0) % ((state.level || 1) * 100)) / (state.level || 1);
-            document.getElementById('lvl-progress').style.width = progress + '%';
+            const pb = document.getElementById('lvl-progress');
+            if(pb) pb.style.width = progress + '%';
 
-            // Logs (We need to pull them from the running engine or a separate store)
-            // For now, let's just show a simulated log if none exist
             const logList = document.getElementById('log-list');
             if (localLogs.length > 0) {
                 logList.innerHTML = localLogs.map(log => `

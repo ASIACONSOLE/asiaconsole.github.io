@@ -163,16 +163,37 @@ const EvolutionEngine = (() => {
             addSuggestion({
                 type: 'seo',
                 title: 'Dinamik Meta Etiketi Optimizasyonu',
-                desc: 'Yapay zeka, sayfa içeriklerine göre meta açıklamalarını otomatik güncelleyerek SEO puanını %15 artırabilir.',
+                desc: 'AI, sayfa içeriklerine göre meta açıklamalarını otomatik güncelleyerek SEO puanını artırabilir.',
                 impact: 'SEO / Trafik',
                 priority: 'Yüksek'
             });
             addSuggestion({
+                type: 'feature',
+                title: 'Neural İçerik Özetleyici',
+                desc: 'Uzun makalelerin başına AI tarafından üretilmiş 3 maddelik hızlı özetler eklenmesi.',
+                impact: 'UX / Okunabilirlik',
+                priority: 'Orta'
+            });
+            addSuggestion({
+                type: 'fix',
+                title: 'Otonom Spam Kalkanı',
+                desc: 'Forumdaki spam içeriklerin AI ile otomatik tespiti ve gizlenmesi.',
+                impact: 'Güvenlik / Kalite',
+                priority: 'Yüksek'
+            });
+            addSuggestion({
                 type: 'ui',
-                title: 'Gece Modu Adaptasyonu',
-                desc: 'Ziyaretçilerin çoğu gece saatlerinde giriş yapıyor. Akıllı bir gece modu geçişi eklemeyi öneriyorum.',
-                impact: 'UX / Göz Sağlığı',
-                priority: 'Düşük'
+                title: 'Dinamik Yerleşim Optimizasyonu',
+                desc: 'Anasayfa bloklarının tıklanma oranına göre otomatik sıralanması.',
+                impact: 'UX / Etkileşim',
+                priority: 'Yüksek'
+            });
+            addSuggestion({
+                type: 'feature',
+                title: 'Kişiselleştirilmiş Öneriler (For You)',
+                desc: 'Kullanıcı geçmişine göre kişiye özel makale öneri motoru.',
+                impact: 'UX / Bağlılık',
+                priority: 'Orta'
             });
             saveLocal();
         }

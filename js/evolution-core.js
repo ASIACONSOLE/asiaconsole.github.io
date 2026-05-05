@@ -20,16 +20,12 @@ const EvolutionEngine = (() => {
     const init = () => {
         console.log('%c[Evolution Engine] Sinir sistemi başlatıldı... 🧠', 'color: #a855f7; font-weight: bold;');
         
-        // Load local state
+        // Load combined state
         const saved = localStorage.getItem('tc_evolution_state');
-        if (saved) state = { ...state, ...JSON.parse(saved) };
-        
-        // Load suggestions & accomplishments
-        const suggs = localStorage.getItem('tc_evolution_suggestions');
-        if (suggs) state.suggestions = JSON.parse(suggs);
-        
-        const accs = localStorage.getItem('tc_evolution_accomplishments');
-        if (accs) state.accomplishments = JSON.parse(accs);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            state = { ...state, ...parsed };
+        }
 
         setupMonitoring();
         setupPatcher();
@@ -207,27 +203,35 @@ const EvolutionEngine = (() => {
         localStorage.setItem('tc_evolution_state', JSON.stringify({
             level: state.level,
             experience: state.experience,
-            lastSync: state.lastSync
+            lastSync: state.lastSync,
+            suggestions: state.suggestions,
+            accomplishments: state.accomplishments,
+            logs: state.logs.slice(0, 20) // Save only latest 20 logs locally
         }));
     };
 
     const syncWithCloud = async () => {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
-        FirebaseDB.set('evolution_meta', 'state', {
-            level: state.level,
-            experience: state.experience,
-            suggestions: state.suggestions,
-            accomplishments: state.accomplishments,
+        
+        console.log('[Evolution Engine] Bulut senkronizasyonu başlatıldı...');
+        const success = await FirebaseDB.set('evolution_meta', 'state', {
+            ...state,
             lastSync: Date.now()
         });
+
+        if (success) {
+            console.log('[Evolution Engine] Bulut senkronizasyonu başarılı. ✅');
+            state.lastSync = Date.now();
+            saveLocal();
+        }
     };
 
     const updateUI = () => {
         // Broadcast event for the dashboard to pick up
-        document.dispatchEvent(new CustomEvent('evolutionUpdated', { detail: state }));
+        document.dispatchEvent(new CustomEvent('evolutionUpdated', { detail: { ...state } }));
     };
 
-    return { init, logEvent, state, addSuggestion, addAccomplishment, approveSuggestion };
+    return { init, logEvent, state, addSuggestion, addAccomplishment, approveSuggestion, syncWithCloud };
 })();
 
 // Attach to window to ensure global access from HTML onclick handlers

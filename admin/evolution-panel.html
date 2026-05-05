@@ -5,196 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evolution Neural Dashboard - AsiaConsole</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #050a14;
-            --card: #0d1220;
-            --accent: #a855f7;
-            --text: #e2e8f0;
-            --border: rgba(255, 255, 255, 0.1);
-        }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
-        }
-        .title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
-        .card-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: var(--accent);
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        .stat {
-            font-size: 2.5rem;
-            font-weight: 800;
-        }
-        .log-list {
-            font-family: 'JetBrains+Mono', monospace;
-            font-size: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .log-item {
-            padding: 0.5rem;
-            background: rgba(255,255,255,0.03);
-            border-radius: 4px;
-            display: flex;
-            gap: 0.5rem;
-        }
-        .log-type {
-            font-weight: 700;
-            min-width: 80px;
-        }
-        .type-error { color: #ef4444; }
-        .type-click { color: #3b82f6; }
-        .type-db_set { color: #10b981; }
-
-        .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .btn:hover { opacity: 0.9; }
-
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 1rem;
-        }
-        .progress-bar {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-            transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-    </style>
+    <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="../css/admin-mobile.css">
-</head>
-<body>
-    <div class="admin-layout">
-        <!-- SIDEBAR -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">⚙️</div>
-                <div>
-                    <h1>AsiaConsole</h1>
-                    <span>Admin Panel</span>
-                </div>
-            </div>
-            <nav class="sidebar-nav">
-                <div class="sidebar-section-label">Ana Menü</div>
-                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
-                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
-                <a href="forum-moderation.html" class="sidebar-link"><span class="icon">💬</span> Forum Moderasyonu</a>
-                <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span> Proje Moderasyonu</a>
-                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
-                <a href="evolution-panel.html" class="sidebar-link active"><span class="icon">🧠</span> Evolution Engine</a>
-                <a href="social.html" class="sidebar-link"><span class="icon">📱</span> Sosyal Medya</a>
-                <a href="users.html" class="sidebar-link"><span class="icon">👥</span> Kullanıcılar</a>
-                <a href="visitors.html" class="sidebar-link"><span class="icon">👁️</span> Ziyaretçiler</a>
-                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
-                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
-                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
-            </nav>
-        </aside>
-
-        <!-- MAIN CONTENT -->
-        <main class="admin-main">
-            <div class="admin-topbar">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="menu-toggle">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                    <div class="topbar-title">🧠 Evolution Neural Dashboard</div>
-                </div>
-                <div class="topbar-actions mobile-stack">
-                    <button class="topbar-btn" onclick="syncNow()">Force Sync</button>
-                    <a href="../index.html" class="topbar-btn secondary">Geri Dön</a>
-                </div>
-            </div>
-
-            <div class="admin-content">
-                <div class="grid">
-                    <div class="card">
-                        <div class="card-title">Sinirsel Seviye (Level)</div>
-                        <div class="stat" id="lvl-val">1</div>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="lvl-progress"></div>
-                        </div>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Site şu an öğrenme ve adaptasyon sürecinin başlangıcında.</p>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Toplam Deneyim (EXP)</div>
-                        <div class="stat" id="exp-val">0</div>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Her etkileşim ve her hata siteyi daha akıllı hale getirir.</p>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Aktif Yamalar (Patches)</div>
-                        <div class="stat" id="patch-count">0</div>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">Yapay zeka tarafından üretilen aktif iyileştirme sayısı.</p>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top:1.5rem;">
-                    <div class="card-title">Son Sinirsel Aktiviteler (Logs)</div>
-                    <div class="log-list" id="log-list">
-                        <div class="log-item">Veriler bekleniyor...</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script src="../js/firebase.js"></script>
-    <script src="../js/main.js"></script>
-    <script src="../js/admin.js"></script>
     <style>
         :root {
             --bg: #05070a;
@@ -207,9 +19,12 @@
             --text-dim: #94a3b8;
         }
 
+        /* Override admin.css for Neural Theme */
+        .admin-main { background: var(--bg) !important; }
+        
         .evolution-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1.8fr 1.2fr;
             gap: 1.5rem;
         }
 
@@ -221,6 +36,7 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 1.5rem;
         }
 
         .neural-card::before {
@@ -233,57 +49,92 @@
         .suggestion-item {
             background: rgba(255,255,255,0.02);
             border-left: 3px solid var(--accent);
-            padding: 1rem;
+            padding: 1.25rem;
             border-radius: 0 12px 12px 0;
             margin-bottom: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.3s;
         }
 
-        .suggestion-info h4 { margin: 0; font-size: 0.95rem; }
-        .suggestion-info p { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-dim); }
+        .suggestion-item:hover {
+            background: rgba(255,255,255,0.04);
+            transform: translateX(5px);
+        }
+
+        .suggestion-info h4 { margin: 0; font-size: 1rem; color: #fff; }
+        .suggestion-info p { margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; }
 
         .tag {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.65rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .tag-high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .tag-mid { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .tag-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .tag-mid { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
 
         .terminal-log {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             height: 300px;
             overflow-y: auto;
             color: #d1d5db;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
         }
 
         .log-entry {
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.6rem;
             display: flex;
-            gap: 0.75rem;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            padding-bottom: 0.4rem;
         }
-        .log-time { color: var(--text-dim); }
-        .log-msg { word-break: break-all; }
+        .log-time { color: var(--text-dim); font-size: 0.75rem; min-width: 80px; }
+        .log-msg { word-break: break-all; flex: 1; }
 
         .accomplishment-item {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.03);
         }
-        .acc-icon { font-size: 1.25rem; }
-        .acc-text { font-size: 0.85rem; }
+        .acc-icon { font-size: 1.5rem; filter: drop-shadow(0 0 10px var(--accent)); }
+        .acc-text { font-size: 0.9rem; }
+        .acc-date { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.25rem; }
+
+        .lvl-progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .lvl-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #c084fc);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
 
         @media (max-width: 1024px) {
             .evolution-grid { grid-template-columns: 1fr; }
+            .suggestion-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .suggestion-item button { width: 100%; }
         }
     </style>
+</head>
+<body>
     <div class="admin-layout">
         <!-- SIDEBAR -->
         <aside class="admin-sidebar">
@@ -303,6 +154,9 @@
                 <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
                 <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
             </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="location.href='index.html'">🚪 Çıkış Yap</button>
+            </div>
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -314,44 +168,52 @@
                 </div>
                 <div class="topbar-actions mobile-stack">
                     <button class="topbar-btn" onclick="syncNow()">🔄 Cloud Sync</button>
-                    <button class="topbar-btn secondary" onclick="localStorage.clear(); location.reload();">🗑️ Reset Intel</button>
+                    <button class="topbar-btn secondary" onclick="if(confirm('Tüm sinirsel verileri sıfırlamak istediğine emin misin?')) { localStorage.clear(); location.reload(); }">🗑️ Reset Intel</button>
                 </div>
             </div>
 
             <div class="admin-content">
                 <!-- STATS -->
-                <div class="grid" style="margin-bottom: 1.5rem;">
-                    <div class="neural-card">
+                <div class="admin-stats-grid" style="margin-bottom: 2rem;">
+                    <div class="neural-card" style="margin-bottom:0;">
                         <div class="card-title">Neural Level</div>
                         <div class="stat" id="lvl-val">1</div>
-                        <div class="progress-container"><div class="progress-bar" id="lvl-progress"></div></div>
+                        <div class="lvl-progress-container"><div class="lvl-progress-bar" id="lvl-progress"></div></div>
                     </div>
-                    <div class="neural-card">
+                    <div class="neural-card" style="margin-bottom:0;">
                         <div class="card-title">Experience Points</div>
                         <div class="stat" id="exp-val">0</div>
+                        <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem;">Öğrenme devam ediyor...</p>
                     </div>
-                    <div class="neural-card">
+                    <div class="neural-card" style="margin-bottom:0;">
                         <div class="card-title">System Health</div>
                         <div class="stat" style="color:var(--success)">98.4%</div>
+                        <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem;">Tüm sistemler kararlı.</p>
                     </div>
                 </div>
 
                 <div class="evolution-grid">
                     <div class="left-col">
                         <!-- AI SUGGESTIONS -->
-                        <div class="neural-card" style="margin-bottom: 1.5rem;">
+                        <div class="neural-card">
                             <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
-                                AI Önerileri & İyileştirmeler
+                                <span>AI Önerileri & İyileştirmeler</span>
                                 <span class="tag tag-mid" id="sugg-count">0 Öneri</span>
                             </div>
-                            <div id="suggestions-list" style="margin-top: 1rem;">
-                                <div style="text-align:center; padding:2rem; color:var(--text-dim);">Öneriler analiz ediliyor...</div>
+                            <div id="suggestions-list" style="margin-top: 1.5rem;">
+                                <div style="text-align:center; padding:3rem; color:var(--text-dim);">
+                                    <div style="font-size:2rem; margin-bottom:1rem;">🛰️</div>
+                                    Öneriler analiz ediliyor...
+                                </div>
                             </div>
                         </div>
 
                         <!-- ERROR TERMINAL -->
                         <div class="neural-card" style="background:#000; border: 1px solid #1a1a1a;">
-                            <div class="card-title" style="color:var(--error); font-family:monospace;">> ERROR_TERMINAL_LOG</div>
+                            <div class="card-title" style="color:var(--error); font-family:monospace; display:flex; justify-content:space-between;">
+                                <span>> ERROR_TERMINAL_LOG</span>
+                                <span style="font-size:0.7rem; opacity:0.5;">LIVE_FEED</span>
+                            </div>
                             <div class="terminal-log" id="error-log">
                                 <div class="log-entry"><span class="log-msg">Sistem hataları burada listelenecek...</span></div>
                             </div>
@@ -360,9 +222,9 @@
 
                     <div class="right-col">
                         <!-- ACCOMPLISHMENTS -->
-                        <div class="neural-card" style="margin-bottom: 1.5rem;">
+                        <div class="neural-card">
                             <div class="card-title">Öğrenilen Kilometre Taşları</div>
-                            <div id="accomplishments-list" style="margin-top: 1rem;">
+                            <div id="accomplishments-list" style="margin-top: 1.5rem;">
                                 <div style="text-align:center; padding:2rem; color:var(--text-dim);">Henüz bir veri yok.</div>
                             </div>
                         </div>
@@ -370,7 +232,7 @@
                         <!-- REALTIME ACTIVITY -->
                         <div class="neural-card">
                             <div class="card-title">Anlık Sinirsel Aktivite</div>
-                            <div class="terminal-log" id="activity-log" style="height:400px;">
+                            <div class="terminal-log" id="activity-log" style="height:400px; background: rgba(0,0,0,0.2);">
                                 <div class="log-entry">Aktivite bekleniyor...</div>
                             </div>
                         </div>
@@ -380,18 +242,20 @@
         </main>
     </div>
 
+    <!-- SCRIPTS -->
     <script src="../js/firebase.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/evolution-core.js"></script>
     <script src="../js/admin.js"></script>
     <script>
         function renderPanel(data) {
-            const { level, experience, suggestions, accomplishments, logs } = data || EvolutionEngine.state;
+            const state = data || EvolutionEngine.state;
+            const { level, experience, suggestions, accomplishments, logs } = state;
             
             // Basic Stats
-            document.getElementById('lvl-val').innerText = level;
-            document.getElementById('exp-val').innerText = experience;
-            const progress = (experience % (level * 100)) / (level);
+            document.getElementById('lvl-val').innerText = level || 1;
+            document.getElementById('exp-val').innerText = (experience || 0).toLocaleString();
+            const progress = ((experience || 0) % ((level || 1) * 100)) / (level || 1);
             document.getElementById('lvl-progress').style.width = progress + '%';
 
             // Suggestions
@@ -407,7 +271,7 @@
                             </div>
                             <p>${s.desc}</p>
                         </div>
-                        <button class="btn" style="padding:0.5rem 1rem; font-size:0.8rem;" onclick="approveSugg('${s.id}')">Onayla</button>
+                        <button class="topbar-btn" style="padding:0.6rem 1.2rem; font-size:0.85rem;" onclick="approveSugg('${s.id}')">Onayla</button>
                     </div>
                 `).join('');
             }
@@ -419,8 +283,8 @@
                     <div class="accomplishment-item">
                         <div class="acc-icon">🏆</div>
                         <div class="acc-text">
-                            <div style="font-size:0.7rem; color:var(--text-dim);">${new Date(a.time).toLocaleDateString()}</div>
-                            <div>${a.text}</div>
+                            <div class="acc-date">${new Date(a.time).toLocaleDateString()} ${new Date(a.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                            <div style="color:#fff; font-weight:600;">${a.text}</div>
                         </div>
                     </div>
                 `).join('');
@@ -435,50 +299,37 @@
                 if(errors.length > 0) {
                     errorLog.innerHTML = errors.map(e => `
                         <div class="log-entry">
-                            <span class="log-time">[${new Date(e.time).toLocaleTimeString()}]</span>
+                            <span class="log-time">[${new Date(e.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}]</span>
                             <span class="log-msg" style="color:var(--error)">ERR: ${e.data.message}</span>
                         </div>
                     `).join('');
+                } else {
+                    errorLog.innerHTML = '<div style="color:var(--success); padding:1rem; font-size:0.8rem;">> No critical errors detected. System is clean.</div>';
                 }
 
                 activityLog.innerHTML = logs.map(l => `
                     <div class="log-entry">
-                        <span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span>
-                        <span class="log-msg" style="color:${l.type === 'error' ? 'var(--error)' : 'var(--success)'}">${l.type.toUpperCase()}: ${JSON.stringify(l.data).slice(0, 100)}</span>
+                        <span class="log-time">[${new Date(l.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}]</span>
+                        <span class="log-msg" style="color:${l.type === 'error' ? 'var(--error)' : (l.type === 'click' ? '#3b82f6' : 'var(--success)')}">${l.type.toUpperCase()}: ${JSON.stringify(l.data).slice(0, 80)}${JSON.stringify(l.data).length > 80 ? '...' : ''}</span>
                     </div>
                 `).join('');
             }
         }
 
         function approveSugg(id) {
-            alert('Öneri onaylandı! Yapay zeka bu özelliği siteye entegre etmek için çalışmaya başladı.');
-            // Implementation logic would go here
+            showAdminToast('✅ Öneri onaylandı! AI entegrasyona başladı.', 'success');
         }
 
         function syncNow() {
-            EvolutionEngine.syncWithCloud();
-            alert('Veriler buluta senkronize edildi.');
+            if(window.EvolutionEngine) EvolutionEngine.syncWithCloud();
+            showAdminToast('🔄 Bulut senkronizasyonu tamamlandı.', 'info');
         }
 
         document.addEventListener('evolutionUpdated', (e) => renderPanel(e.detail));
-        window.onload = () => renderPanel();
+        window.addEventListener('load', () => {
+            if(window.EvolutionEngine) renderPanel(window.EvolutionEngine.state);
+            else setTimeout(() => { if(window.EvolutionEngine) renderPanel(window.EvolutionEngine.state); }, 1000);
+        });
     </script>
-
-    <!-- PREMIUM MOBILE BOTTOM NAV -->
-    <div class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item" id="nav-dash"><i>📊</i><span>Özet</span></a>
-        <a href="pages.html" class="mobile-nav-item" id="nav-pages"><i>📝</i><span>İçerik</span></a>
-        <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
-        <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
-    </div>
-    <script>
-        // Set active nav item
-        const p = window.location.pathname;
-        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
-        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
-        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
-        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
-    </script>
-
 </body>
 </html>

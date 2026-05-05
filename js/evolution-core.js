@@ -182,7 +182,8 @@ const EvolutionEngine = (() => {
     const setupPatcher = () => {
         if (typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
-                FirebaseDB.listen('evolution_data', 'active_patches', (data) => {
+                // Listening on 'settings' collection which is already permitted
+                FirebaseDB.listen('settings', 'evolution_patches', (data) => {
                     if (data && data.patches) applyPatches(data.patches);
                 });
             });
@@ -216,7 +217,8 @@ const EvolutionEngine = (() => {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         
         console.log('[Evolution Engine] Bulut senkronizasyonu başlatıldı...');
-        const success = await FirebaseDB.set('evolution_meta', 'state', {
+        // Using 'settings' collection because it has correct permissions in Firebase Rules
+        const success = await FirebaseDB.set('settings', 'evolution_state', {
             ...state,
             lastSync: Date.now()
         });

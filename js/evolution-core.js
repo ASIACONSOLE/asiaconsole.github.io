@@ -209,17 +209,14 @@ const EvolutionEngine = (() => {
         };
 
         // Fetch current patches and append
-        if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
-            FirebaseDB.db.collection('settings').doc('evolution_patches').get().then(doc => {
-                let currentPatches = [];
-                if (doc.exists) currentPatches = doc.data().patches || [];
-                currentPatches.push(newPatch);
-                FirebaseDB.set('settings', 'evolution_patches', { patches: currentPatches });
-                
-                // Show notification to Admin
-                if(typeof showAdminToast === 'function') showAdminToast('Yama Ağa Dağıtıldı!', 'success');
-            });
-        }
+        const currentPatches = DB.get('evolution_patches') || [];
+        currentPatches.push(newPatch);
+        
+        // Save using the safe local DB which handles cloud sync to site_data
+        DB.set('evolution_patches', currentPatches);
+        
+        // Show notification to Admin
+        if(typeof showAdminToast === 'function') showAdminToast('Yama Ağa Dağıtıldı!', 'success');
     };
 
     const generateInitialSuggestions = () => {
@@ -295,11 +292,15 @@ const EvolutionEngine = (() => {
 
     // --- PATCHER ---
     const setupPatcher = () => {
+        // Apply existing patches from local DB immediately
+        const localPatches = DB.get('evolution_patches');
+        if (localPatches && Array.isArray(localPatches)) applyPatches(localPatches);
+
         if (typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
-                // Listening on 'settings' collection which is already permitted
-                FirebaseDB.listen('settings', 'evolution_patches', (data) => {
-                    if (data && data.patches) applyPatches(data.patches);
+                // Listen to the main site_data collection
+                FirebaseDB.listen('site_data', 'evolution_patches', (remoteData) => {
+                    if (remoteData && remoteData.data) applyPatches(remoteData.data);
                 });
             });
         }

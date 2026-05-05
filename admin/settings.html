@@ -1053,11 +1053,8 @@
                     lastUpdated: Date.now()
                 };
 
-                // CRITICAL: Save to IndexedDB AND Firebase synchronously
+                // CRITICAL: Save to IndexedDB (DB.set automatically handles Firebase 'site_data' sync in main.js)
                 DB.set('settings', newSettings);
-                if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
-                    await FirebaseDB.set('settings', 'all', newSettings);
-                }
                 
                 showAdminToast('✅ Tüm ayarlar, API anahtarları ve SEO verileri ZIRHLI bir şekilde kaydedildi.', 'success');
                 document.documentElement.style.setProperty('--accent-blue', newSettings.accentColor);

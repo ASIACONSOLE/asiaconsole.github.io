@@ -203,11 +203,25 @@ const EvolutionEngine = (() => {
                 priority: 'Orta'
             });
             addSuggestion({
-                type: 'seo',
-                title: 'Dinamik Meta Başlık Optimizasyonu',
-                desc: 'Tıklama oranını artırmak için sayfa başlıklarının AI ile daha çekici hale getirilmesi.',
-                impact: 'SEO / CTR',
+                type: 'performance',
+                title: 'WebP Görsel Dönüşümü',
+                desc: 'Tüm görsellerin otomatik olarak yeni nesil WebP formatına çevrilerek dosya boyutlarının %70 düşürülmesi.',
+                impact: 'Hız / Performans',
                 priority: 'Yüksek'
+            });
+            addSuggestion({
+                type: 'performance',
+                title: 'Akıllı Lazy Load Sistemi',
+                desc: 'Görsellerin ve videoların sadece ekrana girdiğinde yüklenerek ilk açılış hızının artırılması.',
+                impact: 'Hız / UX',
+                priority: 'Yüksek'
+            });
+            addSuggestion({
+                type: 'performance',
+                title: 'Kaynak Ön-Yükleme (Pre-fetching)',
+                desc: 'Kullanıcının gidebileceği olası sayfaların arka planda önceden yüklenmesi.',
+                impact: 'Hız / Geçişler',
+                priority: 'Orta'
             });
             saveLocal();
         }

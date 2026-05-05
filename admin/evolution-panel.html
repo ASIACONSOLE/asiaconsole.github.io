@@ -262,18 +262,27 @@
             const suggList = document.getElementById('suggestions-list');
             document.getElementById('sugg-count').innerText = (suggestions || []).length + ' Öneri';
             if (suggestions && suggestions.length > 0) {
-                suggList.innerHTML = suggestions.map(s => `
-                    <div class="suggestion-item">
+                suggList.innerHTML = suggestions.map(s => {
+                    const isApplying = s.status === 'applying';
+                    return `
+                    <div class="suggestion-item" style="${isApplying ? 'opacity:0.7; border-left-color:var(--success)' : ''}">
                         <div class="suggestion-info">
                             <div style="display:flex; gap:0.5rem; align-items:center;">
                                 <h4>${s.title}</h4>
                                 <span class="tag ${s.priority === 'Yüksek' ? 'tag-high' : 'tag-mid'}">${s.impact}</span>
+                                ${isApplying ? '<span style="color:var(--success); font-size:0.7rem; font-weight:bold;">⚙️ Entegre Ediliyor...</span>' : ''}
                             </div>
                             <p>${s.desc}</p>
                         </div>
-                        <button class="topbar-btn" style="padding:0.6rem 1.2rem; font-size:0.85rem;" onclick="approveSugg('${s.id}')">Onayla</button>
+                        <button class="topbar-btn" 
+                                style="padding:0.6rem 1.2rem; font-size:0.85rem; ${isApplying ? 'background:rgba(16,185,129,0.2); pointer-events:none;' : ''}" 
+                                onclick="approveSugg('${s.id}')">
+                            ${isApplying ? '◌ Bekleyin' : 'Onayla'}
+                        </button>
                     </div>
-                `).join('');
+                `}).join('');
+            } else if (!suggestions || suggestions.length === 0) {
+                suggList.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-dim);"><div style="font-size:2rem; margin-bottom:1rem;">✅</div>Tüm öneriler uygulandı! Yeni analiz bekleniyor...</div>';
             }
 
             // Accomplishments
@@ -317,7 +326,10 @@
         }
 
         function approveSugg(id) {
-            showAdminToast('✅ Öneri onaylandı! AI entegrasyona başladı.', 'success');
+            if(window.EvolutionEngine) {
+                EvolutionEngine.approveSuggestion(id);
+                showAdminToast('⚙️ AI Entegrasyonu başladı... Lütfen bekleyin.', 'info');
+            }
         }
 
         function syncNow() {

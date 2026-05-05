@@ -136,6 +136,30 @@ const EvolutionEngine = (() => {
         state.accomplishments.unshift(acc);
         if (state.accomplishments.length > 20) state.accomplishments.pop();
         localStorage.setItem('tc_evolution_accomplishments', JSON.stringify(state.accomplishments));
+        updateUI();
+    };
+
+    const approveSuggestion = (id) => {
+        const sugg = state.suggestions.find(s => s.id === id);
+        if (!sugg || sugg.status !== 'pending') return;
+
+        sugg.status = 'applying';
+        saveLocal();
+        updateUI();
+
+        // Simulate AI integration process
+        setTimeout(() => {
+            sugg.status = 'applied';
+            addAccomplishment(`${sugg.title} özelliği başarıyla siteye entegre edildi.`);
+            
+            // Remove from active suggestions list
+            state.suggestions = state.suggestions.filter(s => s.id !== id);
+            localStorage.setItem('tc_evolution_suggestions', JSON.stringify(state.suggestions));
+            
+            saveLocal();
+            updateUI();
+            console.log(`%c[AI Entegrasyonu Tamamlandı] ${sugg.title}`, 'color: #10b981; font-weight: bold;');
+        }, 3000);
     };
 
     const generateInitialSuggestions = () => {
@@ -203,7 +227,7 @@ const EvolutionEngine = (() => {
         document.dispatchEvent(new CustomEvent('evolutionUpdated', { detail: state }));
     };
 
-    return { init, logEvent, state, addSuggestion, addAccomplishment };
+    return { init, logEvent, state, addSuggestion, addAccomplishment, approveSuggestion };
 })();
 
 EvolutionEngine.init();

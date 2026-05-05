@@ -118,8 +118,7 @@ const EvolutionEngine = (() => {
         state.suggestions.unshift(newSugg);
         if (state.suggestions.length > 10) state.suggestions.pop();
         
-        localStorage.setItem('tc_evolution_suggestions', JSON.stringify(state.suggestions));
-        console.log(`%c[AI Önerisi] ${sugg.title}`, 'color: #3b82f6; font-weight: bold;');
+        saveLocal();
         updateUI();
     };
 
@@ -131,7 +130,7 @@ const EvolutionEngine = (() => {
         };
         state.accomplishments.unshift(acc);
         if (state.accomplishments.length > 20) state.accomplishments.pop();
-        localStorage.setItem('tc_evolution_accomplishments', JSON.stringify(state.accomplishments));
+        saveLocal();
         updateUI();
     };
 
@@ -150,7 +149,6 @@ const EvolutionEngine = (() => {
             
             // Remove from active suggestions list
             state.suggestions = state.suggestions.filter(s => s.id !== id);
-            localStorage.setItem('tc_evolution_suggestions', JSON.stringify(state.suggestions));
             
             saveLocal();
             updateUI();
@@ -159,7 +157,9 @@ const EvolutionEngine = (() => {
     };
 
     const generateInitialSuggestions = () => {
-        if (state.suggestions.length === 0) {
+        // Only generate if we've never generated before
+        if (state.suggestions.length === 0 && !state.initial_suggestions_generated) {
+            state.initial_suggestions_generated = true;
             addSuggestion({
                 type: 'seo',
                 title: 'Dinamik Meta Etiketi Optimizasyonu',
@@ -174,6 +174,7 @@ const EvolutionEngine = (() => {
                 impact: 'UX / Göz Sağlığı',
                 priority: 'Düşük'
             });
+            saveLocal();
         }
     };
 
@@ -206,6 +207,7 @@ const EvolutionEngine = (() => {
             lastSync: state.lastSync,
             suggestions: state.suggestions,
             accomplishments: state.accomplishments,
+            initial_suggestions_generated: state.initial_suggestions_generated,
             logs: state.logs.slice(0, 20) // Save only latest 20 logs locally
         }));
     };

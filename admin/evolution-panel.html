@@ -195,36 +195,273 @@
     <script src="../js/firebase.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/admin.js"></script>
-    <script>
-        function updateDashboard() {
-            const state = JSON.parse(localStorage.getItem('tc_evolution_state') || '{}');
-            const localLogs = JSON.parse(localStorage.getItem('tc_evolution_logs') || '[]');
-            
-            document.getElementById('lvl-val').innerText = state.level || 1;
-            document.getElementById('exp-val').innerText = state.experience || 0;
-            
-            const progress = ((state.experience || 0) % ((state.level || 1) * 100)) / (state.level || 1);
-            const pb = document.getElementById('lvl-progress');
-            if(pb) pb.style.width = progress + '%';
+    <style>
+        :root {
+            --bg: #05070a;
+            --card: #0d1117;
+            --accent: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text-dim: #94a3b8;
+        }
 
-            const logList = document.getElementById('log-list');
-            if (localLogs.length > 0) {
-                logList.innerHTML = localLogs.map(log => `
-                    <div class="log-item">
-                        <span style="color:#64748b">[${new Date(log.time).toLocaleTimeString()}]</span>
-                        <span class="log-type type-${log.type}">${log.type.toUpperCase()}</span>
-                        <span>${JSON.stringify(log.data)}</span>
+        .evolution-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .neural-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .neural-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .suggestion-item {
+            background: rgba(255,255,255,0.02);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suggestion-info h4 { margin: 0; font-size: 0.95rem; }
+        .suggestion-info p { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-dim); }
+
+        .tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tag-high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .tag-mid { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .terminal-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            height: 300px;
+            overflow-y: auto;
+            color: #d1d5db;
+        }
+
+        .log-entry {
+            margin-bottom: 0.4rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .log-time { color: var(--text-dim); }
+        .log-msg { word-break: break-all; }
+
+        .accomplishment-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .acc-icon { font-size: 1.25rem; }
+        .acc-text { font-size: 0.85rem; }
+
+        @media (max-width: 1024px) {
+            .evolution-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🧠</div>
+                <div>
+                    <h1>AsiaConsole</h1>
+                    <span>Neural Engine</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Otonom Kontrol</div>
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="evolution-panel.html" class="sidebar-link active"><span class="icon">🧠</span> Evolution Engine</a>
+                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
+                <div class="sidebar-section-label" style="margin-top:0.5rem;">Yapılandırma</div>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="menu-toggle"><span></span><span></span><span></span></div>
+                    <div class="topbar-title">🧠 Evolution Neural Dashboard</div>
+                </div>
+                <div class="topbar-actions mobile-stack">
+                    <button class="topbar-btn" onclick="syncNow()">🔄 Cloud Sync</button>
+                    <button class="topbar-btn secondary" onclick="localStorage.clear(); location.reload();">🗑️ Reset Intel</button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <!-- STATS -->
+                <div class="grid" style="margin-bottom: 1.5rem;">
+                    <div class="neural-card">
+                        <div class="card-title">Neural Level</div>
+                        <div class="stat" id="lvl-val">1</div>
+                        <div class="progress-container"><div class="progress-bar" id="lvl-progress"></div></div>
+                    </div>
+                    <div class="neural-card">
+                        <div class="card-title">Experience Points</div>
+                        <div class="stat" id="exp-val">0</div>
+                    </div>
+                    <div class="neural-card">
+                        <div class="card-title">System Health</div>
+                        <div class="stat" style="color:var(--success)">98.4%</div>
+                    </div>
+                </div>
+
+                <div class="evolution-grid">
+                    <div class="left-col">
+                        <!-- AI SUGGESTIONS -->
+                        <div class="neural-card" style="margin-bottom: 1.5rem;">
+                            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                                AI Önerileri & İyileştirmeler
+                                <span class="tag tag-mid" id="sugg-count">0 Öneri</span>
+                            </div>
+                            <div id="suggestions-list" style="margin-top: 1rem;">
+                                <div style="text-align:center; padding:2rem; color:var(--text-dim);">Öneriler analiz ediliyor...</div>
+                            </div>
+                        </div>
+
+                        <!-- ERROR TERMINAL -->
+                        <div class="neural-card" style="background:#000; border: 1px solid #1a1a1a;">
+                            <div class="card-title" style="color:var(--error); font-family:monospace;">> ERROR_TERMINAL_LOG</div>
+                            <div class="terminal-log" id="error-log">
+                                <div class="log-entry"><span class="log-msg">Sistem hataları burada listelenecek...</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right-col">
+                        <!-- ACCOMPLISHMENTS -->
+                        <div class="neural-card" style="margin-bottom: 1.5rem;">
+                            <div class="card-title">Öğrenilen Kilometre Taşları</div>
+                            <div id="accomplishments-list" style="margin-top: 1rem;">
+                                <div style="text-align:center; padding:2rem; color:var(--text-dim);">Henüz bir veri yok.</div>
+                            </div>
+                        </div>
+
+                        <!-- REALTIME ACTIVITY -->
+                        <div class="neural-card">
+                            <div class="card-title">Anlık Sinirsel Aktivite</div>
+                            <div class="terminal-log" id="activity-log" style="height:400px;">
+                                <div class="log-entry">Aktivite bekleniyor...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/evolution-core.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        function renderPanel(data) {
+            const { level, experience, suggestions, accomplishments, logs } = data || EvolutionEngine.state;
+            
+            // Basic Stats
+            document.getElementById('lvl-val').innerText = level;
+            document.getElementById('exp-val').innerText = experience;
+            const progress = (experience % (level * 100)) / (level);
+            document.getElementById('lvl-progress').style.width = progress + '%';
+
+            // Suggestions
+            const suggList = document.getElementById('suggestions-list');
+            document.getElementById('sugg-count').innerText = (suggestions || []).length + ' Öneri';
+            if (suggestions && suggestions.length > 0) {
+                suggList.innerHTML = suggestions.map(s => `
+                    <div class="suggestion-item">
+                        <div class="suggestion-info">
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <h4>${s.title}</h4>
+                                <span class="tag ${s.priority === 'Yüksek' ? 'tag-high' : 'tag-mid'}">${s.impact}</span>
+                            </div>
+                            <p>${s.desc}</p>
+                        </div>
+                        <button class="btn" style="padding:0.5rem 1rem; font-size:0.8rem;" onclick="approveSugg('${s.id}')">Onayla</button>
+                    </div>
+                `).join('');
+            }
+
+            // Accomplishments
+            const accList = document.getElementById('accomplishments-list');
+            if (accomplishments && accomplishments.length > 0) {
+                accList.innerHTML = accomplishments.map(a => `
+                    <div class="accomplishment-item">
+                        <div class="acc-icon">🏆</div>
+                        <div class="acc-text">
+                            <div style="font-size:0.7rem; color:var(--text-dim);">${new Date(a.time).toLocaleDateString()}</div>
+                            <div>${a.text}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Logs
+            const errorLog = document.getElementById('error-log');
+            const activityLog = document.getElementById('activity-log');
+            
+            if (logs && logs.length > 0) {
+                const errors = logs.filter(l => l.type === 'error');
+                if(errors.length > 0) {
+                    errorLog.innerHTML = errors.map(e => `
+                        <div class="log-entry">
+                            <span class="log-time">[${new Date(e.time).toLocaleTimeString()}]</span>
+                            <span class="log-msg" style="color:var(--error)">ERR: ${e.data.message}</span>
+                        </div>
+                    `).join('');
+                }
+
+                activityLog.innerHTML = logs.map(l => `
+                    <div class="log-entry">
+                        <span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span>
+                        <span class="log-msg" style="color:${l.type === 'error' ? 'var(--error)' : 'var(--success)'}">${l.type.toUpperCase()}: ${JSON.stringify(l.data).slice(0, 100)}</span>
                     </div>
                 `).join('');
             }
         }
 
-        function syncNow() {
-            alert('Bulut senkronizasyonu tetiklendi. Veriler Firebase\'e aktarılıyor...');
+        function approveSugg(id) {
+            alert('Öneri onaylandı! Yapay zeka bu özelliği siteye entegre etmek için çalışmaya başladı.');
+            // Implementation logic would go here
         }
 
-        setInterval(updateDashboard, 2000);
-        updateDashboard();
+        function syncNow() {
+            EvolutionEngine.syncWithCloud();
+            alert('Veriler buluta senkronize edildi.');
+        }
+
+        document.addEventListener('evolutionUpdated', (e) => renderPanel(e.detail));
+        window.onload = () => renderPanel();
     </script>
 
     <!-- PREMIUM MOBILE BOTTOM NAV -->

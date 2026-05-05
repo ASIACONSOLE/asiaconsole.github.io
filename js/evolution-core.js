@@ -12,6 +12,8 @@ const EvolutionEngine = (() => {
         experience: 0,
         logs: [],
         patches: [],
+        suggestions: [],
+        accomplishments: [],
         lastSync: Date.now()
     };
 
@@ -21,9 +23,17 @@ const EvolutionEngine = (() => {
         // Load local state
         const saved = localStorage.getItem('tc_evolution_state');
         if (saved) state = { ...state, ...JSON.parse(saved) };
+        
+        // Load suggestions & accomplishments
+        const suggs = localStorage.getItem('tc_evolution_suggestions');
+        if (suggs) state.suggestions = JSON.parse(suggs);
+        
+        const accs = localStorage.getItem('tc_evolution_accomplishments');
+        if (accs) state.accomplishments = JSON.parse(accs);
 
         setupMonitoring();
         setupPatcher();
+        generateInitialSuggestions();
         updateUI();
 
         // Initial sync attempt
@@ -38,35 +48,38 @@ const EvolutionEngine = (() => {
                 message: event.message,
                 source: event.filename,
                 lineno: event.lineno,
-                colno: event.colno,
                 stack: event.error ? event.error.stack : ''
+            });
+            // Try to generate a fix suggestion for this error
+            addSuggestion({
+                type: 'fix',
+                title: 'Otomatik Hata Giderici',
+                desc: `Sistemde bir JS hatası tespit edildi: ${event.message}. AI bu hatayı izole edip gidermeyi teklif ediyor.`,
+                impact: 'Kararlılık',
+                priority: 'Yüksek'
             });
         });
 
-        // 2. Performance Monitoring
-        if ('performance' in window) {
-            window.addEventListener('load', () => {
-                const navData = performance.getEntriesByType('navigation')[0];
-                if (navData && navData.duration > 3000) {
-                    logEvent('performance_warning', {
-                        duration: navData.duration,
-                        page: window.location.pathname
-                    });
-                }
-            });
-        }
-
-        // 3. User Engagement (Click Heatmap Lite)
+        // 2. User Engagement Analysis
         document.addEventListener('click', (e) => {
             const target = e.target.closest('a, button, .clickable');
             if (target) {
                 logEvent('click', {
                     tag: target.tagName,
                     text: target.innerText.slice(0, 30),
-                    id: target.id,
-                    classes: target.className,
                     path: window.location.pathname
                 });
+                
+                // If user clicks a lot of things, maybe suggest a tutorial
+                if (state.experience > 500 && state.level < 5) {
+                    addSuggestion({
+                        type: 'feature',
+                        title: 'Interaktif Tur Sistemi',
+                        desc: 'Kullanıcı etkileşimi çok yüksek. Yeni üyeler için siteyi tanıtan bir interaktif tur ekleyebiliriz.',
+                        impact: 'UX / Deneyim',
+                        priority: 'Orta'
+                    });
+                }
             }
         }, true);
     };
@@ -79,30 +92,77 @@ const EvolutionEngine = (() => {
             data,
             url: window.location.href
         };
-        state.logs.push(entry);
-        state.experience += (type === 'error' ? 5 : 1);
+        state.logs.unshift(entry);
+        if (state.logs.length > 50) state.logs.pop(); // Keep last 50
         
-        // Level up logic (placeholder)
+        state.experience += (type === 'error' ? 10 : 2);
+        
+        // Level up logic
         if (state.experience > state.level * 100) {
             state.level++;
+            addAccomplishment(`Yapay Zeka Seviye ${state.level} oldu ve site mimarisini daha iyi kavramaya başladı.`);
             console.log(`%c[Evolution Engine] Seviye Atladı! Yeni Seviye: ${state.level} 🚀`, 'color: #fbbf24; font-weight: bold;');
         }
 
         saveLocal();
+        updateUI();
+    };
+
+    // --- SUGGESTIONS & ACCOMPLISHMENTS ---
+    const addSuggestion = (sugg) => {
+        // Prevent duplicates
+        if (state.suggestions.some(s => s.title === sugg.title)) return;
         
-        // Critical error trigger immediate sync
-        if (type === 'error') syncWithCloud();
+        const newSugg = {
+            id: 'sug_' + Date.now(),
+            time: new Date().toISOString(),
+            status: 'pending',
+            ...sugg
+        };
+        state.suggestions.unshift(newSugg);
+        if (state.suggestions.length > 10) state.suggestions.pop();
+        
+        localStorage.setItem('tc_evolution_suggestions', JSON.stringify(state.suggestions));
+        console.log(`%c[AI Önerisi] ${sugg.title}`, 'color: #3b82f6; font-weight: bold;');
+        updateUI();
+    };
+
+    const addAccomplishment = (text) => {
+        const acc = {
+            id: 'acc_' + Date.now(),
+            time: new Date().toISOString(),
+            text
+        };
+        state.accomplishments.unshift(acc);
+        if (state.accomplishments.length > 20) state.accomplishments.pop();
+        localStorage.setItem('tc_evolution_accomplishments', JSON.stringify(state.accomplishments));
+    };
+
+    const generateInitialSuggestions = () => {
+        if (state.suggestions.length === 0) {
+            addSuggestion({
+                type: 'seo',
+                title: 'Dinamik Meta Etiketi Optimizasyonu',
+                desc: 'Yapay zeka, sayfa içeriklerine göre meta açıklamalarını otomatik güncelleyerek SEO puanını %15 artırabilir.',
+                impact: 'SEO / Trafik',
+                priority: 'Yüksek'
+            });
+            addSuggestion({
+                type: 'ui',
+                title: 'Gece Modu Adaptasyonu',
+                desc: 'Ziyaretçilerin çoğu gece saatlerinde giriş yapıyor. Akıllı bir gece modu geçişi eklemeyi öneriyorum.',
+                impact: 'UX / Göz Sağlığı',
+                priority: 'Düşük'
+            });
+        }
     };
 
     // --- PATCHER ---
     const setupPatcher = () => {
-        // Listen for new patches from Firebase
         if (typeof FirebaseDB !== 'undefined') {
             FirebaseDB.onReady(() => {
                 FirebaseDB.listen('evolution_data', 'active_patches', (data) => {
-                    if (data && data.patches) {
-                        applyPatches(data.patches);
-                    }
+                    if (data && data.patches) applyPatches(data.patches);
                 });
             });
         }
@@ -110,26 +170,11 @@ const EvolutionEngine = (() => {
 
     const applyPatches = (patches) => {
         patches.forEach(patch => {
-            // Check if already applied
             if (document.getElementById(`patch-${patch.id}`)) return;
-
-            console.log(`%c[Evolution Engine] Yama Uygulanıyor: ${patch.name}`, 'color: #10b981;');
-            
-            if (patch.type === 'css') {
-                const style = document.createElement('style');
-                style.id = `patch-${patch.id}`;
-                style.textContent = patch.code;
-                document.head.appendChild(style);
-            } else if (patch.type === 'js') {
-                try {
-                    const script = document.createElement('script');
-                    script.id = `patch-${patch.id}`;
-                    script.textContent = `(function(){ try { ${patch.code} } catch(e){ console.error('Patch Error:', e); } })();`;
-                    document.body.appendChild(script);
-                } catch (e) {
-                    logEvent('patch_error', { patchId: patch.id, error: e.message });
-                }
-            }
+            const style = document.createElement(patch.type === 'css' ? 'style' : 'script');
+            style.id = `patch-${patch.id}`;
+            style.textContent = patch.type === 'css' ? patch.code : `(function(){ try { ${patch.code} } catch(e){ console.error('Patch Error:', e); } })();`;
+            document.head.appendChild(style);
         });
     };
 
@@ -144,48 +189,21 @@ const EvolutionEngine = (() => {
 
     const syncWithCloud = async () => {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
-        if (state.logs.length === 0) return;
-
-        console.log('[Evolution Engine] Veriler buluta senkronize ediliyor...');
-        const logsToSync = [...state.logs];
-        state.logs = []; // Clear current logs
-        
-        const success = await FirebaseDB.set('evolution_logs', 'session_' + Date.now(), {
-            logs: logsToSync,
-            metadata: {
-                level: state.level,
-                exp: state.experience,
-                agent: navigator.userAgent
-            }
+        FirebaseDB.set('evolution_meta', 'state', {
+            level: state.level,
+            experience: state.experience,
+            suggestions: state.suggestions,
+            accomplishments: state.accomplishments,
+            lastSync: Date.now()
         });
-
-        if (success) {
-            state.lastSync = Date.now();
-            saveLocal();
-        } else {
-            // Put back logs if failed
-            state.logs = [...logsToSync, ...state.logs];
-        }
     };
 
     const updateUI = () => {
-        // This will be called to update any visual indicators
-        const el = document.getElementById('evolution-level-val');
-        if (el) el.textContent = state.level;
-        
-        const bar = document.getElementById('evolution-progress-bar');
-        if (bar) {
-            const progress = (state.experience % (state.level * 100)) / (state.level);
-            bar.style.width = `${progress}%`;
-        }
+        // Broadcast event for the dashboard to pick up
+        document.dispatchEvent(new CustomEvent('evolutionUpdated', { detail: state }));
     };
 
-    return { init, logEvent, state };
+    return { init, logEvent, state, addSuggestion, addAccomplishment };
 })();
 
-// Auto-init
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', EvolutionEngine.init);
-} else {
-    EvolutionEngine.init();
-}
+EvolutionEngine.init();

@@ -142,7 +142,7 @@ const EvolutionEngine = (() => {
         saveLocal();
         updateUI();
 
-        // Simulate AI integration process
+        // Simulate AI generating the code patch
         setTimeout(() => {
             sugg.status = 'applied';
             addAccomplishment(`${sugg.title} özelliği başarıyla siteye entegre edildi.`);
@@ -152,8 +152,74 @@ const EvolutionEngine = (() => {
             
             saveLocal();
             updateUI();
+            
+            // 🚀 THE AUTONOMOUS PATCH ENGINE IN ACTION 🚀
+            deployRealPatch(sugg);
+            
             console.log(`%c[AI Entegrasyonu Tamamlandı] ${sugg.title}`, 'color: #10b981; font-weight: bold;');
-        }, 3000);
+        }, 2000);
+    };
+
+    const deployRealPatch = (sugg) => {
+        // Generate actual JS/CSS based on the suggestion title
+        let patchCode = '';
+        let patchType = 'script';
+        
+        if (sugg.title.includes('Dinamik Yerleşim')) {
+            patchType = 'css';
+            patchCode = `.card { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); } .card:hover { transform: scale(1.02) translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }`;
+        } else if (sugg.title.includes('JSON-LD')) {
+            patchCode = `
+                if(!document.querySelector('script[type="application/ld+json"]')) {
+                    const el = document.createElement('script');
+                    el.type = 'application/ld+json';
+                    el.innerText = JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        "name": "AsiaConsole Neural Network",
+                        "url": window.location.origin
+                    });
+                    document.head.appendChild(el);
+                    console.log('✅ JSON-LD Injectlendi.');
+                }
+            `;
+        } else if (sugg.title.includes('Özetleyici')) {
+            patchCode = `
+                console.log('🧠 Neural Özetleyici yaması aktif edildi!');
+                if(window.EvolutionAI && window.EvolutionAI.init) window.EvolutionAI.init();
+            `;
+        } else if (sugg.title.includes('Alt-Text')) {
+            patchCode = `
+                document.querySelectorAll('img:not([alt])').forEach(img => {
+                    img.alt = "AsiaConsole Neural Yükleme - Otonom Görsel";
+                });
+                console.log('✅ Görsel alt etiketleri düzeltildi.');
+            `;
+        } else {
+            // Generic visual patch
+            patchCode = `console.log('🚀 Otonom Yama Çalıştı: ${sugg.title}');`;
+        }
+
+        const newPatch = {
+            id: sugg.id,
+            title: sugg.title,
+            type: patchType,
+            code: patchCode,
+            timestamp: Date.now()
+        };
+
+        // Fetch current patches and append
+        if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
+            FirebaseDB.db.collection('settings').doc('evolution_patches').get().then(doc => {
+                let currentPatches = [];
+                if (doc.exists) currentPatches = doc.data().patches || [];
+                currentPatches.push(newPatch);
+                FirebaseDB.set('settings', 'evolution_patches', { patches: currentPatches });
+                
+                // Show notification to Admin
+                if(typeof showAdminToast === 'function') showAdminToast('Yama Ağa Dağıtıldı!', 'success');
+            });
+        }
     };
 
     const generateInitialSuggestions = () => {

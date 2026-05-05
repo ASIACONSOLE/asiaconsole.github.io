@@ -965,78 +965,102 @@
             });
 
             // Save all
-            document.getElementById('saveAllBtn').addEventListener('click', () => {
+            document.getElementById('saveAllBtn').addEventListener('click', async () => {
                 const currentSettings = DB.get('settings') || {};
+                
+                // Safe getter to prevent null errors if UI changes
+                const safeVal = (id, fallback) => {
+                    const el = document.getElementById(id);
+                    return el ? el.value.trim() : fallback;
+                };
+                const safeCheck = (id, fallback) => {
+                    const el = document.getElementById(id);
+                    return el ? el.checked : fallback;
+                };
+
                 const newSettings = {
                     ...currentSettings,
-                    siteName: document.getElementById('siteName').value.trim() || 'AsiaConsole',
-                    siteSlogan: document.getElementById('siteSlogan').value.trim(),
-                    footerText: document.getElementById('footerText').value.trim(),
-                    accentColor: document.getElementById('accentColor').value,
-                    contactEmail: document.getElementById('contactEmail').value.trim(),
-                    socialTwitter: document.getElementById('socialTwitter').value.trim() || '#',
-                    socialGithub: document.getElementById('socialGithub').value.trim() || '#',
-                    socialYoutube: document.getElementById('socialYoutube').value.trim() || '#',
-                    socialDiscord: document.getElementById('socialDiscord').value.trim() || '#',
-                    metaDesc: document.getElementById('metaDesc').value.trim(),
-                    metaKeywords: document.getElementById('metaKeywords').value.trim(),
-                    gaId: document.getElementById('gaId').value.trim(),
-                    // New settings
-                    tickerEnabled: document.getElementById('tickerEnabled').checked,
-                    tickerText: document.getElementById('tickerText').value.trim(),
-                    tickerBg: document.getElementById('tickerBg').value,
-                    tickerColor: document.getElementById('tickerColor').value,
-                    tickerSpeed: document.getElementById('tickerSpeed').value,
-                    siteFont: document.getElementById('siteFont').value,
-                    brandAnim: document.getElementById('brandAnim').value,
-                    navbarStyle: document.getElementById('navbarStyle').value,
-                    aiEnabled: document.getElementById('aiEnabled').checked,
-                    aiName: document.getElementById('aiName').value.trim(),
-                    aiGreeting: document.getElementById('aiGreeting').value.trim(),
-                    geminiApiKey: document.getElementById('geminiApiKey').value.trim(),
-                    groqApiKey: document.getElementById('groqApiKey').value.trim(),
-                    groqApiKey2: document.getElementById('groqApiKey2').value.trim(),
-                    groqApiKey3: document.getElementById('groqApiKey3').value.trim(),
-                    groqApiKey4: document.getElementById('groqApiKey4').value.trim(),
-                    groqApiKey5: document.getElementById('groqApiKey5').value.trim(),
-                    openrouterApiKey: document.getElementById('openrouterApiKey').value.trim(),
-                    mistralApiKey: document.getElementById('mistralApiKey').value.trim(),
-                    bannerEnabled: document.getElementById('bannerEnabled').checked,
-                    bannerTitle: document.getElementById('bannerTitle').value.trim(),
-                    bannerSubtitle: document.getElementById('bannerSubtitle').value.trim(),
-                    bannerBtn1: document.getElementById('bannerBtn1').value.trim(),
-                    bannerBtn2: document.getElementById('bannerBtn2').value.trim(),
-                    homeArticleCount: document.getElementById('homeArticleCount').value,
-                    homeForumCount: document.getElementById('homeForumCount').value,
-                    forumModMode: document.getElementById('forumModMode').value,
-                    googleClientId: document.getElementById('googleClientId').value.trim(),
-                    // Theme settings
-                    activeTheme: document.getElementById('activeTheme').value,
-                    // Typography settings
-                    baseFontSize: document.getElementById('baseFontSize').value,
-                    headingScale: document.getElementById('headingScale').value,
-                    lineHeight: document.getElementById('lineHeight').value,
-                    fontFamily: document.getElementById('fontFamily').value,
-                    // Design sizes
-                    logoSize: document.getElementById('logoSize').value,
-                    siteNameSize: document.getElementById('siteNameSize').value,
-                    brandAnimSpeed: document.getElementById('brandAnimSpeed').value,
-                    heroHeight: document.getElementById('heroHeight').value,
-                    heroTitleSize: document.getElementById('heroTitleSize').value,
-                    heroBgOpacity: parseFloat(document.getElementById('heroBgOpacity').value),
-                    // Category icons
-                    iconTeknoloji: document.getElementById('iconTeknoloji').value.trim() || '💻',
-                    iconOyun: document.getElementById('iconOyun').value.trim() || '🎮',
-                    iconUygulama: document.getElementById('iconUygulama').value.trim() || '📱',
-                    navbarAnimStyle: document.getElementById('navbarAnimStyle').value,
-                    logoUrl: document.getElementById('logoUrl').value.trim(),
-                    heroBgUrl: document.getElementById('heroBgUrl').value.trim()
+                    siteName: safeVal('siteName', currentSettings.siteName || 'AsiaConsole'),
+                    siteSlogan: safeVal('siteSlogan', currentSettings.siteSlogan),
+                    footerText: safeVal('footerText', currentSettings.footerText),
+                    accentColor: safeVal('accentColor', currentSettings.accentColor),
+                    contactEmail: safeVal('contactEmail', currentSettings.contactEmail),
+                    socialTwitter: safeVal('socialTwitter', currentSettings.socialTwitter || '#'),
+                    socialGithub: safeVal('socialGithub', currentSettings.socialGithub || '#'),
+                    socialYoutube: safeVal('socialYoutube', currentSettings.socialYoutube || '#'),
+                    socialDiscord: safeVal('socialDiscord', currentSettings.socialDiscord || '#'),
+                    metaDesc: safeVal('metaDesc', currentSettings.metaDesc),
+                    metaKeywords: safeVal('metaKeywords', currentSettings.metaKeywords),
+                    gaId: safeVal('gaId', currentSettings.gaId),
+                    
+                    // Ticker
+                    tickerEnabled: safeCheck('tickerEnabled', currentSettings.tickerEnabled),
+                    tickerText: safeVal('tickerText', currentSettings.tickerText),
+                    tickerBg: safeVal('tickerBg', currentSettings.tickerBg || '#4f8ef7'),
+                    tickerColor: safeVal('tickerColor', currentSettings.tickerColor || '#ffffff'),
+                    tickerSpeed: safeVal('tickerSpeed', currentSettings.tickerSpeed || 'normal'),
+                    
+                    // Design
+                    siteFont: safeVal('siteFont', currentSettings.siteFont),
+                    brandAnim: safeVal('brandAnim', currentSettings.brandAnim),
+                    navbarStyle: safeVal('navbarStyle', currentSettings.navbarStyle),
+                    activeTheme: safeVal('activeTheme', currentSettings.activeTheme),
+                    baseFontSize: safeVal('baseFontSize', currentSettings.baseFontSize),
+                    headingScale: safeVal('headingScale', currentSettings.headingScale),
+                    lineHeight: safeVal('lineHeight', currentSettings.lineHeight),
+                    fontFamily: safeVal('fontFamily', currentSettings.fontFamily),
+                    logoSize: safeVal('logoSize', currentSettings.logoSize),
+                    siteNameSize: safeVal('siteNameSize', currentSettings.siteNameSize),
+                    brandAnimSpeed: safeVal('brandAnimSpeed', currentSettings.brandAnimSpeed),
+                    heroHeight: safeVal('heroHeight', currentSettings.heroHeight),
+                    heroTitleSize: safeVal('heroTitleSize', currentSettings.heroTitleSize),
+                    heroBgOpacity: parseFloat(safeVal('heroBgOpacity', currentSettings.heroBgOpacity || 0.3)),
+                    navbarAnimStyle: safeVal('navbarAnimStyle', currentSettings.navbarAnimStyle),
+                    
+                    // AI & API
+                    aiEnabled: safeCheck('aiEnabled', currentSettings.aiEnabled),
+                    aiName: safeVal('aiName', currentSettings.aiName || 'AsiaBot'),
+                    aiGreeting: safeVal('aiGreeting', currentSettings.aiGreeting),
+                    geminiApiKey: safeVal('geminiApiKey', currentSettings.geminiApiKey),
+                    groqApiKey: safeVal('groqApiKey', currentSettings.groqApiKey),
+                    groqApiKey2: safeVal('groqApiKey2', currentSettings.groqApiKey2),
+                    groqApiKey3: safeVal('groqApiKey3', currentSettings.groqApiKey3),
+                    groqApiKey4: safeVal('groqApiKey4', currentSettings.groqApiKey4),
+                    groqApiKey5: safeVal('groqApiKey5', currentSettings.groqApiKey5),
+                    openrouterApiKey: safeVal('openrouterApiKey', currentSettings.openrouterApiKey),
+                    mistralApiKey: safeVal('mistralApiKey', currentSettings.mistralApiKey),
+                    
+                    // Content & Integrations
+                    bannerEnabled: safeCheck('bannerEnabled', currentSettings.bannerEnabled),
+                    bannerTitle: safeVal('bannerTitle', currentSettings.bannerTitle),
+                    bannerSubtitle: safeVal('bannerSubtitle', currentSettings.bannerSubtitle),
+                    bannerBtn1: safeVal('bannerBtn1', currentSettings.bannerBtn1),
+                    bannerBtn2: safeVal('bannerBtn2', currentSettings.bannerBtn2),
+                    homeArticleCount: safeVal('homeArticleCount', currentSettings.homeArticleCount),
+                    homeForumCount: safeVal('homeForumCount', currentSettings.homeForumCount),
+                    forumModMode: safeVal('forumModMode', currentSettings.forumModMode),
+                    googleClientId: safeVal('googleClientId', currentSettings.googleClientId),
+                    
+                    // Categories
+                    iconTeknoloji: safeVal('iconTeknoloji', currentSettings.iconTeknoloji || '💻'),
+                    iconOyun: safeVal('iconOyun', currentSettings.iconOyun || '🎮'),
+                    iconUygulama: safeVal('iconUygulama', currentSettings.iconUygulama || '📱'),
+                    
+                    // Media
+                    logoUrl: safeVal('logoUrl', currentSettings.logoUrl),
+                    heroBgUrl: safeVal('heroBgUrl', currentSettings.heroBgUrl),
+                    
+                    lastUpdated: Date.now()
                 };
+
+                // CRITICAL: Save to IndexedDB AND Firebase synchronously
                 DB.set('settings', newSettings);
-                showAdminToast('✅ Tüm ayarlar kaydedildi ve senkronize edildi!', 'success');
-
+                if (typeof FirebaseDB !== 'undefined' && FirebaseDB._ready) {
+                    await FirebaseDB.set('settings', 'all', newSettings);
+                }
+                
+                showAdminToast('✅ Tüm ayarlar, API anahtarları ve SEO verileri ZIRHLI bir şekilde kaydedildi.', 'success');
                 document.documentElement.style.setProperty('--accent-blue', newSettings.accentColor);
-
             });
 
             // Admin password change

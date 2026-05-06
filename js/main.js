@@ -1379,18 +1379,23 @@ const UserTiers = {
 // ---- INIT ----
 async function logVisitor() {
     try {
-        if (window.location.pathname.includes('/admin/')) return;
-        const lastLog = sessionStorage.getItem('last_visit_log');
-        const now = Date.now();
-        if (lastLog && (now - parseInt(lastLog)) < 15000) return;
+        // Wait for DB to be ready if not already
+        if (!window.DB || !window.DB._isInitialized) {
+            document.addEventListener('dbReady', logVisitor, { once: true });
+            return;
+        }
 
-        let ip = localStorage.getItem('visitor_ip');
-        if (!ip) {
+        const now = Date.now();
+        const lastLog = sessionStorage.getItem('last_visit_log');
+        if (lastLog && (now - parseInt(lastLog)) < 10000) return;
+
+        let ip = localStorage.getItem('visitor_ip') || 'Fetching...';
+        try {
             const res = await fetch('https://api.ipify.org?format=json');
             const data = await res.json();
             ip = data.ip || 'Unknown';
             localStorage.setItem('visitor_ip', ip);
-        }
+        } catch(e) { ip = 'Unknown'; }
 
         const logs = DB.get('visitor_logs') || [];
         logs.push({
@@ -1401,10 +1406,11 @@ async function logVisitor() {
             ref: document.referrer || 'Direct'
         });
 
-        if (logs.length > 1000) logs.shift();
+        if (logs.length > 2000) logs.shift();
         DB.set('visitor_logs', logs);
         sessionStorage.setItem('last_visit_log', now.toString());
-    } catch (e) {}
+        console.log('[Analytics] Visit logged ✓', ip, window.location.pathname);
+    } catch (e) { console.error('[Analytics] Error:', e); }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1416,7 +1422,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateNavAuth();
     renderHeroProjects();
     setTimeout(initScrollAnimations, 100);
-    setTimeout(logVisitor, 1500);
+    // Try log immediately and also on dbReady
+    logVisitor();
 });
 
 /* ================================================

@@ -366,11 +366,14 @@
             <h1 class="upload-title">Hızlı Resim Yükle</h1>
             <p class="upload-subtitle">Görsellerinizi anında paylaşın, sonsuza dek saklayın.</p>
             
-            <div class="drop-zone" id="dropZone">
+            <div class="drop-zone" id="dropZone" onclick="if(event.target.id !== 'urlBtn') fileInput.click();">
                 <span class="drop-icon">📁</span>
                 <br>
-                <button class="select-btn">Resim Seç</button>
-                <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Sürükle bırak veya panodan yapıştır (Ctrl+V)</p>
+                <div style="display:flex; justify-content:center; gap:1rem;">
+                    <button class="select-btn" style="pointer-events:none;">Resim Seç</button>
+                    <button class="select-btn" id="urlBtn" style="background:var(--bg-glass); border:1px solid var(--border);" onclick="uploadFromUrl(); event.stopPropagation();">URL'den Çek</button>
+                </div>
+                <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Sürükle bırak, yapıştır veya URL kullan</p>
             </div>
             <input type="file" id="fileInput" accept="image/*" style="display: none;">
 
@@ -588,7 +591,6 @@
         }
 
         // Upload Logic
-        dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFiles(e.target.files);
         
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
@@ -610,6 +612,36 @@
             let result = '';
             for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
             return result;
+        }
+
+        async function uploadFromUrl() {
+            const url = prompt("Kopyaladığınız resim bağlantısını (URL) yapıştırın:");
+            if (!url) return;
+            
+            progressContainer.style.display = 'block';
+            dropZone.style.display = 'none';
+            optionsRow.style.display = 'none';
+            progressBar.style.width = '15%';
+            
+            try {
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                const res = await fetch(proxyUrl);
+                if (!res.ok) throw new Error('Resim çekilemedi.');
+                
+                const blob = await res.blob();
+                if (!blob.type.startsWith('image/')) {
+                    throw new Error('URL geçerli bir resim formatında değil.');
+                }
+                
+                let filename = url.split('/').pop().split('?')[0];
+                if (!filename || !filename.includes('.')) filename = 'url_image.' + blob.type.split('/')[1];
+                
+                const file = new File([blob], filename, { type: blob.type });
+                handleFiles([file]);
+            } catch(e) {
+                alert('Hata: Resim alınamadı. Güvenlik (CORS) duvarı veya geçersiz link olabilir.');
+                resetUI();
+            }
         }
 
         async function handleFiles(files) {

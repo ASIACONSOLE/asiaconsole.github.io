@@ -196,22 +196,85 @@
             box-shadow: 0 0 15px var(--accent-blue);
         }
 
-        .viewer-mode .medya-header { position: relative; margin-bottom: -40px; }
-        .viewer-mode .drop-zone { display: none; }
-        .viewer-mode .result-section { display: block; }
-
-        @media (max-width: 768px) {
-            .result-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .header-auth { display: none; }
+    <style>
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
         }
+        .modal-content {
+            background: var(--bg-card-dark);
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1rem;
+            background: none; border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem; cursor: pointer;
+        }
+        .auth-tab-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        .auth-tab {
+            background: none; border: none;
+            color: var(--text-muted);
+            font-weight: 700; cursor: pointer;
+            font-size: 1rem;
+        }
+        .auth-tab.active { color: var(--accent-blue); }
+        .form-input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            color: #fff;
+            margin-bottom: 1rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .btn-auth-submit {
+            width: 100%;
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-auth-submit:hover { opacity: 0.9; transform: scale(0.98); }
     </style>
 </head>
 <body id="pageBody">
     <header class="medya-header">
         <a href="index.html" class="header-center">ASIACONSOLE</a>
-        <div class="header-auth">
-            <a href="uye-panel.html" class="auth-link">👤 Giriş Yap</a>
-            <a href="uye-panel.html" class="auth-link">✨ Kayıt Ol</a>
+        <div class="header-auth" id="headerAuth">
+            <a href="javascript:void(0)" onclick="openAuthModal('login')" class="auth-link">👤 Giriş Yap</a>
+            <a href="javascript:void(0)" onclick="openAuthModal('register')" class="auth-link">✨ Kayıt Ol</a>
+        </div>
+        <div class="header-auth" id="headerUser" style="display:none;">
+            <a href="profil.html" class="auth-link">👤 <span id="headerUname">Profilim</span></a>
+            <a href="javascript:void(0)" onclick="handleLogout()" class="auth-link" style="color:#ef4444;">Çıkış</a>
         </div>
     </header>
 
@@ -297,6 +360,30 @@
         </div>
     </main>
 
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAuthModal()">×</button>
+            <div class="auth-tab-group">
+                <button class="auth-tab active" id="tabL" onclick="switchAuth('login')">Giriş Yap</button>
+                <button class="auth-tab" id="tabR" onclick="switchAuth('register')">Kayıt Ol</button>
+            </div>
+            
+            <div id="formLogin">
+                <input type="text" id="authEmail" class="form-input" placeholder="E-posta veya Kullanıcı Adı">
+                <input type="password" id="authPass" class="form-input" placeholder="Şifre">
+                <button class="btn-auth-submit" onclick="doLogin()">Giriş Yap</button>
+            </div>
+            
+            <div id="formRegister" style="display:none;">
+                <input type="text" id="regUser" class="form-input" placeholder="Kullanıcı Adı">
+                <input type="email" id="regEmail" class="form-input" placeholder="E-posta Adresi">
+                <input type="password" id="regPass" class="form-input" placeholder="Şifre">
+                <button class="btn-auth-submit" onclick="doRegister()">Kayıt Ol</button>
+            </div>
+        </div>
+    </div>
+
     <footer style="background:var(--bg-secondary); border-top:1px solid var(--border); padding:4rem 0 2rem; margin-top:4rem; color:var(--text-secondary);">
         <div class="container">
             <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:4rem;">
@@ -348,6 +435,71 @@
         
         let currentUrls = {};
 
+        // Auth Logic
+        function checkAuthState() {
+            const user = JSON.parse(localStorage.getItem('asia_user') || 'null');
+            if (user) {
+                document.getElementById('headerAuth').style.display = 'none';
+                document.getElementById('headerUser').style.display = 'flex';
+                document.getElementById('headerUname').innerText = user.username;
+            } else {
+                document.getElementById('headerAuth').style.display = 'flex';
+                document.getElementById('headerUser').style.display = 'none';
+            }
+        }
+
+        function openAuthModal(mode) {
+            document.getElementById('authModal').style.display = 'flex';
+            switchAuth(mode);
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function switchAuth(mode) {
+            document.getElementById('tabL').classList.toggle('active', mode === 'login');
+            document.getElementById('tabR').classList.toggle('active', mode === 'register');
+            document.getElementById('formLogin').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('formRegister').style.display = mode === 'register' ? 'block' : 'none';
+        }
+
+        async function doLogin() {
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPass').value;
+            const users = DB.get('users') || [];
+            const found = users.find(u => (u.email === email || u.username === email) && u.password === pass);
+            
+            if (found) {
+                localStorage.setItem('asia_user', JSON.stringify(found));
+                checkAuthState();
+                closeAuthModal();
+                if (window.showAdminToast) showAdminToast('Hoş geldin!', 'success');
+            } else alert('Hatalı giriş bilgileri.');
+        }
+
+        async function doRegister() {
+            const user = document.getElementById('regUser').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            
+            if (!user || !email || !pass) return alert('Lütfen tüm alanları doldurun.');
+            
+            const newUser = { id: 'u' + Date.now(), username: user, email: email, password: pass, joined: new Date().toLocaleDateString('tr-TR') };
+            const users = DB.get('users') || [];
+            users.push(newUser);
+            DB.set('users', users);
+            localStorage.setItem('asia_user', JSON.stringify(newUser));
+            checkAuthState();
+            closeAuthModal();
+            alert('Kayıt başarılı!');
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('asia_user');
+            checkAuthState();
+        }
+
         // URL Check (Viewer Mode)
         const urlParams = new URLSearchParams(window.location.search);
         const viewId = urlParams.get('id');
@@ -355,6 +507,7 @@
 
         window.addEventListener('load', async () => {
             FirebaseDB.init();
+            checkAuthState();
             if (viewId) {
                 FirebaseDB.onReady(async () => {
                     const doc = await FirebaseDB.db.collection('short_urls').doc(viewId).get();
@@ -471,4 +624,5 @@
         }
     </script>
 </body>
+</html>
 </html>

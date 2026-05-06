@@ -4,6 +4,9 @@
  */
 
 let lastRenderedHash = "";
+let searchQuery = "";
+let activeFilter = "all";
+let pageSize = 12;
 
 function renderHome() {
     try {
@@ -37,7 +40,10 @@ function renderHome() {
             articleIds: articles.map(a => a.id),
             forumIds: forumPosts.map(f => f.id),
             userCount: users.length,
-            firstArticleTitle: articles[0]?.title || ''
+            firstArticleTitle: articles[0]?.title || '',
+            searchQuery,
+            activeFilter,
+            pageSize
         });
 
         if (currentDataHash === lastRenderedHash) {
@@ -141,8 +147,21 @@ function renderHome() {
 
 
 
-        // Featured Articles (Below Portal) - SET TO 15
-        const combinedFeed = articles.slice(0, 15);
+        // --- SEARCH & FILTER LOGIC ---
+        let filteredArticles = [...articles];
+        if (activeFilter !== 'all') {
+            filteredArticles = filteredArticles.filter(a => a.category === activeFilter);
+        }
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            filteredArticles = filteredArticles.filter(a => 
+                (a.title && a.title.toLowerCase().includes(q)) || 
+                (a.desc && a.desc.toLowerCase().includes(q))
+            );
+        }
+
+        // Featured Articles (Below Portal) - Paginated
+        const combinedFeed = filteredArticles.slice(0, pageSize);
         const grid = document.getElementById('featuredArticles');
 
         if (grid) {
@@ -178,6 +197,27 @@ function renderHome() {
                         </a>
                     `;
                 }).join('');
+
+                // Load More Button
+                if (filteredArticles.length > pageSize) {
+                    const existingBtn = document.getElementById('loadMoreBtn');
+                    if (!existingBtn) {
+                        const btn = document.createElement('button');
+                        btn.id = 'loadMoreBtn';
+                        btn.className = 'btn-secondary';
+                        btn.style.margin = '2rem auto';
+                        btn.style.display = 'block';
+                        btn.textContent = 'Daha Fazla Yükle ↓';
+                        btn.onclick = () => {
+                            pageSize += 12;
+                            renderHome();
+                        };
+                        grid.after(btn);
+                    }
+                } else {
+                    const existingBtn = document.getElementById('loadMoreBtn');
+                    if (existingBtn) existingBtn.remove();
+                }
             }
         }
 
@@ -237,14 +277,45 @@ document.addEventListener('dbUpdated', (e) => {
     }
 });
 
+// ---- SEARCH & FILTER LISTENERS ----
+function initHomeFilters() {
+    const searchInput = document.getElementById('homeSearchInput');
+    const searchBtn = document.getElementById('homeSearchBtn');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            debouncedRender();
+        });
+    }
+    if (searchBtn) {
+        searchBtn.onclick = () => {
+            searchQuery = (searchInput ? searchInput.value : '').trim();
+            renderHome();
+        };
+    }
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            activeFilter = chip.dataset.filter;
+            pageSize = 12; // Reset pagination on filter change
+            renderHome();
+        });
+    });
+}
+
 // Fallback: if nothing triggered within 2 seconds, force render
-// (handles edge cases where events are missed)
 setTimeout(() => {
     if (window.DB) {
         if (!window.DB._isInitialized) {
             window.DB.init();
             window.DB._isInitialized = true;
         }
+        initHomeFilters();
         renderHome();
     }
 }, 2000);
+
+document.addEventListener('DOMContentLoaded', initHomeFilters);
+document.addEventListener('dbReady', initHomeFilters);

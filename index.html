@@ -73,6 +73,132 @@
             .portal-grid { grid-template-columns: 1fr; }
             #matrixCanvas { display: none !important; }
         }
+        .search-section {
+            padding: 2rem 0;
+            background: linear-gradient(to bottom, transparent, var(--bg-secondary));
+            margin-top: -2rem;
+            position: relative;
+            z-index: 100;
+        }
+
+        .search-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 700px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 30px rgba(79, 142, 247, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .search-icon {
+            color: var(--text-muted);
+            margin-right: 0.75rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            padding: 0.75rem 0;
+            outline: none;
+        }
+
+        .btn-search {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-search:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-chip {
+            padding: 0.6rem 1.2rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .filter-chip.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 15px rgba(79, 142, 247, 0.3);
+        }
+
+        .btn-theme-toggle {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .btn-theme-toggle:hover {
+            border-color: var(--accent-blue);
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .btn-theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        [data-theme="light"] .sun-icon { display: none !important; }
+        [data-theme="light"] .moon-icon { display: block !important; }
+        [data-theme="space"] .sun-icon { display: block !important; }
+        [data-theme="space"] .moon-icon { display: none !important; }
     </style>
 
     <!-- Google Fonts for Branding -->
@@ -100,6 +226,10 @@
             <li style="display:none;"><a href="contact.html">📞 İletişim</a></li>
         </ul>
         <div class="navbar-actions">
+            <button class="btn-theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
+                <svg class="sun-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm0-9a1 1 0 0 0 1-1V4a1 1 0 0 0-2 0v1a1 1 0 0 0 1 1zm0 12a1 1 0 0 0-1 1v1a1 1 0 0 0 2 0v-1a1 1 0 0 0-1-1zm10-7h-1a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2zm-18 0H3a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2zm14.22-4.62a1 1 0 1 0 1.41-1.41l-.7-.7a1 1 0 0 0-1.41 1.41zm-11.71 11.71a1 1 0 1 0 1.41-1.41l-.7-.7a1 1 0 0 0-1.41 1.41zm11.71 0a1 1 0 1 0-1.41-1.41l-.7.7a1 1 0 0 0 1.41 1.41zm-11.71-11.71a1 1 0 1 0-1.41-1.41l-.7.7a1 1 0 0 0 1.41 1.41z"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" style="display:none;"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9zm0 16a7 7 0 1 1 7-7 7 7 0 0 1-7 7z"/></svg>
+            </button>
             <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
             <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
             <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
@@ -167,8 +297,27 @@
 
         <!-- (Stats bar moved to bottom) -->
 
+        <!-- SEARCH & FILTER BAR -->
+        <section class="search-section">
+            <div class="container">
+                <div class="search-wrapper">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        <input type="text" id="homeSearchInput" placeholder="Makale, rehber veya inceleme ara..." autocomplete="off">
+                        <button class="btn-search" id="homeSearchBtn">ARA</button>
+                    </div>
+                    <div class="filter-chips">
+                        <button class="filter-chip active" data-filter="all">Hepsi</button>
+                        <button class="filter-chip" data-filter="teknoloji">💻 Teknoloji</button>
+                        <button class="filter-chip" data-filter="oyun">🎮 Oyun</button>
+                        <button class="filter-chip" data-filter="uygulama">📱 Uygulama</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- FEATURED ARTICLES -->
-        <section class="section">
+        <section class="section" id="latest-articles-section">
             <div class="container">
                 <div class="section-header">
                     <span class="section-label">⭐ Öne Çıkanlar</span>

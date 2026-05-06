@@ -99,19 +99,37 @@ const THEME_PRESETS = {
     },
     titanium: {
         '--bg-primary': '#111111',
-        '--bg-secondary': '#222222',
+        '--bg-secondary': '#1a1a1a',
         '--bg-card': '#1a1a1a',
         '--bg-nav': 'rgba(17, 17, 17, 0.95)',
-        '--accent-blue': '#ffffff',
-        '--accent-purple': '#888888',
-        '--accent-cyan': '#cccccc',
-        '--gradient-hero': 'linear-gradient(135deg, #1a1a1a 0%, #222 100%)',
-        '--gradient-card': 'none',
+        '--accent-blue': '#a1a1a1',
+        '--accent-purple': '#ffffff',
+        '--accent-cyan': '#e0e0e0',
+        '--gradient-hero': 'linear-gradient(135deg, #111111 0%, #1a1a1a 100%)',
+        '--gradient-card': 'linear-gradient(135deg, rgba(161, 161, 161, 0.1), rgba(255, 255, 255, 0.1))',
         '--text-primary': '#ffffff',
-        '--radius': '4px',
-        '--radius-lg': '8px',
-        '--border-width': '2px',
-        '--shadow-card': '3px 3px 0px #333'
+        '--radius': '8px',
+        '--radius-lg': '12px'
+    },
+    light: {
+        '--bg-primary': '#f8fafc',
+        '--bg-secondary': '#ffffff',
+        '--bg-card': '#ffffff',
+        '--bg-nav': 'rgba(255, 255, 255, 0.95)',
+        '--accent-blue': '#2563eb',
+        '--accent-purple': '#7c3aed',
+        '--accent-cyan': '#0891b2',
+        '--gradient-hero': 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        '--gradient-card': 'linear-gradient(135deg, rgba(37, 63, 235, 0.05), rgba(124, 58, 237, 0.05))',
+        '--text-primary': '#0f172a',
+        '--text-secondary': '#475569',
+        '--text-muted': '#64748b',
+        '--border': '#e2e8f0',
+        '--radius': '12px',
+        '--radius-lg': '20px',
+        '--nav-blur': '20px',
+        '--shadow-card': '0 10px 30px rgba(0,0,0,0.05)'
+    }
     },
     synthwave: {
         '--bg-primary': '#2b0035',
@@ -771,6 +789,27 @@ var DB = {
     }
 };
 
+function applyTheme(themeId) {
+    const theme = THEME_PRESETS[themeId];
+    if (!theme) return;
+    const root = document.documentElement;
+    const defaults = {
+        '--radius': '12px', '--radius-lg': '20px', '--border-width': '1px',
+        '--font-primary': "'Inter', sans-serif", '--font-heading': "'Inter', sans-serif",
+        '--shadow-card': '0 4px 24px rgba(0, 0, 0, 0.4)', '--nav-blur': '20px'
+    };
+    for (const [p, v] of Object.entries(defaults)) root.style.setProperty(p, v);
+    for (const [prop, val] of Object.entries(theme)) root.style.setProperty(prop, val);
+    localStorage.setItem('tc_theme', themeId);
+    document.body.setAttribute('data-theme', themeId);
+}
+
+function toggleTheme() {
+    const current = localStorage.getItem('tc_theme') || 'space';
+    const next = current === 'light' ? 'space' : 'light';
+    applyTheme(next);
+}
+
 // ---- SETTINGS ----
 function applySettings() {
     try {
@@ -784,19 +823,9 @@ function applySettings() {
     document.querySelectorAll('.social-youtube').forEach(el => { el.href = s.socialYoutube || '#'; });
     document.querySelectorAll('.social-discord').forEach(el => { el.href = s.socialDiscord || '#'; });
     // Theme application
-    if (s.activeTheme && s.activeTheme !== 'custom' && THEME_PRESETS[s.activeTheme]) {
-        // Reset structural defaults first
-        const defaults = {
-            '--radius': '12px', '--radius-lg': '20px', '--border-width': '1px',
-            '--font-primary': "'Inter', sans-serif", '--font-heading': "'Inter', sans-serif",
-            '--shadow-card': '0 4px 24px rgba(0, 0, 0, 0.4)', '--nav-blur': '20px'
-        };
-        for (const [p, v] of Object.entries(defaults)) document.documentElement.style.setProperty(p, v);
-
-        const theme = THEME_PRESETS[s.activeTheme];
-        for (const [prop, val] of Object.entries(theme)) {
-            document.documentElement.style.setProperty(prop, val);
-        }
+    let themeId = localStorage.getItem('tc_theme') || s.activeTheme || 'space';
+    if (themeId && themeId !== 'custom' && THEME_PRESETS[themeId]) {
+        applyTheme(themeId);
     } else if (s.accentColor) {
         document.documentElement.style.setProperty('--accent-blue', s.accentColor);
     }

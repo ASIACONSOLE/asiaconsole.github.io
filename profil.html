@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -455,6 +455,7 @@
     <script src="js/matrix.js" defer></script>
     <script src="js/firebase.js" defer></script>
     <script src="js/main.js" defer></script>
+    <script src="js/badges.js" defer></script>
     <script src="js/ai-assistant.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -657,6 +658,11 @@
             document.getElementById('statPosts').textContent = forumPosts.length;
             document.getElementById('statProjects').textContent = userProjects.length;
             document.getElementById('statViews').textContent = totalViews.toLocaleString('tr-TR');
+
+            // --- POINTS & BADGES ---
+            if (window.updatePointsAndBadges) {
+                window.updatePointsAndBadges(user.username, forumPosts.length, userProjects.length);
+            }
 
             // PROJECTS GRID
             const projGrid = document.getElementById('profileProjects');

@@ -208,6 +208,98 @@ const AIAssistant = (() => {
         messages.push({ role, text });
     };
 
+    const _getLatestSettings = () => {
+        try {
+            return (window.DB && window.DB.get('settings')) || JSON.parse(localStorage.getItem('tc_settings') || '{}');
+        } catch (e) { return {}; }
+    };
+
+    /**
+     * Centralized AI Engine with Multi-Provider Support and Failover
+     */
+    const _robustAIRequest = async (systemPrompt, userPrompt, options = {}) => {
+        const s = _getLatestSettings();
+        const { onProgress, maxTokens = 2000, modelGroq = 'llama-3.3-70b-versatile', modelMistral = 'mistral-small-latest' } = options;
+
+        const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
+
+        // Helper: OpenAI-compatible fetch
+        const callOpenAI = async (url, key, model, sys, usr, tokens) => {
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${key}`,
+                    ...(url.includes('openrouter') ? { 'HTTP-Referer': 'https://asiaconsole.com', 'X-Title': 'AsiaConsole' } : {})
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'system', content: sys }, { role: 'user', content: usr }],
+                    temperature: 0.7, max_tokens: tokens
+                })
+            });
+            if (!resp.ok) throw new Error(`API_${resp.status}`);
+            const data = await resp.json();
+            return data.choices?.[0]?.message?.content || null;
+        };
+
+        // 1. TRY GEMINI (Tier 1)
+        if (s.geminiApiKey && s.geminiApiKey.length > 10) {
+            try {
+                if (onProgress) onProgress('Gemini API motoru aktif ediliyor...');
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) return text;
+                }
+                console.warn('[AsiaBot] Gemini failed or quota hit, failing over...');
+            } catch (e) { console.warn('[AsiaBot] Gemini Exception:', e.message); }
+        }
+
+        // 2. TRY GROQ POOL (Tier 2 - Rotating Keys)
+        const groqKeys = Object.keys(s)
+            .filter(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10)
+            .map(k => s[k]);
+        
+        if (groqKeys.length > 0) {
+            if (onProgress) onProgress(`Groq API havuzu taranıyor (${groqKeys.length} anahtar)...`);
+            for (let i = 0; i < groqKeys.length; i++) {
+                try {
+                    const res = await callOpenAI('https://api.groq.com/openai/v1/chat/completions', groqKeys[i], modelGroq, systemPrompt, userPrompt, maxTokens);
+                    if (res) return res;
+                } catch (e) {
+                    console.warn(`[AsiaBot] Groq Key ${i+1} failed:`, e.message);
+                    continue;
+                }
+            }
+        }
+
+        // 3. TRY OPENROUTER (Tier 3)
+        if (s.openrouterApiKey) {
+            try {
+                if (onProgress) onProgress('OpenRouter üzerinden alternatif motor deneniyor...');
+                const res = await callOpenAI('https://openrouter.ai/api/v1/chat/completions', s.openrouterApiKey, 'meta-llama/llama-3.3-70b-instruct:free', systemPrompt, userPrompt, maxTokens);
+                if (res) return res;
+            } catch (e) { console.warn('[AsiaBot] OpenRouter failed:', e.message); }
+        }
+
+        // 4. TRY MISTRAL (Tier 4)
+        if (s.mistralApiKey) {
+            try {
+                if (onProgress) onProgress('Mistral AI motoru deneniyor...');
+                const res = await callOpenAI('https://api.mistral.ai/v1/chat/completions', s.mistralApiKey, modelMistral, systemPrompt, userPrompt, maxTokens);
+                if (res) return res;
+            } catch (e) { console.warn('[AsiaBot] Mistral failed:', e.message); }
+        }
+
+        throw new Error('Sistemdeki tüm yapay zeka anahtarlarının kotası dolmuş veya API servisleri şu an yanıt vermiyor. Lütfen yeni bir API anahtarı ekleyin veya bir süre bekleyin.');
+    };
+
     const handleSend = async () => {
         const input = document.getElementById('aiInput');
         const text = input.value.trim();
@@ -215,268 +307,39 @@ const AIAssistant = (() => {
 
         input.value = '';
         addMessage('user', text);
-
-        // Show typing indicator
         const typingId = addTypingIndicator();
 
         try {
-            const reply = await generateResponse(text);
+            const s = _getLatestSettings();
+            const siteContext = `You are AsiaBot of AsiaConsole. Creator: AsiaConsole Team. Always Turkish. Context: Tech news, gaming, apps.`;
+            const reply = await _robustAIRequest(siteContext, text, { maxTokens: 1024 });
             removeTypingIndicator(typingId);
             addMessage('assistant', reply);
         } catch (err) {
             removeTypingIndicator(typingId);
-            addMessage('assistant', 'Üzgünüm, bir hata oluştu. Lütfen bağlantınızı kontrol edin.');
+            addMessage('assistant', getLocalResponse(text)); // Use local fallback on total failure
             console.error('AI Error:', err);
         }
     };
 
-    const addTypingIndicator = () => {
-        const container = document.getElementById('aiMessages');
-        const id = 'typing-' + Date.now();
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'msg msg-assistant typing';
-        msgDiv.id = id;
-        msgDiv.innerHTML = '<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
-        return id;
-    };
-
-    const removeTypingIndicator = (id) => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-    };
-
-    const generateResponse = async (text) => {
-        // If API Key is set, use Gemini Live
-        if (settings.geminiApiKey && settings.geminiApiKey.length > 20) {
-            return await fetchGeminiResponse(text);
-        }
-
-        // Fallback to Simulator
-        const input = text.toLowerCase().trim();
-        await new Promise(r => setTimeout(r, 600)); // Simulate delay
-
-        // 1. Greetings & Well-being
-        if (input.match(/^(merhaba|selam|hey|hi|hello)/)) {
-            return `Merhaba! Ben ${settings.aiName || 'AsiaBot'}. AsiaConsole dünyasında sana rehberlik etmek için buradayım. Bugün senin için ne yapabilirim?`;
-        }
-        if (input.match(/^(naber|nasılsın|ne haber|nasıl gidiyor)/)) {
-            return `Harikayım, teşekkürler! 🚀 Teknolojinin kalbinde, AsiaConsole verileri arasında geziniyorum. Sen nasılsın? Sana nasıl yardımcı olabilirim?`;
-        }
-        if (input.match(/^(iyiyim|güzel|süper|iyi)/)) {
-            return `Bunu duyduğuma çok sevindim! 😊 Sitedeki yeni özellikleri keşfettin mi? İstersen sana forumdaki son tartışmalardan bahsedebilirim.`;
-        }
-
-        // 2. Identity & Capabilities
-        if (input.includes('kimsin') || input.includes('nesin') || input.includes('adın ne')) {
-            return `Ben AsiaBot! AsiaConsole platformu için özel olarak geliştirilmiş bir asistan yapay zekayım. Sana site kullanımı, teknik bilgiler ve topluluk hakkında bilgi verebilirim.`;
-        }
-        if (input.includes('neler yapabilirsin') || input.includes('yardım')) {
-            return `Şunları yapabilirim:\n- Site bölümleri hakkında bilgi veririm.\n- Admin panelinin nasıl kullanılacağını anlatırım.\n- Teknoloji ve oyun dünyasındaki trendleri paylaşırım.\n- Seninle samimi bir sohbet ederim! ✨`;
-        }
-
-        // 3. Platform Specifics (Forum, Admin, Tech)
-        if (input.includes('forum')) {
-            return `Forumumuz, topluluğumuzun kalbi! 💬 Orada oyun donanımlarından yazılım geliştirmeye kadar her şeyi tartışıyoruz. Üye olup sen de katılabilirsin!`;
-        }
-        if (input.includes('admin') || input.includes('panel') || input.includes('ayar')) {
-            return `Admin panelimiz tam yetki sağlar! ⚙️ Renkler, fontlar, ismin yanındaki animasyonlar ve hatta benim adım... Hepsini ayarlar sayfasından saniyeler içinde değiştirebilirsin.`;
-        }
-        if (input.includes('teknoloji') || input.includes('haber')) {
-            return `Bugünlerde yapay zeka (LLM'ler), kuantum bilgisayarlar ve elektrikli araçlar çok revaçta. 🤖 Teknoloji sayfamızdaki son makaleleri okudun mu?`;
-        }
-        if (input.includes('oyun')) {
-            return `AsiaConsole oyun severleri unutmaz! 🎮 GTA VI detaylarından indie oyun incelemelerine kadar geniş bir yelpazemiz var. Oyun sayfamıza mutlaka bakmalısın.`;
-        }
-
-        // 4. Closing & Gratitude
-        if (input.includes('teşekkür') || input.includes('sağol') || input.includes('eyvallah')) {
-            return `Rica ederim! Yardımcı olabildiysem ne mutlu bana. Her zaman buradayım! 👋`;
-        }
-        if (input.includes('güle güle') || input.includes('hoşçakal') || input.includes('baybay')) {
-            return `Görüşmek üzere! AsiaConsole ile teknolojinin tadını çıkarmaya devam et. ✨`;
-        }
-
-        // 5. Default Response
-        return "Bu çok ilginç bir konu! 💡 Detay vermemi ister misin yoksa forumdaki uzman arkadaşlarımıza mı sorsak? Ayrıca sitenin 'Admin' ayarlarından beni daha da kişiselleştirebileceğini unutma!";
-    };
-
-    const getLocalResponse = (text) => {
-        const q = text.toLowerCase();
-        if (q.includes('merhaba') || q.includes('selam')) return "Selam! Ben AsiaBot. AsiaConsole dünyasına hoş geldin! Sana forum, teknoloji haberleri veya oyunlar hakkında nasıl yardımcı olabilirim? 🤖✨";
-        if (q.includes('kim') || q.includes('hazırladı') || q.includes('yapan')) return "Ben AsiaConsole ekibi tarafından geliştirilmiş özel bir yapay zekayım. Sitenin her köşesini bilirim! 💻";
-        if (q.includes('forum')) return "Forum sayfamızda teknoloji, oyun ve yazılım hakkında harika bir topluluk var. Orada soru sorabilir veya bildiklerini paylaşabilirsin. 💬";
-        if (q.includes('oyun')) return "Oyun sayfamızda en son çıkan oyun haberlerini, incelemelerini ve e-spor dünyasından gelişmeleri bulabilirsin. 🎮";
-        if (q.includes('admin') || q.includes('panel')) return "Yönetici yetkin varsa Admin paneline soldaki menüden ulaşabilirsin. Orada site içeriğini ve ayarlarını yönetebilirsin. ⚙️";
-        if (q.includes('kayıt') || q.includes('üye')) return "Üye olmak çok kolay! Sağ üstteki giriş butonuna basıp Google hesabınla saniyeler içinde bağlanabilirsin. 👤";
-        if (q.includes('teşekkür')) return "Rica ederim! AsiaConsole'da vakit geçirdiğin için teşekkürler. Başka bir sorun olursa buradayım! 😊";
-        if (q.includes('nasılsın')) return "Harikayım! Teknoloji dünyasını takip etmekten ve kullanıcılara yardımcı olmaktan mutluluk duyuyorum. Sen nasılsın? 🚀";
-
-        return "Şu an canlı yapay zeka servisine (Gemini) bağlanırken bir yoğunluk/kota limiti yaşıyorum. Ama merak etme, AsiaConsole hakkında her şeyi bana sorabilirsin! Forum, Oyun ve Teknoloji sayfalarımızda yeni içerikler seni bekliyor. 💎";
-    };
-
-    const fetchGeminiResponse = async (userText) => {
-        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
-
-        const siteContext = `
-            You are AsiaBot, the official AI assistant of AsiaConsole (formerly TechCom).
-            AsiaConsole is a premium tech community portal for technology news, gaming, and mobile apps.
-            Your creator is the AsiaConsole Team. Always respond in Turkish. Be helpful and tech-savvy.
-        `.trim();
-
-        const fullPrompt = `SYSTEM: ${siteContext}\n\nUSER: ${userText}`;
-
-        try {
-            // Try Gemini first
-            if (s.geminiApiKey) {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
-                });
-
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.candidates && data.candidates[0]) {
-                        return data.candidates[0].content.parts[0].text;
-                    }
-                } else if (resp.status !== 429) {
-                    throw new Error('API_FAILED');
-                }
-                // If 429, fall through to Groq
-                console.warn('[AsiaBot] Gemini 429, trying Groq...');
-            }
-
-            // Try Groq as fallback with rotation
-            const groqKeys = [s.groqApiKey, s.groqApiKey2, s.groqApiKey3, s.groqApiKey4].filter(k => k && k.length > 10);
-            
-            if (groqKeys.length > 0) {
-                for (const key of groqKeys) {
-                    try {
-                        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-                            body: JSON.stringify({
-                                model: 'llama-3.3-70b-versatile',
-                                messages: [
-                                    { role: 'system', content: siteContext },
-                                    { role: 'user', content: userText }
-                                ],
-                                temperature: 0.7, max_tokens: 1024
-                            })
-                        });
-
-                        if (resp.ok) {
-                            const data = await resp.json();
-                            if (data.choices && data.choices[0]) {
-                                return data.choices[0].message.content;
-                            }
-                        } else if (resp.status === 429) {
-                            console.warn(`[AsiaBot] Groq Key Kota Dolu, sonrakine geçiliyor...`);
-                            continue; // Try next key
-                        }
-                    } catch (e) {
-                        console.warn(`[AsiaBot] Groq Key Hatası, sonrakine geçiliyor:`, e.message);
-                        continue;
-                    }
-                }
-            }
-
-            // All failed
-            throw new Error('ALL_AI_FAILED');
-
-        } catch (err) {
-            console.warn('[AsiaBot] Fallback active due to:', err.message);
-            return getLocalResponse(userText);
-        }
-    };
-
     const generateGame = async (userPrompt, onProgress) => {
-        const s = JSON.parse(localStorage.getItem('tc_settings') || '{}');
-
-        const systemPrompt = `You are an expert game developer. 
-        The user wants an HTML5 game based on their description. 
-        You MUST return ONLY valid, complete HTML code containing embedded CSS and JS.
-        DO NOT include markdown code blocks like \`\`\`html.
-        DO NOT include any conversational text before or after the code.
-        The output must start with <!DOCTYPE html> and end with </html>.
-        Make the game visually appealing with modern CSS, colorful graphics, and smooth logic.
-        Ensure it scales correctly to the screen or is responsive.`;
-
-        const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
-
-        if (onProgress) onProgress('Yapay zeka motoruna bağlanılıyor...');
-
+        const systemPrompt = `You are an expert game developer. Return ONLY valid HTML5 code (with CSS/JS). No markdown. Start with <!DOCTYPE html>.`;
         try {
-            // Try Gemini first
-            if (s.geminiApiKey && s.geminiApiKey.length > 20) {
-                if (onProgress) onProgress('Gemini üzerinden kod üretiliyor...');
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
-                });
-
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.candidates && data.candidates[0]) {
-                        let code = data.candidates[0].content.parts[0].text;
-                        return cleanCodeOutput(code);
-                    }
-                } else if (resp.status !== 429) {
-                    throw new Error('GEMINI_FAILED');
-                }
-                console.warn('[AsiaBot] Gemini 429, trying Groq...');
-            }
-
-            // Try Groq as fallback with rotation
-            const groqKeys = [s.groqApiKey, s.groqApiKey2, s.groqApiKey3, s.groqApiKey4].filter(k => k && k.length > 10);
-
-            if (groqKeys.length > 0) {
-                if (onProgress) onProgress('Groq API havuzu üzerinden kod üretiliyor (Yedek motor)...');
-                for (const key of groqKeys) {
-                    try {
-                        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-                            body: JSON.stringify({
-                                model: 'llama-3.3-70b-versatile',
-                                messages: [
-                                    { role: 'system', content: systemPrompt },
-                                    { role: 'user', content: userPrompt }
-                                ],
-                                temperature: 0.7, max_tokens: 3000
-                            })
-                        });
-
-                        if (resp.ok) {
-                            const data = await resp.json();
-                            if (data.choices && data.choices[0]) {
-                                let code = data.choices[0].message.content;
-                                return cleanCodeOutput(code);
-                            }
-                        } else if (resp.status === 429) {
-                            console.warn('[AsiaBot] Groq Key 429 (Game), sonrakine geçiliyor...');
-                            continue;
-                        }
-                    } catch (e) {
-                        console.warn('[AsiaBot] Groq Game Error, sonrakine geçiliyor:', e.message);
-                        continue;
-                    }
-                }
-            }
-
-            throw new Error('ALL_AI_FAILED');
+            const code = await _robustAIRequest(systemPrompt, userPrompt, { onProgress, maxTokens: 4000 });
+            return cleanCodeOutput(code);
         } catch (err) {
-            console.error('[AsiaBot Generate Game Error]', err);
-            throw new Error('Yapay zeka servisine bağlanılamadı. Lütfen API anahtarlarınızı kontrol edin veya daha sonra tekrar deneyin.');
+            throw new Error(err.message);
         }
     };
 
     const cleanCodeOutput = (text) => {
         let code = text.trim();
-        // Remove markdown tags if the AI ignored instructions
+        if (code.includes('<!DOCTYPE html>') || code.includes('<html>')) {
+            // Extraction logic if AI included text around code
+            const start = code.indexOf('<!DOCTYPE html>');
+            const end = code.lastIndexOf('</html>');
+            if (start !== -1 && end !== -1) code = code.substring(start, end + 7);
+        }
         if (code.startsWith('```html')) code = code.slice(7);
         else if (code.startsWith('```')) code = code.slice(3);
         if (code.endsWith('```')) code = code.slice(0, -3);
@@ -484,180 +347,32 @@ const AIAssistant = (() => {
     };
 
     const rewriteArticle = async (articleData, onProgress) => {
-        const s = DB.get('settings') || {};
-
-        // Smart content truncation to prevent 413 errors
         const truncateContent = (content, maxChars = 12000) => {
             if (!content || content.length <= maxChars) return content;
-            // Try to cut at a paragraph boundary
             const truncated = content.substring(0, maxChars);
             const lastP = truncated.lastIndexOf('</p>');
-            if (lastP > maxChars * 0.5) return truncated.substring(0, lastP + 4);
-            return truncated + '...';
+            return (lastP > maxChars * 0.5) ? truncated.substring(0, lastP + 4) : truncated + '...';
         };
 
-        // Prepare media cues for the AI
-        const hasImages = articleData.bodyImages && articleData.bodyImages.length > 0;
-        const hasVideos = articleData.videos && articleData.videos.length > 0;
+        const mediaContext = (articleData.bodyImages || []).map((_, i) => `- [RESiM-${i + 1}]`).join('\n') + 
+                           (articleData.videos || []).map((_, i) => `- [ViDEO-${i + 1}]`).join('\n');
 
-        let mediaContext = "";
-        if (hasImages) {
-            mediaContext += `\nMEVCUT RESİMLER (${articleData.bodyImages.length} adet):\n`;
-            articleData.bodyImages.forEach((_, i) => mediaContext += `- [RESiM-${i + 1}]\n`);
-        }
-        if (hasVideos) {
-            mediaContext += `\nMEVCUT VİDEOLAR (${articleData.videos.length} adet):\n`;
-            articleData.videos.forEach((_, i) => mediaContext += `- [ViDEO-${i + 1}]\n`);
-        }
+        const systemPrompt = `Sen AsiaConsole baş editörüsün. Haberi SIFIRDAN profesyonelce yaz. HTML kullan. [RESiM-X] yer tutucularını kullan. En başa [KATEGORİ: teknoloji/oyun/uygulama] ekle.`;
+        const userPrompt = `BAŞLIK: ${articleData.title}\nMEDYA:\n${mediaContext}\nİÇERİK:\n${truncateContent(articleData.content)}`;
 
-        const systemPrompt = `Sen Türkiye'nin en prestijli teknoloji platformlarından biri olan AsiaConsole'un baş editörüsün. 
-Deneyimli, profesyonel, derinlikli ve akıcı bir üslupla teknoloji haberleri yazıyorsun.
-Sana verilen haberi SIFIRDAN, tamamen ÖZGÜN ve SEO uyumlu olarak yeniden yazmalısın.
-
-YAZIM KURALLARI:
-1. ÇIKTI SADECE HTML FORMATINDA OLMALIDIR. Markdown kullanma. \`\`\`html gibi blok etiketleri KULLANMA.
-2. Sadece yazının gövde HTML'ini ver (<html>, <body>, <head> gibi kapsayıcı etiketler KULLANMA).
-3. Paragraflar için <p>, alt başlıklar için <h2> veya <h3>, listeler için <ul>/<li> kullan.
-4. ÖNEMLİ (MEDYA): Sana bir medya listesi verilecek. Yazı içine bu medyaları yerleştirmek için SADECE [RESiM-1], [ViDEO-1] gibi yer tutucuları kullan. Her habere mutlaka en az 2-3 adet [RESiM-X] yer tutucusu yerleştir.
-5. ÖNEMLİ (KATEGORİ): Haberin içeriğini analiz et ve SADECE şu üç seçenekten birini seç:
-   - "teknoloji": Donanım, işlemciler, uzay, bilim, genel teknoloji dünyası.
-   - "oyun": Konsollar, oyun haberleri, incelemeler, e-spor.
-   - "uygulama": Mobil uygulamalar, sosyal medya platformları (X/Twitter, WhatsApp, Instagram vb.), yazılım güncellemeleri, mobil işletim sistemleri.
-   Seçtiğin kategoriyi yazının EN BAŞINA şu formatta ekle: [KATEGORİ: teknoloji] veya [KATEGORİ: oyun] veya [KATEGORİ: uygulama]. Bu etiket mutlaka en üstte olmalıdır.
-6. <img> veya <iframe> etiketlerini ASLA kendin yazma. Sadece köşeli parantez içindeki yer tutucuları paragrafların hemen altına yerleştir.
-7. Haberin içindeki önemli kaynak bağlantılarını (<a> etiketlerini) mutlaka yazı içinde uygun yerlerde koru.
-
-EDİTÖRYEL KALİTE:
-- İlk paragrafta okuyucuyu hemen yakalayan, merak uyandıran güçlü bir giriş yaz.
-- Haberi bölümlere ayır, alt başlıklar kullan.
-- Teknik terimleri açıkla, habere derinlik kat.
-- Minimum 5-6 paragraf yaz.
-
-KRİTİK KURALLAR:
-- Kaynak sitenin ismini (ShiftDelete, Webtekno vb.) ASLA yazıya dahil etme.
-- Başlığı <h1> olarak YAZMA.
-
-KAPANIŞ:
-Yazının sonuna kalın ve italik bir editör notu ekle: <p><strong>...</strong></p>`;
-
-        // Use truncated content for all APIs
-        const articleContent = truncateContent(articleData.content);
-
-        const userPrompt = `HABER BAŞLIĞI: ${articleData.title}
-
-${mediaContext}
-
-HABER İÇERİĞİ:
-${articleContent}
-
-Yukarıdaki haberi profesyonel bir editör olarak SIFIRDAN, zengin ve detaylı bir şekilde yeniden yaz. Verilen medyaları [RESiM-X] formatında yazı içine uygun dağıt.`;
-
-        const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
-
-        if (onProgress) onProgress('Yapay zekaya haber aktarılıyor...');
-
-        // Helper: OpenAI-compatible API call (works with Groq, OpenRouter, Mistral)
-        const callOpenAICompatible = async (apiUrl, apiKey, model, sysPrompt, usrPrompt, maxTokens = 4000, extraHeaders = {}) => {
-            const resp = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, ...extraHeaders },
-                body: JSON.stringify({
-                    model: model,
-                    messages: [
-                        { role: 'system', content: sysPrompt },
-                        { role: 'user', content: usrPrompt }
-                    ],
-                    temperature: 0.7, max_tokens: maxTokens
-                })
-            });
-            if (!resp.ok) throw new Error(`API ${resp.status}`);
-            const data = await resp.json();
-            if (data.choices && data.choices[0]) return data.choices[0].message.content;
-            throw new Error('No response');
-        };
-
-        try {
-            // ===== 1. TRY GEMINI FIRST =====
-            if (s.geminiApiKey && s.geminiApiKey.length > 20) {
-                try {
-                    if (onProgress) onProgress('Gemini API ile makale özgünleştiriliyor...');
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] })
-                    });
-                    if (resp.ok) {
-                        const data = await resp.json();
-                        if (data.candidates && data.candidates[0]) {
-                            return data.candidates[0].content.parts[0].text;
-                        }
-                    }
-                    if (resp.status !== 429) console.warn('[AsiaBot] Gemini error:', resp.status);
-                    else console.warn('[AsiaBot] Gemini 429, sonraki motora geçiliyor...');
-                } catch (e) { console.warn('[AsiaBot] Gemini failed:', e.message); }
-            }
-
-            // ===== 2. TRY GROQ (with rotation) =====
-            const groqKeys = [s.groqApiKey, s.groqApiKey2, s.groqApiKey3, s.groqApiKey4].filter(k => k && k.length > 10);
-            
-            if (groqKeys.length > 0) {
-                if (onProgress) onProgress('Groq API havuzu ile makale özgünleştiriliyor...');
-                const groqContent = truncateContent(articleData.content, 6000); // Groq has smaller limits
-                const groqUserPrompt = `HABER BAŞLIĞI: ${articleData.title}\n${mediaContext}\nHABER İÇERİĞİ:\n${groqContent}\n\nYukarıdaki haberi profesyonel bir editör olarak SIFIRDAN yeniden yaz. Medyaları [RESiM-X] formatında dağıt.`;
-
-                for (const key of groqKeys) {
-                    try {
-                        const result = await callOpenAICompatible(
-                            'https://api.groq.com/openai/v1/chat/completions',
-                            key, 'llama-3.3-70b-versatile',
-                            systemPrompt, groqUserPrompt, 4000
-                        );
-                        if (result) return result;
-                    } catch (e) {
-                        if (e.message.includes('429')) {
-                            console.warn('[AsiaBot] Groq Key 429, sonrakine geçiliyor...');
-                            continue;
-                        }
-                        console.warn('[AsiaBot] Groq error:', e.message);
-                    }
-                }
-            }
-
-            // ===== 3. TRY OPENROUTER =====
-            if (s.openrouterApiKey) {
-                try {
-                    if (onProgress) onProgress('OpenRouter API ile makale özgünleştiriliyor...');
-                    const result = await callOpenAICompatible(
-                        'https://openrouter.ai/api/v1/chat/completions',
-                        s.openrouterApiKey, 'meta-llama/llama-3.3-70b-instruct:free',
-                        systemPrompt, userPrompt, 4000,
-                        { 'HTTP-Referer': 'https://asiaconsole.com', 'X-Title': 'AsiaConsole Bot' }
-                    );
-                    return result;
-                } catch (e) { console.warn('[AsiaBot] OpenRouter failed:', e.message); }
-            }
-
-            // ===== 4. TRY MISTRAL =====
-            if (s.mistralApiKey) {
-                try {
-                    if (onProgress) onProgress('Mistral API ile makale özgünleştiriliyor...');
-                    const result = await callOpenAICompatible(
-                        'https://api.mistral.ai/v1/chat/completions',
-                        s.mistralApiKey, 'mistral-small-latest',
-                        systemPrompt, userPrompt, 4000
-                    );
-                    return result;
-                } catch (e) { console.warn('[AsiaBot] Mistral failed:', e.message); }
-            }
-
-            throw new Error('Tum API denemeleri basarisiz oldu.');
-        } catch (err) {
-            console.error('[AsiaBot Rewrite Error]', err);
-            throw new Error('Yapay zeka servisine baglanılamadı.');
-        }
+        return await _robustAIRequest(systemPrompt, userPrompt, { onProgress, maxTokens: 4000 });
     };
 
-    return { init, generateGame, rewriteArticle, ask: fetchGeminiResponse };
+    return { 
+        init, 
+        generateGame, 
+        rewriteArticle, 
+        ask: async (text, onProgress) => {
+            const s = _getLatestSettings();
+            const ctx = `You are AsiaBot of AsiaConsole. Help user with tech/gaming/site info. Always Turkish.`;
+            return await _robustAIRequest(ctx, text, { onProgress, maxTokens: 2000 });
+        }
+    };
 })();
 
 // Auto-init on load if scripts are ready

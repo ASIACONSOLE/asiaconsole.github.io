@@ -224,6 +224,16 @@
                 <p class="upload-subtitle" id="mainDesc">Yüklemek istediğiniz resimleri sürükleyip bırakın</p>
                 <p style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem;">PNG, JPG, WEBP, GIF • Max 10MB</p>
                 <input type="file" id="fileInput" hidden accept="image/*">
+                
+                <div style="margin-top:2rem; display:flex; justify-content:center; gap:1rem; align-items:center;">
+                    <label style="font-size:0.85rem; color:var(--text-secondary);">Resim Saklama Süresi:</label>
+                    <select id="retentionSelect" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border); padding:0.5rem 1rem; border-radius:8px; outline:none; cursor:pointer;">
+                        <option value="0">Süresiz</option>
+                        <option value="1">1 Gün</option>
+                        <option value="7">7 Gün</option>
+                        <option value="30">30 Gün</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Progress -->
@@ -328,7 +338,7 @@
                             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">GÖRÜNTÜLENME</div>
                         </div>
                         <div>
-                            <div style="font-size:2rem; font-weight:800; color:var(--text-primary);">+2.800</div>
+                            <div style="font-size:2rem; font-weight:800; color:var(--text-primary);">1.241</div>
                             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">ÜYELER</div>
                         </div>
                     </div>
@@ -337,7 +347,7 @@
 
             <div style="border-top:1px solid var(--border); padding-top:2rem; text-align:center; font-size:0.8rem; color:var(--text-muted);">
                 <p style="margin-bottom:1rem;">AsiaConsole Medya ücretsiz resim barındırma sitesidir. Kullanıcılar yükledikleri resimlerden kendileri sorumludur.</p>
-                <p>Copyright © 2015 - 2024 AsiaConsole.Net • Tüm Hakları Saklıdır.</p>
+                <p>Copyright © 2025 - 2026 AsiaConsole.Net • Tüm Hakları Saklıdır.</p>
             </div>
         </div>
     </footer>
@@ -408,6 +418,7 @@
                 return;
             }
 
+            const retention = document.getElementById('retentionSelect').value;
             progressContainer.style.display = 'block';
             dropZone.style.display = 'none';
 
@@ -424,9 +435,23 @@
                     const url = await uploadTask.snapshot.ref.getDownloadURL();
                     const shortId = generateShortId();
                     
-                    await FirebaseDB.db.collection('short_urls').doc(shortId).set({
-                        url: url, name: file.name, ts: Date.now()
-                    });
+                    // Save to Firestore
+                    const uploadData = {
+                        url: url,
+                        name: file.name,
+                        ts: Date.now(),
+                        retention: retention
+                    };
+
+                    // Link to user if logged in
+                    const user = JSON.parse(localStorage.getItem('asia_user') || 'null');
+                    if (user && user.id) {
+                        uploadData.owner = user.id;
+                        // Add to user's gallery in Firestore
+                        await FirebaseDB.db.collection('users').doc(user.id).collection('uploads').doc(shortId).set(uploadData);
+                    }
+
+                    await FirebaseDB.db.collection('short_urls').doc(shortId).set(uploadData);
 
                     generateLinks(url, shortId);
                     previewImg.src = url;

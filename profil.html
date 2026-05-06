@@ -202,6 +202,7 @@
             <div id="ownerTabs" class="profile-tabs" style="display:none; margin-bottom:1.5rem;">
                 <button class="profile-tab active" onclick="switchProfileTab('view')">👁️ Görüntüle</button>
                 <button class="profile-tab" onclick="switchProfileTab('panel')">📊 Panel</button>
+                <button class="profile-tab" onclick="switchProfileTab('media')">📸 Medya</button>
                 <button class="profile-tab" onclick="switchProfileTab('edit')">✏️ Düzenle</button>
                 <button class="profile-tab" onclick="switchProfileTab('projects')">🚀 Proje Gönder</button>
             </div>
@@ -513,10 +514,12 @@
             if (target) {
                 target.style.display = 'block';
                 // Better button matching via data-tab or index
-                const tabs = ['view', 'panel', 'edit', 'projects'];
+                const tabs = ['view', 'panel', 'media', 'edit', 'projects'];
                 const idx = tabs.indexOf(tab);
                 const buttons = document.querySelectorAll('.profile-tab');
                 if (buttons[idx]) buttons[idx].classList.add('active');
+
+                if (tab === 'media' && window._renderMedia) window._renderMedia();
             }
         }
 
@@ -835,6 +838,53 @@
                 renderProjectsTab(user);
             };
         }
+
+        window._renderMedia = async function() {
+            const me = Auth.currentUser();
+            const grid = document.getElementById('userMediaGrid');
+            if (!me || !grid) return;
+
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem;">⏳ Yüklemeleriniz getiriliyor...</div>';
+
+            FirebaseDB.onReady(async () => {
+                try {
+                    const snap = await FirebaseDB.db.collection('users').doc(me.id).collection('uploads').orderBy('ts', 'desc').get();
+                    if (snap.empty) {
+                        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-muted);">Henüz bir resim yüklemediniz.</div>';
+                        return;
+                    }
+
+                    grid.innerHTML = snap.docs.map(doc => {
+                        const data = doc.data();
+                        const shortUrl = window.location.origin + '/medya.html?id=' + doc.id;
+                        return `
+                            <div class="card" style="padding:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+                                <div style="height:120px; background: #000; border-radius:8px; overflow:hidden;">
+                                    <img src="${data.url}" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.name}</div>
+                                <div style="display:flex; gap:0.4rem;">
+                                    <button class="btn-primary" style="flex:1; padding:0.4rem; font-size:0.7rem;" onclick="copyDirect('${data.url}')">🔗 Link</button>
+                                    <button class="btn-secondary" style="flex:1; padding:0.4rem; font-size:0.7rem;" onclick="window.open('${shortUrl}', '_blank')">👁️ İzle</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } catch (e) {
+                    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#ef4444;">Yüklemeler yüklenirken bir hata oluştu.</div>';
+                }
+            });
+        };
+
+        window.copyDirect = (url) => {
+            const el = document.createElement('textarea');
+            el.value = url;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('Direkt link kopyalandı! 🚀', 'success');
+        };
     </script>
 </body>
 

@@ -50,14 +50,34 @@
             text-align: left;
             animation: fadeIn 0.5s ease;
         }
-        .link-group {
+        .share-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .share-tab {
+            padding: 0.4rem 0.8rem;
             background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .share-tab.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        .link-group {
+            background: rgba(0,0,0,0.2);
             border: 1px solid var(--border);
             border-radius: 10px;
             display: flex;
             align-items: center;
             padding: 0.5rem;
-            margin-top: 0.5rem;
+            margin-bottom: 1rem;
         }
         .link-input {
             background: none;
@@ -66,7 +86,7 @@
             flex: 1;
             padding: 0.5rem;
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
         }
         .copy-btn {
@@ -77,43 +97,36 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.8rem;
         }
-        .copy-btn:hover { opacity: 0.9; }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
+        .social-share {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-top: 1.5rem;
         }
-        .feature-card {
-            padding: 2rem;
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 15px;
-            text-align: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s;
         }
-        .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+        .social-btn:hover { transform: translateY(-3px); background: var(--accent-blue); color: white; }
         
-        #progressContainer {
-            display: none;
-            width: 100%;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            margin-top: 2rem;
-            overflow: hidden;
-        }
-        #progressBar {
-            width: 0%;
-            height: 100%;
-            background: var(--accent-blue);
-            transition: width 0.3s;
-            box-shadow: 0 0 15px var(--accent-blue);
-        }
+        .viewer-mode .upload-card { margin-top: 2rem; }
+        .viewer-mode .medya-hero { padding: 4rem 0 2rem; }
+        .viewer-mode #dropZone, .viewer-mode .features-grid { display: none !important; }
+        .viewer-mode .result-box { display: block !important; }
     </style>
 </head>
-<body>
+<body id="pageBody">
     <nav class="navbar nav-style-neon">
         <a href="index.html" class="navbar-brand"><span class="site-name">AsiaConsole</span></a>
         <ul class="navbar-nav">
@@ -128,8 +141,8 @@
 
     <div class="medya-hero">
         <div class="container">
-            <h1 class="anim-glow">AsiaConsole Medya Paylaşım</h1>
-            <p style="color:var(--text-secondary); margin-top:1rem;">Resimlerinizi Google Cloud hızında yükleyin ve anında paylaşın.</p>
+            <h1 class="anim-glow" id="mainTitle">AsiaConsole Medya Paylaşım</h1>
+            <p id="mainDesc" style="color:var(--text-secondary); margin-top:1rem;">Resimlerinizi Google Cloud hızında yükleyin ve anında paylaşın.</p>
         </div>
     </div>
 
@@ -147,13 +160,33 @@
             </div>
 
             <div class="result-box" id="resultBox">
-                <h3 style="margin-bottom:1rem;">✅ Başarıyla Yüklendi!</h3>
-                <div class="link-group">
-                    <input type="text" id="directLink" class="link-input" readonly>
-                    <button class="copy-btn" onclick="copyLink('directLink')">Kopyala</button>
+                <div style="text-align:center; margin-bottom:2rem;">
+                    <img id="previewImg" style="max-width:100%; border-radius:12px; border:1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                 </div>
-                <div style="margin-top:1.5rem; text-align:center;">
-                    <img id="previewImg" style="max-width:100%; max-height:300px; border-radius:10px; border:1px solid var(--border);">
+
+                <h4 style="margin-bottom:1rem; color:var(--accent-blue);">🔗 Resim Bağlantıları</h4>
+                
+                <div class="share-tabs">
+                    <div class="share-tab active" onclick="switchLink('direct')">Doğrudan</div>
+                    <div class="share-tab" onclick="switchLink('page')">İzleyici (URL)</div>
+                    <div class="share-tab" onclick="switchLink('html')">HTML</div>
+                    <div class="share-tab" onclick="switchLink('bbcode')">BBCode (Forum)</div>
+                    <div class="share-tab" onclick="switchLink('md')">Markdown</div>
+                </div>
+
+                <div class="link-group">
+                    <input type="text" id="shareLink" class="link-input" readonly>
+                    <button class="copy-btn" onclick="copyLink('shareLink')">Kopyala</button>
+                </div>
+
+                <div class="social-share">
+                    <a href="#" id="shareWa" class="social-btn" target="_blank" title="WhatsApp">📱</a>
+                    <a href="#" id="shareTw" class="social-btn" target="_blank" title="Twitter">𝕏</a>
+                    <a href="#" id="shareFb" class="social-btn" target="_blank" title="Facebook">📘</a>
+                </div>
+
+                <div style="text-align:center; margin-top:2rem;">
+                    <button class="topbar-btn secondary" onclick="window.location.href='medya.html'">🔄 Yeni Resim Yükle</button>
                 </div>
             </div>
         </div>
@@ -185,11 +218,29 @@
         const resultBox = document.getElementById('resultBox');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
-        const directLink = document.getElementById('directLink');
+        const shareLink = document.getElementById('shareLink');
         const previewImg = document.getElementById('previewImg');
+        
+        let currentUrls = { direct: '', page: '', html: '', bbcode: '', md: '' };
+
+        // URL Check (Viewer Mode)
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewUrl = urlParams.get('v');
+
+        if (viewUrl) {
+            enableViewerMode(viewUrl);
+        }
+
+        function enableViewerMode(url) {
+            document.getElementById('pageBody').classList.add('viewer-mode');
+            document.getElementById('mainTitle').innerText = 'AsiaConsole Medya İzleyici';
+            document.getElementById('mainDesc').innerText = 'Bu görsel AsiaConsole Medya Paylaşım servisi ile barındırılmaktadır.';
+            generateLinks(url);
+            previewImg.src = url;
+            resultBox.style.display = 'block';
+        }
 
         dropZone.onclick = () => fileInput.click();
-        
         fileInput.onchange = (e) => handleFiles(e.target.files);
         
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
@@ -205,7 +256,7 @@
             const file = files[0];
             
             if (!window.FirebaseDB || !FirebaseDB.storage) {
-                alert('Sistem henüz hazır değil, lütfen 2 saniye bekleyip tekrar deneyin.');
+                alert('Sistem henüz hazır değil, lütfen bekleyin...');
                 FirebaseDB.init();
                 return;
             }
@@ -228,17 +279,36 @@
                 }, 
                 async () => {
                     const url = await uploadTask.snapshot.ref.getDownloadURL();
-                    directLink.value = url;
+                    generateLinks(url);
                     previewImg.src = url;
                     progressContainer.style.display = 'none';
                     resultBox.style.display = 'block';
-                    
-                    // Log the public upload
-                    if (window.EvolutionEngine) {
-                        EvolutionEngine.logEvent('public_upload', { filename: file.name });
-                    }
                 }
             );
+        }
+
+        function generateLinks(directUrl) {
+            const pageUrl = window.location.origin + window.location.pathname + '?v=' + encodeURIComponent(directUrl);
+            currentUrls = {
+                direct: directUrl,
+                page: pageUrl,
+                html: `<img src="${directUrl}" alt="AsiaConsole Image">`,
+                bbcode: `[img]${directUrl}[/img]`,
+                md: `![AsiaConsole Image](${directUrl})`
+            };
+            switchLink('direct');
+            
+            // Social Links
+            document.getElementById('shareWa').href = `https://api.whatsapp.com/send?text=Görsele bak: ${encodeURIComponent(pageUrl)}`;
+            document.getElementById('shareTw').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=AsiaConsole Medya`;
+            document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+        }
+
+        function switchLink(type) {
+            document.querySelectorAll('.share-tab').forEach(t => t.classList.remove('active'));
+            const tab = [...document.querySelectorAll('.share-tab')].find(t => t.innerText.toLowerCase().includes(type) || (type === 'page' && t.innerText.includes('İzleyici')) || (type === 'direct' && t.innerText.includes('Doğrudan')));
+            if (tab) tab.classList.add('active');
+            shareLink.value = currentUrls[type];
         }
 
         function resetUI() {
@@ -252,7 +322,7 @@
             const input = document.getElementById(id);
             input.select();
             document.execCommand('copy');
-            alert('Link kopyalandı! 🚀');
+            showAdminToast ? showAdminToast('Link kopyalandı! 🚀', 'success') : alert('Link kopyalandı! 🚀');
         }
 
         document.addEventListener('DOMContentLoaded', () => {

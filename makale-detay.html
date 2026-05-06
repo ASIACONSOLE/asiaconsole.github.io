@@ -32,13 +32,29 @@
             border-bottom: 1px solid var(--border);
             position: relative;
             overflow: hidden;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
         }
 
         .article-hero::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(79, 142, 247, 0.12), transparent);
+            background: linear-gradient(to bottom, rgba(13, 17, 23, 0.3) 0%, rgba(13, 17, 23, 0.85) 100%);
+            z-index: 1;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            padding: 2.5rem;
+            background: rgba(13, 17, 23, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
         }
 
         .article-meta {
@@ -110,14 +126,21 @@
         }
 
         .article-title-main {
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            font-weight: 800;
-            line-height: 1.25;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #fff 60%, var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: clamp(1.8rem, 5vw, 3.2rem);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 1.25rem;
+            color: #ffffff;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.6);
+            letter-spacing: -0.02em;
+        }
+
+        .article-hero-desc {
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
         }
 
         .article-share {
@@ -400,26 +423,27 @@
 
         <!-- HERO -->
         <div class="article-hero">
-            <div class="container" style="max-width:800px; position:relative; z-index:1;">
-                <div class="article-emoji-hero" id="artEmoji">📄</div>
+            <div class="container" style="max-width:900px; position:relative; z-index:2;">
+                <div class="hero-inner">
+                    <div class="article-emoji-hero" id="artEmoji">📄</div>
 
-                <div class="article-meta">
-                    <span class="badge" id="artCategoryBadge" style="font-size:0.85rem;">💻 Teknoloji</span>
-                    <span class="reading-time">⏱️ <span id="readingTime">5</span> dk okuma</span>
-                    <span class="reading-time">👁️ <span id="artViews">0</span> görüntülenme</span>
-                </div>
+                    <div class="article-meta">
+                        <span class="badge" id="artCategoryBadge" style="font-size:0.85rem;">💻 Teknoloji</span>
+                        <span class="reading-time">⏱️ <span id="readingTime">5</span> dk okuma</span>
+                        <span class="reading-time">👁️ <span id="artViews">0</span> görüntülenme</span>
+                    </div>
 
-                <h1 class="article-title-main" id="artTitle">Makale başlığı</h1>
-                <p style="font-size:1.05rem; color:var(--text-secondary); line-height:1.7; margin-bottom:1.5rem;"
-                    id="artDesc"></p>
+                    <h1 class="article-title-main" id="artTitle">Makale başlığı</h1>
+                    <p class="article-hero-desc" id="artDesc"></p>
 
-                <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                    <div style="display:flex; align-items:center; gap:0.6rem;">
-                        <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,#4f8ef7,#a855f7); display:flex; align-items:center; justify-content:center; font-weight:700; color:white;"
-                            id="artAuthorAvatar">?</div>
-                        <div>
-                            <div style="font-weight:700; font-size:0.9rem;" id="artAuthor">Yazar</div>
-                            <div style="font-size:0.8rem; color:var(--text-muted);" id="artDate">Tarih</div>
+                    <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:0.6rem;">
+                            <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#4f8ef7,#a855f7); display:flex; align-items:center; justify-content:center; font-weight:700; color:white; box-shadow: 0 4px 15px rgba(79, 142, 247, 0.4);"
+                                id="artAuthorAvatar">?</div>
+                            <div>
+                                <div style="font-weight:700; font-size:1rem; color:#fff;" id="artAuthor">Yazar</div>
+                                <div style="font-size:0.8rem; color:rgba(255,255,255,0.7);" id="artDate">Tarih</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -594,7 +618,7 @@
             // Apply cover image if exists
             if (article.cover) {
                 const hero = document.querySelector('.article-hero');
-                hero.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${article.cover})`;
+                hero.style.background = `url(${article.cover})`;
                 hero.style.backgroundSize = 'cover';
                 hero.style.backgroundPosition = 'center';
                 document.getElementById('artEmoji').style.display = 'none';
@@ -750,4 +774,3 @@
 </body>
 
 </html>
-

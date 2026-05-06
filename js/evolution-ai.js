@@ -25,6 +25,12 @@ const EvolutionAI = (() => {
         }
     };
 
+    const _escapeHTML = (str) => {
+        const p = document.createElement('p');
+        p.textContent = str;
+        return p.innerHTML;
+    };
+
     // 1. Neural Summary: Automatically summarize articles
     const handleSummarization = () => {
         const articleContent = document.querySelector('.article-text, .post-content');
@@ -47,7 +53,11 @@ const EvolutionAI = (() => {
 
         // Simulate AI summarization based on content headers
         const headers = Array.from(articleContent.querySelectorAll('h2, h3')).map(h => h.innerText);
-        const points = headers.length > 0 ? headers.slice(0, 3) : ['İçerik analizi tamamlandı.', 'Kritik bilgiler optimize edildi.', 'Kullanıcı deneyimi artırıldı.'];
+        const points = (headers.length > 0 ? headers.slice(0, 3) : [
+            'İçerik analizi tamamlandı.', 
+            'Kritik bilgiler optimize edildi.', 
+            'Kullanıcı deneyimi artırıldı.'
+        ]).map(p => _escapeHTML(p));
 
         summaryBox.innerHTML = `
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">

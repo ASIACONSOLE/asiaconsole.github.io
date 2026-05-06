@@ -688,10 +688,7 @@
         }
 
         function updateStats() {
-            const users = DB.get('users') || [];
-            if (users.length > 0) {
-                document.getElementById('statMembers').innerText = users.length.toLocaleString('tr-TR');
-            }
+            // Keep stats static as requested by the user
         }
     </script>
 </body>

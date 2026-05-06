@@ -576,9 +576,8 @@
                 renderEditForm(user, extra);
                 renderProjectsTab(user);
 
-                // Use current tab if exists (e.g. after save), else hash, else default
                 const hash = location.hash.replace('#', '');
-                const validTabs = ['view', 'panel', 'edit', 'projects'];
+                const validTabs = ['view', 'panel', 'edit', 'projects', 'media'];
                 const activeTab = window._currentTab || (validTabs.includes(hash) ? hash : 'panel');
 
                 switchProfileTab(activeTab);

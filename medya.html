@@ -225,17 +225,32 @@
 
         // URL Check (Viewer Mode)
         const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('id');
         const viewUrl = urlParams.get('v');
 
-        if (viewUrl) {
-            enableViewerMode(viewUrl);
-        }
+        window.addEventListener('load', async () => {
+            FirebaseDB.init();
+            
+            if (viewId) {
+                // Wait for Firebase
+                FirebaseDB.onReady(async () => {
+                    const doc = await FirebaseDB.db.collection('short_urls').doc(viewId).get();
+                    if (doc.exists) {
+                        enableViewerMode(doc.data().url);
+                    } else {
+                        alert('Görsel bulunamadı veya silinmiş.');
+                    }
+                });
+            } else if (viewUrl) {
+                enableViewerMode(viewUrl);
+            }
+        });
 
         function enableViewerMode(url) {
             document.getElementById('pageBody').classList.add('viewer-mode');
             document.getElementById('mainTitle').innerText = 'AsiaConsole Medya İzleyici';
             document.getElementById('mainDesc').innerText = 'Bu görsel AsiaConsole Medya Paylaşım servisi ile barındırılmaktadır.';
-            generateLinks(url);
+            generateLinks(url, viewId);
             previewImg.src = url;
             resultBox.style.display = 'block';
         }
@@ -243,21 +258,22 @@
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFiles(e.target.files);
         
-        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
-        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
-        dropZone.ondrop = (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        };
+        // Helper: Generate Random ID
+        function generateShortId(length = 7) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
 
         async function handleFiles(files) {
             if (!files.length) return;
             const file = files[0];
             
             if (!window.FirebaseDB || !FirebaseDB.storage) {
-                alert('Sistem henüz hazır değil, lütfen bekleyin...');
-                FirebaseDB.init();
+                alert('Sistem henüz hazır değil...');
                 return;
             }
 
@@ -279,7 +295,16 @@
                 }, 
                 async () => {
                     const url = await uploadTask.snapshot.ref.getDownloadURL();
-                    generateLinks(url);
+                    const shortId = generateShortId();
+                    
+                    // Save to Firestore
+                    await FirebaseDB.db.collection('short_urls').doc(shortId).set({
+                        url: url,
+                        name: file.name,
+                        ts: Date.now()
+                    });
+
+                    generateLinks(url, shortId);
                     previewImg.src = url;
                     progressContainer.style.display = 'none';
                     resultBox.style.display = 'block';
@@ -287,8 +312,8 @@
             );
         }
 
-        function generateLinks(directUrl) {
-            const pageUrl = window.location.origin + window.location.pathname + '?v=' + encodeURIComponent(directUrl);
+        function generateLinks(directUrl, shortId = null) {
+            const pageUrl = window.location.origin + window.location.pathname + (shortId ? '?id=' + shortId : '?v=' + encodeURIComponent(directUrl));
             currentUrls = {
                 direct: directUrl,
                 page: pageUrl,
@@ -296,7 +321,7 @@
                 bbcode: `[img]${directUrl}[/img]`,
                 md: `![AsiaConsole Image](${directUrl})`
             };
-            switchLink('direct');
+            switchLink(shortId || !viewUrl ? 'page' : 'direct');
             
             // Social Links
             document.getElementById('shareWa').href = `https://api.whatsapp.com/send?text=Görsele bak: ${encodeURIComponent(pageUrl)}`;
@@ -306,9 +331,14 @@
 
         function switchLink(type) {
             document.querySelectorAll('.share-tab').forEach(t => t.classList.remove('active'));
-            const tab = [...document.querySelectorAll('.share-tab')].find(t => t.innerText.toLowerCase().includes(type) || (type === 'page' && t.innerText.includes('İzleyici')) || (type === 'direct' && t.innerText.includes('Doğrudan')));
+            const tab = [...document.querySelectorAll('.share-tab')].find(t => {
+                const txt = t.innerText.toLowerCase();
+                if (type === 'page' && txt.includes('izleyici')) return true;
+                if (type === 'direct' && txt.includes('doğrudan')) return true;
+                return txt.includes(type);
+            });
             if (tab) tab.classList.add('active');
-            shareLink.value = currentUrls[type];
+            shareLink.value = currentUrls[type] || currentUrls['direct'];
         }
 
         function resetUI() {
@@ -322,12 +352,9 @@
             const input = document.getElementById(id);
             input.select();
             document.execCommand('copy');
-            showAdminToast ? showAdminToast('Link kopyalandı! 🚀', 'success') : alert('Link kopyalandı! 🚀');
+            if (window.showAdminToast) showAdminToast('Link kopyalandı! 🚀', 'success');
+            else alert('Link kopyalandı! 🚀');
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            FirebaseDB.init();
-        });
     </script>
 </body>
 </html>

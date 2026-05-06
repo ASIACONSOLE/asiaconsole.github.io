@@ -129,7 +129,6 @@ const THEME_PRESETS = {
         '--radius-lg': '20px',
         '--nav-blur': '20px',
         '--shadow-card': '0 10px 30px rgba(0,0,0,0.05)'
-    }
     },
     synthwave: {
         '--bg-primary': '#2b0035',

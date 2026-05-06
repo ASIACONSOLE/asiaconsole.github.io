@@ -623,26 +623,35 @@
             optionsRow.style.display = 'none';
             progressBar.style.width = '15%';
             
-            const proxies = [
-                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-                'https://corsproxy.io/?' + encodeURIComponent(url),
-                'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
-            ];
-            
             let blob = null;
-            
-            for (let proxy of proxies) {
+
+            if (url.startsWith('data:image/')) {
                 try {
-                    const res = await fetch(proxy);
-                    if (res.ok) {
-                        const tempBlob = await res.blob();
-                        if (tempBlob.type.startsWith('image/')) {
-                            blob = tempBlob;
-                            break;
-                        }
-                    }
+                    const res = await fetch(url);
+                    blob = await res.blob();
                 } catch(e) {
-                    console.log("[Proxy Bypass] Başarısız:", proxy);
+                    console.log("Base64 fetch hatası", e);
+                }
+            } else {
+                const proxies = [
+                    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+                    'https://corsproxy.io/?' + encodeURIComponent(url),
+                    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+                ];
+                
+                for (let proxy of proxies) {
+                    try {
+                        const res = await fetch(proxy);
+                        if (res.ok) {
+                            const tempBlob = await res.blob();
+                            if (tempBlob.type.startsWith('image/')) {
+                                blob = tempBlob;
+                                break;
+                            }
+                        }
+                    } catch(e) {
+                        console.log("[Proxy Bypass] Başarısız:", proxy);
+                    }
                 }
             }
             
@@ -653,7 +662,9 @@
             }
             
             let filename = url.split('/').pop().split('?')[0];
-            if (!filename || !filename.includes('.')) filename = 'url_image.' + blob.type.split('/')[1];
+            if (!filename || !filename.includes('.') || url.startsWith('data:')) {
+                filename = 'url_image.' + blob.type.split('/')[1];
+            }
             
             const file = new File([blob], filename, { type: blob.type });
             handleFiles([file]);

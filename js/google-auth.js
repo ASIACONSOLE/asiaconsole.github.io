@@ -69,7 +69,7 @@ const GoogleAuth = (function () {
                 client_id: _clientId,
                 callback: _handleCredential,
                 auto_select: false,
-                use_fedcm_for_prompt: true
+                use_fedcm_for_prompt: false // Set to false for broader compatibility unless fully configured
             });
             _renderOfficialButtons();
             _showGoogleButtons();
@@ -166,19 +166,20 @@ const GoogleAuth = (function () {
                 console.log('[GoogleAuth] Prompt notification:', notification.getMomentType(), notification.getNotDisplayedReason());
                 if (notification.isNotDisplayed()) {
                     const reason = notification.getNotDisplayedReason();
+                    console.warn('[GoogleAuth] Prompt suppressed. Reason:', reason);
+                    
+                    // If One Tap is suppressed, the user must use the rendered button.
+                    _renderOfficialButtons();
+                    _showGoogleButtons();
+
                     if (reason === 'opt_out_or_no_session') {
-                        alert('Google oturumunuz bulunamadı veya kapalı. Lütfen Google hesabınızda açık olduğundan emin olun.');
-                    } else if (reason === 'suppressed_by_user') {
-                        alert('Giriş penceresi çok sık kapatıldığı için engellendi. Lütfen tarayıcıyı kapatıp açın veya çerezleri temizleyin.');
-                    } else {
-                        console.warn('[GoogleAuth] Prompt not displayed. Reason:', reason);
-                        // Fallback: One Tap might be suppressed, but we don't have a direct "popup" call in this SDK
-                        // without using renderButton. For now, just notifying.
+                        alert('Google oturumunuz bulunamadı. Lütfen Google hesabınızda giriş yaptığınızdan emin olun.');
                     }
                 }
             });
         } catch (e) {
             console.error('[GoogleAuth] Prompt error:', e);
+            alert('Google girişi başlatılamadı. Lütfen çerezleri kontrol edin.');
         }
     }
 
@@ -215,10 +216,12 @@ const GoogleAuth = (function () {
     function _renderOfficialButtons() {
         // Render the official Google button in specific containers for better reliability
         document.querySelectorAll('.google-login-container').forEach(el => {
+            // If container is hidden or zero-width, wait and retry
+            const width = el.offsetWidth || 280;
             google.accounts.id.renderButton(el, {
                 theme: 'outline',
                 size: 'large',
-                width: el.offsetWidth || 300,
+                width: width,
                 text: 'signin_with',
                 shape: 'rectangular',
                 logo_alignment: 'left'

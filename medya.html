@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resim Yükle & Paylaş - AsiaConsole Medya</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .medya-hero {
+            padding: 8rem 0 4rem;
+            background: var(--gradient-hero);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .upload-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            max-width: 800px;
+            margin: -4rem auto 4rem;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            z-index: 10;
+        }
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 15px;
+            padding: 4rem 2rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(79, 142, 247, 0.02);
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(79, 142, 247, 0.08);
+            transform: scale(1.01);
+        }
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            filter: drop-shadow(0 0 15px var(--accent-blue));
+        }
+        .result-box {
+            margin-top: 2rem;
+            display: none;
+            text-align: left;
+            animation: fadeIn 0.5s ease;
+        }
+        .link-group {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .link-input {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            flex: 1;
+            padding: 0.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .copy-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .copy-btn:hover { opacity: 0.9; }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        .feature-card {
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            text-align: center;
+        }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+        
+        #progressContainer {
+            display: none;
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin-top: 2rem;
+            overflow: hidden;
+        }
+        #progressBar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s;
+            box-shadow: 0 0 15px var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar nav-style-neon">
+        <a href="index.html" class="navbar-brand"><span class="site-name">AsiaConsole</span></a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="projeler.html">🚀 Projeler</a></li>
+            <li><a href="medya.html" class="active">📸 Medya</a></li>
+        </ul>
+    </nav>
+
+    <div class="medya-hero">
+        <div class="container">
+            <h1 class="anim-glow">AsiaConsole Medya Paylaşım</h1>
+            <p style="color:var(--text-secondary); margin-top:1rem;">Resimlerinizi Google Cloud hızında yükleyin ve anında paylaşın.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="upload-card">
+            <div class="drop-zone" id="dropZone">
+                <span class="upload-icon">☁️</span>
+                <h2>Dosyayı Buraya Sürükleyin</h2>
+                <p style="color:var(--text-secondary);">veya tıklayarak seçin (PNG, JPG, WEBP, GIF)</p>
+                <input type="file" id="fileInput" hidden accept="image/*">
+            </div>
+
+            <div id="progressContainer">
+                <div id="progressBar"></div>
+            </div>
+
+            <div class="result-box" id="resultBox">
+                <h3 style="margin-bottom:1rem;">✅ Başarıyla Yüklendi!</h3>
+                <div class="link-group">
+                    <input type="text" id="directLink" class="link-input" readonly>
+                    <button class="copy-btn" onclick="copyLink('directLink')">Kopyala</button>
+                </div>
+                <div style="margin-top:1.5rem; text-align:center;">
+                    <img id="previewImg" style="max-width:100%; max-height:300px; border-radius:10px; border:1px solid var(--border);">
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3>Işık Hızında</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem;">Google Cloud altyapısı sayesinde resimleriniz saniyeler içinde yüklenir ve açılır.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">💎</span>
+                <h3>Orijinal Kalite</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem;">Resimlerinizi sıkıştırmıyoruz. Yüklediğiniz kalitede, pırıl pırıl saklıyoruz.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🔒</span>
+                <h3>Güvenli & Kalıcı</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem;">Resimleriniz silinme riski olmadan AsiaConsole güvencesiyle sonsuza dek kalır.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const resultBox = document.getElementById('resultBox');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const directLink = document.getElementById('directLink');
+        const previewImg = document.getElementById('previewImg');
+
+        dropZone.onclick = () => fileInput.click();
+        
+        fileInput.onchange = (e) => handleFiles(e.target.files);
+        
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        };
+
+        async function handleFiles(files) {
+            if (!files.length) return;
+            const file = files[0];
+            
+            if (!window.FirebaseDB || !FirebaseDB.storage) {
+                alert('Sistem henüz hazır değil, lütfen 2 saniye bekleyip tekrar deneyin.');
+                FirebaseDB.init();
+                return;
+            }
+
+            progressContainer.style.display = 'block';
+            resultBox.style.display = 'none';
+            dropZone.style.display = 'none';
+
+            const storageRef = FirebaseDB.storage.ref(`public/${Date.now()}_${file.name}`);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = progress + '%';
+                }, 
+                (error) => {
+                    alert('Hata: ' + error.message);
+                    resetUI();
+                }, 
+                async () => {
+                    const url = await uploadTask.snapshot.ref.getDownloadURL();
+                    directLink.value = url;
+                    previewImg.src = url;
+                    progressContainer.style.display = 'none';
+                    resultBox.style.display = 'block';
+                    
+                    // Log the public upload
+                    if (window.EvolutionEngine) {
+                        EvolutionEngine.logEvent('public_upload', { filename: file.name });
+                    }
+                }
+            );
+        }
+
+        function resetUI() {
+            dropZone.style.display = 'block';
+            progressContainer.style.display = 'none';
+            resultBox.style.display = 'none';
+            progressBar.style.width = '0%';
+        }
+
+        function copyLink(id) {
+            const input = document.getElementById(id);
+            input.select();
+            document.execCommand('copy');
+            alert('Link kopyalandı! 🚀');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            FirebaseDB.init();
+        });
+    </script>
+</body>
+</html>

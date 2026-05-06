@@ -10,9 +10,22 @@ function renderHome() {
         const DB = window.DB;
         if (!DB) return;
 
-        const articles = (DB.get('articles') || [])
+        let rawArticles = (DB.get('articles') || [])
             .filter(a => a && typeof a === 'object' && a.title)
             .map(a => ({ ...a, type: 'article' }));
+
+        // --- DATA SANITY: Sort by ID descending (newest first) & Remove Duplicates ---
+        rawArticles.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+        
+        const articles = [];
+        const seenIds = new Set();
+        for (const a of rawArticles) {
+            const aid = String(a.id);
+            if (!seenIds.has(aid)) {
+                seenIds.add(aid);
+                articles.push(a);
+            }
+        }
 
         const forumPosts = (DB.get('forum_posts') || []).filter(p => p && (p.status === 'approved' || !p.status));
         const users = DB.get('users') || [];
@@ -129,7 +142,7 @@ function renderHome() {
 
 
         // Featured Articles (Below Portal) - SET TO 15
-        const combinedFeed = [...articles].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 15);
+        const combinedFeed = articles.slice(0, 15);
         const grid = document.getElementById('featuredArticles');
 
         if (grid) {

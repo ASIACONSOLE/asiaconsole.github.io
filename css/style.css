@@ -663,7 +663,8 @@ h6 {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(13, 17, 23, 0.95);
+    background: var(--bg-nav);
+
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   display: flex;

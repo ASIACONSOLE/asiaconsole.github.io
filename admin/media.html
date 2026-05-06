@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medya Kütüphanesi - AsiaConsole Admin</title>
+    <link rel="icon" href="../favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-mobile.css">
+    <style>
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .media-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .media-item:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
+        .media-preview {
+            aspect-ratio: 16/9;
+            width: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .media-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .media-info {
+            padding: 0.75rem;
+            font-size: 0.75rem;
+        }
+        .media-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.25rem;
+        }
+        .media-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(79, 142, 247, 0.03);
+        }
+        .upload-zone:hover { border-color: var(--accent-blue); background: rgba(79, 142, 247, 0.08); }
+        .upload-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        
+        #uploadProgress {
+            display: none;
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        #uploadBar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚙️</div>
+                <div><h1>AsiaConsole</h1><span>Admin Panel</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+                <a href="pages.html" class="sidebar-link"><span class="icon">📄</span> Sayfa & İçerik</a>
+                <a href="media.html" class="sidebar-link active"><span class="icon">🖼️</span> Medya Kütüphanesi</a>
+                <a href="bot.html" class="sidebar-link"><span class="icon">🤖</span> Otonom Bot</a>
+                <a href="visitors.html" class="sidebar-link"><span class="icon">👁️</span> Ziyaretçiler</a>
+                <a href="settings.html" class="sidebar-link"><span class="icon">🎨</span> Site Ayarları</a>
+                <a href="../index.html" class="sidebar-link" target="_blank"><span class="icon">🌐</span> Siteyi Görüntüle</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <div class="topbar-title">🖼️ Medya Kütüphanesi (Google Cloud)</div>
+            </div>
+
+            <div class="admin-content">
+                <div class="admin-card">
+                    <div class="upload-zone" id="dropZone">
+                        <span class="upload-icon">☁️</span>
+                        <h3>Dosyaları buraya sürükleyin veya tıklayın</h3>
+                        <p style="color:var(--text-secondary); margin-top:0.5rem;">Resimler doğrudan Google Cloud Storage'a yüklenir.</p>
+                        <input type="file" id="fileInput" hidden accept="image/*">
+                        <div id="uploadProgress"><div id="uploadBar"></div></div>
+                    </div>
+                </div>
+
+                <div class="media-grid" id="mediaGrid">
+                    <!-- Media items will appear here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/firebase.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const mediaGrid = document.getElementById('mediaGrid');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const uploadBar = document.getElementById('uploadBar');
+
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => uploadFiles(e.target.files);
+
+        async function uploadFiles(files) {
+            if (!files.length) return;
+            
+            // Check Firebase Storage availability
+            if (!window.FirebaseDB || !FirebaseDB.storage) {
+                alert('Firebase Storage henüz hazır değil. Lütfen sayfayı yenileyin veya bir saniye bekleyin.');
+                return;
+            }
+
+            for (const file of files) {
+                const storageRef = FirebaseDB.storage.ref(`uploads/${Date.now()}_${file.name}`);
+                const uploadTask = storageRef.put(file);
+
+                uploadProgress.style.display = 'block';
+                
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        uploadBar.style.width = progress + '%';
+                    }, 
+                    (error) => {
+                        console.error('Yükleme hatası:', error);
+                        alert('Yükleme başarısız oldu: ' + error.message);
+                        uploadProgress.style.display = 'none';
+                    }, 
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        saveToDB(file.name, downloadURL);
+                        uploadProgress.style.display = 'none';
+                        uploadBar.style.width = '0%';
+                        renderMedia();
+                    }
+                );
+            }
+        }
+
+        function saveToDB(name, url) {
+            const media = DB.get('media_library') || [];
+            media.push({ name, url, ts: Date.now() });
+            DB.set('media_library', media);
+        }
+
+        function renderMedia() {
+            const media = DB.get('media_library') || [];
+            const sorted = [...media].reverse();
+            mediaGrid.innerHTML = sorted.map(m => `
+                <div class="media-item">
+                    <div class="media-preview">
+                        <img src="${m.url}" loading="lazy">
+                    </div>
+                    <div class="media-info">
+                        <div class="media-name" title="${m.name}">${m.name}</div>
+                        <div class="media-actions">
+                            <button class="topbar-btn secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="copyLink('${m.url}')">🔗 Kopyala</button>
+                            <button class="topbar-btn secondary" style="padding:4px 8px; font-size:0.7rem; color:#ff4d4d;" onclick="deleteMedia('${m.url}')">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyLink(url) {
+            navigator.clipboard.writeText(url);
+            alert('Resim linki kopyalandı!');
+        }
+
+        function deleteMedia(url) {
+            if (!confirm('Bu medyayı silmek istediğinize emin misiniz? (Sadece listeden silinir)')) return;
+            const media = DB.get('media_library') || [];
+            const filtered = media.filter(m => m.url !== url);
+            DB.set('media_library', filtered);
+            renderMedia();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            FirebaseDB.init();
+            document.addEventListener('dbReady', renderMedia);
+            document.addEventListener('dbUpdated', renderMedia);
+        });
+    </script>
+</body>
+</html>

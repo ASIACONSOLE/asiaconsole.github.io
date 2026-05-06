@@ -86,7 +86,7 @@
                 <div class="stat-grid">
                     <div class="stat-mini-card">
                         <div class="stat-mini-val" id="totalVisits">0</div>
-                        <div class="stat-mini-lbl">Toplam Oturum (Son 500)</div>
+                        <div class="stat-mini-lbl">Toplam Etkileşim</div>
                     </div>
                     <div class="stat-mini-card">
                         <div class="stat-mini-val" id="uniqueIps">0</div>
@@ -94,21 +94,21 @@
                     </div>
                     <div class="stat-mini-card">
                         <div class="stat-mini-val" id="todayVisits">0</div>
-                        <div class="stat-mini-lbl">Bugünkü Ziyaretler</div>
+                        <div class="stat-mini-lbl">Bugünkü Etkileşim</div>
                     </div>
                 </div>
 
                 <div class="admin-card">
                     <div class="admin-card-header">
-                        <div class="admin-card-title">📋 Son Ziyaret Logları</div>
+                        <div class="admin-card-title">📋 Günlük Ziyaret Grupları (IP + Tarih)</div>
                     </div>
                     <div class="admin-table-wrapper">
                         <table class="admin-table">
                             <thead>
                                 <tr>
                                     <th>IP Adresi</th>
-                                    <th>Tarih / Saat</th>
-                                    <th>Sayfa</th>
+                                    <th>Tarih / Son Giriş</th>
+                                    <th>Konum Bilgisi</th>
                                     <th>Tarayıcı (UA)</th>
                                 </tr>
                             </thead>
@@ -128,42 +128,45 @@
     <script src="../js/main.js"></script>
     <script src="../js/admin.js"></script>
     <script>
-        function showJourney(ip) {
+        function showJourney(ip, dateStr) {
             const logs = DB.get('visitor_logs') || [];
-            const userLogs = logs.filter(l => l.ip === ip).sort((a,b) => b.ts - a.ts);
+            const userLogs = logs.filter(l => {
+                const d = new Date(l.ts).toLocaleDateString('tr-TR');
+                return l.ip === ip && d === dateStr;
+            }).sort((a,b) => b.ts - a.ts);
             
             let html = `
-                <div style="margin-bottom: 1.5rem; display:flex; align-items:center; gap:10px;">
+                <div style="margin-bottom: 1.5rem; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <div style="background:var(--accent-blue); color:white; padding:5px 12px; border-radius:20px; font-family:monospace; font-weight:700;">${ip}</div>
-                    <span style="color:var(--text-secondary); font-size:0.85rem;">için Kullanıcı Yolculuğu</span>
+                    <div style="background:rgba(255,255,255,0.05); padding:5px 12px; border-radius:20px; font-size:0.85rem; font-weight:600;">📅 ${dateStr}</div>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:1rem; max-height: 400px; overflow-y:auto; padding-right:10px;">
             `;
 
             userLogs.forEach(l => {
-                const time = new Date(l.ts).toLocaleString('tr-TR');
+                const time = new Date(l.ts).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
                 html += `
                     <div style="border-left: 2px solid var(--accent-blue); padding-left: 15px; position:relative;">
                         <div style="width:10px; height:10px; background:var(--accent-blue); border-radius:50%; position:absolute; left:-6px; top:5px; box-shadow:0 0 8px var(--accent-blue);"></div>
                         <div style="font-size:0.8rem; color:var(--text-muted);">${time}</div>
-                        <div style="font-weight:600; font-size:0.95rem; margin:2px 0;">${l.path}</div>
+                        <div style="font-weight:600; font-size:0.95rem; margin:2px 0; color:var(--text-primary);">${l.path}</div>
                         <div style="font-size:0.75rem; color:var(--text-secondary);">Referans: ${l.ref || 'Direkt'}</div>
                     </div>
                 `;
             });
 
             html += `</div>`;
-            showModal('Kullanıcı Detayları', html);
+            showModal('Günlük Kullanıcı Yolculuğu', html);
         }
 
         function showModal(title, content) {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
-            overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1.5rem;';
+            overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(15px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1.5rem;';
             
             overlay.innerHTML = `
-                <div class="admin-card" style="width:100%; max-width:600px; position:relative; animation: slideInUp 0.3s ease;">
-                    <div class="admin-card-header">
+                <div class="admin-card" style="width:100%; max-width:600px; position:relative; animation: slideInUp 0.3s ease; border: 1px solid var(--accent-blue);">
+                    <div class="admin-card-header" style="border-bottom: 1px solid var(--border);">
                         <div class="admin-card-title">${title}</div>
                         <button onclick="this.closest('.modal-overlay').remove()" style="background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">&times;</button>
                     </div>
@@ -185,32 +188,56 @@
                 return;
             }
 
-            // Stats
-            const total = logs.length;
-            const uniqueIpsCount = new Set(logs.map(l => l.ip)).size;
-            
+            const totalCount = logs.length;
+            const uniqueIpsSet = new Set(logs.map(l => l.ip));
             const today = new Date().toLocaleDateString('tr-TR');
             const todayCount = logs.filter(l => new Date(l.ts).toLocaleDateString('tr-TR') === today).length;
 
-            document.getElementById('totalVisits').textContent = total;
-            document.getElementById('uniqueIps').textContent = uniqueIpsCount;
+            document.getElementById('totalVisits').textContent = totalCount;
+            document.getElementById('uniqueIps').textContent = uniqueIpsSet.size;
             document.getElementById('todayVisits').textContent = todayCount;
 
-            // Table (Sorted by newest first)
-            const sortedLogs = [...logs].reverse();
-            tbody.innerHTML = sortedLogs.map(l => {
-                const date = new Date(l.ts).toLocaleString('tr-TR');
+            const groups = {};
+            logs.forEach(l => {
+                const dateKey = new Date(l.ts).toLocaleDateString('tr-TR');
+                const groupKey = `${l.ip}_${dateKey}`;
+                if (!groups[groupKey]) {
+                    groups[groupKey] = {
+                        ip: l.ip,
+                        date: dateKey,
+                        lastTs: l.ts,
+                        count: 0,
+                        ua: l.ua,
+                        path: l.path
+                    };
+                }
+                groups[groupKey].count++;
+                if (l.ts > groups[groupKey].lastTs) {
+                    groups[groupKey].lastTs = l.ts;
+                    groups[groupKey].path = l.path;
+                }
+            });
+
+            const sortedGroups = Object.values(groups).sort((a,b) => b.lastTs - a.lastTs);
+
+            tbody.innerHTML = sortedGroups.map(g => {
+                const lastTime = new Date(g.lastTs).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
                 return `
-                    <tr style="cursor:pointer;" onclick="showJourney('${l.ip}')">
+                    <tr style="cursor:pointer;" onclick="showJourney('${g.ip}', '${g.date}')">
                         <td>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-family:monospace; font-weight:700; color:var(--accent-blue);">${l.ip}</span>
-                                <span style="font-size:0.6rem; background:rgba(79, 142, 247, 0.1); color:var(--accent-blue); padding:2px 6px; border-radius:4px;">DETAY</span>
+                                <span style="font-family:monospace; font-weight:700; color:var(--accent-blue);">${g.ip}</span>
+                                <span style="font-size:0.6rem; background:rgba(79, 142, 247, 0.1); color:var(--accent-blue); padding:2px 6px; border-radius:4px;">${g.count} ETKİLEŞİM</span>
                             </div>
                         </td>
-                        <td style="font-size:0.85rem;">${date}</td>
-                        <td style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">${l.path || '/'}</td>
-                        <td style="font-size:0.75rem; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${l.ua}">${l.ua}</td>
+                        <td style="font-size:0.85rem;">
+                            <div style="font-weight:600;">${g.date}</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">Son: ${lastTime}</div>
+                        </td>
+                        <td style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">
+                            <span style="color:var(--text-muted);">Son Konum:</span> ${g.path || '/'}
+                        </td>
+                        <td style="font-size:0.75rem; color:var(--text-muted); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${g.ua}">${g.ua}</td>
                     </tr>
                 `;
             }).join('');
@@ -239,15 +266,6 @@
         <a href="bot.html" class="mobile-nav-item" id="nav-bot"><i>🤖</i><span>Bot</span></a>
         <a href="settings.html" class="mobile-nav-item" id="nav-settings"><i>⚙️</i><span>Ayarlar</span></a>
     </div>
-    <script>
-        // Set active nav item
-        const p = window.location.pathname;
-        if(p.includes('dashboard')) document.getElementById('nav-dash').classList.add('active');
-        if(p.includes('pages')) document.getElementById('nav-pages').classList.add('active');
-        if(p.includes('bot')) document.getElementById('nav-bot').classList.add('active');
-        if(p.includes('settings')) document.getElementById('nav-settings').classList.add('active');
-    </script>
 
 </body>
-
 </html>

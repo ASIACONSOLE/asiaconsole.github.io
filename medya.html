@@ -3,487 +3,539 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resim Yükle - AsiaConsole Medya</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <title>AsiaConsole - Hızlı Resim Yükle</title>
+    <meta name="description" content="AsiaConsole ücretsiz, sınırsız ve hızlı resim yükleme servisi.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    
     <style>
         :root {
-            --bg-darker: #080b10;
-            --bg-card-dark: #12171e;
+            --bg-dark: #0f172a;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
         }
+
         body {
-            background: var(--bg-darker);
-            margin: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
         }
-        /* Minimal Header */
-        .medya-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.5rem 2rem;
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-        }
-        .header-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--text-primary);
-            text-decoration: none;
-            text-shadow: 0 0 20px var(--accent-blue);
-        }
-        .header-auth {
-            display: flex;
-            gap: 1.5rem;
-            margin-left: auto;
-        }
-        .auth-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .auth-link:hover { color: var(--accent-blue); }
 
-        /* Main Container */
-        .medya-main {
-            flex: 1;
+        .minimal-header {
+            padding: 2rem 1rem;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            margin-top: 60px;
-        }
-        .upload-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
             width: 100%;
-            max-width: 900px;
-            text-align: center;
+            box-sizing: border-box;
         }
-        .drop-zone {
-            padding: 5rem 2rem;
-            border: 2px dashed var(--border);
-            border-radius: 24px;
-            background: var(--bg-card-dark);
+
+        .minimal-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            letter-spacing: 1px;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .minimal-logo span {
+            color: var(--accent-blue);
+        }
+
+        .auth-block {
+            display: flex;
+            gap: 1rem;
+            position: absolute;
+            right: 2rem;
+            top: 2rem;
+        }
+
+        .btn-minimal {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s;
+        }
+
+        .btn-minimal:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-minimal-primary {
+            background: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-minimal-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+        }
+
+        .upload-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
         }
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--accent-blue);
-            background: rgba(79, 142, 247, 0.05);
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        .cloud-icon {
-            font-size: 5rem;
-            display: block;
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 15px var(--accent-blue));
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+
         .upload-title {
-            font-size: 1.75rem;
-            font-weight: 800;
+            font-size: 2rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-        .upload-subtitle {
-            color: var(--text-secondary);
-            font-size: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        /* Result Section */
-        .result-section {
-            display: none;
-            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        .upload-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
         }
-        .result-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: start;
-            background: var(--bg-card-dark);
-            padding: 2.5rem;
-            border-radius: 24px;
+
+        .drop-zone {
+            border: 2px dashed rgba(59, 130, 246, 0.4);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(59, 130, 246, 0.02);
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.08);
+            transform: scale(1.02);
+        }
+
+        .drop-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5));
+        }
+
+        .select-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            margin-bottom: 1rem;
+        }
+
+        .select-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .custom-select {
+            background: rgba(15, 23, 42, 0.6);
             border: 1px solid var(--border);
-            text-align: left;
-        }
-        .preview-box img {
-            width: 100%;
+            color: var(--text-primary);
+            padding: 0.8rem 1.2rem;
             border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .custom-select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .stats-banner {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.02);
             border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 16px;
         }
-        .link-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+
+        .stat-item {
+            text-align: center;
         }
-        .link-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .link-label {
-            font-size: 0.8rem;
+
+        .stat-value {
+            font-size: 1.5rem;
             font-weight: 700;
+            color: var(--accent-blue);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-        .link-input-group {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .link-input {
-            flex: 1;
-            background: none;
-            border: none;
-            padding: 0.75rem;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        .btn-copy {
-            background: var(--bg-secondary);
-            border: none;
-            border-left: 1px solid var(--border);
-            color: var(--accent-blue);
-            padding: 0 1rem;
-            cursor: pointer;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
-        .btn-copy:hover { background: var(--accent-blue); color: white; }
-
-        #progressContainer {
-            display: none;
-            margin-top: 2rem;
-        }
-        .progress-bar-bg {
-            height: 6px;
-            background: var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--accent-blue);
-            width: 0%;
-            transition: width 0.3s;
-            box-shadow: 0 0 15px var(--accent-blue);
+            margin-top: 0.3rem;
         }
 
-        .viewer-mode .medya-header { position: relative; margin-bottom: -40px; }
-        .viewer-mode .drop-zone { display: none; }
-        .viewer-mode .result-section { display: block; }
-
-        @media (max-width: 768px) {
-            .result-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .header-auth { display: none; }
-        }
-
-        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
             display: none;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             z-index: 1000;
-            animation: fadeIn 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
         .modal-content {
-            background: var(--bg-card-dark);
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 20px;
             width: 100%;
             max-width: 400px;
             padding: 2.5rem;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
         .modal-close {
             position: absolute;
-            top: 1rem; right: 1rem;
-            background: none; border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem; cursor: pointer;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
         }
-        .auth-tab-group {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
-        }
-        .auth-tab {
-            background: none; border: none;
-            color: var(--text-muted);
-            font-weight: 700; cursor: pointer;
-            font-size: 1rem;
-        }
-        .auth-tab.active { color: var(--accent-blue); }
+
+        .modal-close:hover { color: white; }
+
         .form-input {
             width: 100%;
-            background: rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.05);
             border: 1px solid var(--border);
-            padding: 0.8rem 1rem;
-            border-radius: 10px;
-            color: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
             margin-bottom: 1rem;
-            outline: none;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
-        .btn-auth-submit {
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-submit {
             width: 100%;
             background: var(--accent-blue);
-            color: #fff;
+            color: white;
             border: none;
-            padding: 0.9rem;
-            border-radius: 10px;
-            font-weight: 700;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
         }
-        .btn-auth-submit:hover { opacity: 0.9; transform: scale(0.98); }
+
+        .btn-submit:hover { background: var(--accent-hover); }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-switch a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Result Box styles */
+        .result-box { display: none; margin-top: 2rem; text-align: left; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); }
+        .preview-img { max-width: 100%; max-height: 250px; border-radius: 12px; margin: 0 auto 1.5rem; display: block; object-fit: contain; background: #000; }
+        .link-group { margin-bottom: 1rem; }
+        .link-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .input-row { display: flex; gap: 0.5rem; }
+        .input-row input { flex-grow: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 0.8rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; }
+        .btn-copy { background: rgba(255,255,255,0.1); border: none; color: white; padding: 0 1rem; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        .btn-copy:hover { background: var(--accent-blue); }
+
+        /* Progress Bar */
+        .progress-container { display: none; margin-top: 2rem; }
+        .progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+        .progress-fill { width: 0%; height: 100%; background: var(--accent-blue); transition: width 0.3s; }
     </style>
 </head>
-<body id="pageBody">
-    <header class="medya-header">
-        <a href="index.html" class="header-center">ASIACONSOLE</a>
-        <div class="header-auth" id="headerAuth">
-            <a href="javascript:void(0)" onclick="openAuthModal('login')" class="auth-link">👤 Giriş Yap</a>
-            <a href="javascript:void(0)" onclick="openAuthModal('register')" class="auth-link">✨ Kayıt Ol</a>
+<body>
+
+    <header class="minimal-header">
+        <a href="index.html" class="minimal-logo">Asia<span>Console</span></a>
+        
+        <div class="auth-block" id="navAuth">
+            <button class="btn-minimal" onclick="openAuthModal('login')">Giriş Yap</button>
+            <button class="btn-minimal-primary" onclick="openAuthModal('register')">Kayıt Ol</button>
         </div>
-        <div class="header-auth" id="headerUser" style="display:none;">
-            <a href="profil.html" class="auth-link">👤 <span id="headerUname">Profilim</span></a>
-            <a href="javascript:void(0)" onclick="handleLogout()" class="auth-link" style="color:#ef4444;">Çıkış</a>
+        
+        <div class="auth-block" id="navProfile" style="display: none; align-items: center;">
+            <a href="profil.html" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem;">
+                <span style="font-size: 1.2rem;">👤</span>
+                <span id="displayUsername" style="font-weight: 600;">Kullanıcı</span>
+            </a>
+            <button class="btn-minimal" onclick="handleLogout()">Çıkış</button>
         </div>
     </header>
 
-    <main class="medya-main">
-        <div class="upload-wrapper">
-            <!-- Upload Area -->
+    <div class="container">
+        <div class="upload-card">
+            <h1 class="upload-title">Hızlı Resim Yükle</h1>
+            <p class="upload-subtitle">Görsellerinizi anında paylaşın, sonsuza dek saklayın.</p>
+            
             <div class="drop-zone" id="dropZone">
-                <span class="cloud-icon">☁️</span>
-                <h2 class="upload-title" id="mainTitle">Resim Yükle</h2>
-                <p class="upload-subtitle" id="mainDesc">Yüklemek istediğiniz resimleri sürükleyip bırakın</p>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem;">PNG, JPG, WEBP, GIF • Max 10MB</p>
-                <input type="file" id="fileInput" hidden accept="image/*">
+                <span class="drop-icon">📁</span>
+                <br>
+                <button class="select-btn">Resim Seç</button>
+                <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Sürükle bırak veya panodan yapıştır (Ctrl+V)</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Yükleniyor... Lütfen bekleyin.</p>
+            </div>
+
+            <div class="options-row" id="optionsRow">
+                <select id="retentionSelect" class="custom-select">
+                    <option value="0">Süresiz (Kalıcı)</option>
+                    <option value="1">1 Gün Sonra Sil</option>
+                    <option value="7">1 Hafta Sonra Sil</option>
+                    <option value="30">1 Ay Sonra Sil</option>
+                </select>
+            </div>
+
+            <div class="result-box" id="resultBox">
+                <img id="previewImg" class="preview-img" src="" alt="Önizleme">
                 
-                <div style="margin-top:2rem; display:flex; justify-content:center; gap:1rem; align-items:center;">
-                    <label style="font-size:0.85rem; color:var(--text-secondary);">Resim Saklama Süresi:</label>
-                    <select id="retentionSelect" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border); padding:0.5rem 1rem; border-radius:8px; outline:none; cursor:pointer;">
-                        <option value="0">Süresiz</option>
-                        <option value="1">1 Gün</option>
-                        <option value="7">7 Gün</option>
-                        <option value="30">30 Gün</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Progress -->
-            <div id="progressContainer">
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="progressBar"></div>
-                </div>
-                <p style="margin-top:0.5rem; font-size:0.8rem; color:var(--accent-blue);">Dosya yükleniyor...</p>
-            </div>
-
-            <!-- Result Section -->
-            <div class="result-section" id="resultBox">
-                <div class="result-grid">
-                    <div class="preview-box">
-                        <img id="previewImg" alt="Önizleme">
-                        <div style="margin-top:1.5rem; display:flex; gap:1rem;">
-                            <button class="topbar-btn" style="flex:1;" onclick="location.href='medya.html'">➕ Yeni Yükle</button>
-                            <button class="topbar-btn secondary" style="flex:1;" id="downloadBtn">📥 İndir</button>
-                        </div>
+                <div class="link-group">
+                    <label>Resim Sayfası</label>
+                    <div class="input-row">
+                        <input type="text" id="linkPage" readonly>
+                        <button class="btn-copy" onclick="copyValue('linkPage')">Kopyala</button>
                     </div>
-                    
-                    <div class="link-list">
-                        <div class="link-item">
-                            <label class="link-label">Resim Sayfası</label>
-                            <div class="link-input-group">
-                                <input type="text" id="linkPage" class="link-input" readonly>
-                                <button class="btn-copy" onclick="copyValue('linkPage')">Kopyala</button>
-                            </div>
-                        </div>
-                        <div class="link-item">
-                            <label class="link-label">Doğrudan Link</label>
-                            <div class="link-input-group">
-                                <input type="text" id="linkDirect" class="link-input" readonly>
-                                <button class="btn-copy" onclick="copyValue('linkDirect')">Kopyala</button>
-                            </div>
-                        </div>
-                        <div class="link-item">
-                            <label class="link-label">Web Siteleri : HTML</label>
-                            <div class="link-input-group">
-                                <input type="text" id="linkHtml" class="link-input" readonly>
-                                <button class="btn-copy" onclick="copyValue('linkHtml')">Kopyala</button>
-                            </div>
-                        </div>
-                        <div class="link-item">
-                            <label class="link-label">Forumlar : BBCode</label>
-                            <div class="link-input-group">
-                                <input type="text" id="linkBb" class="link-input" readonly>
-                                <button class="btn-copy" onclick="copyValue('linkBb')">Kopyala</button>
-                            </div>
-                        </div>
-                        <div class="link-item">
-                            <label class="link-label">Dökümanlar : Markdown</label>
-                            <div class="link-input-group">
-                                <input type="text" id="linkMd" class="link-input" readonly>
-                                <button class="btn-copy" onclick="copyValue('linkMd')">Kopyala</button>
-                            </div>
-                        </div>
+                </div>
+                
+                <div class="link-group">
+                    <label>Resim Direkt Bağlantı</label>
+                    <div class="input-row">
+                        <input type="text" id="linkDirect" readonly>
+                        <button class="btn-copy" onclick="copyValue('linkDirect')">Kopyala</button>
                     </div>
+                </div>
+                
+                <div class="link-group">
+                    <label>BBCode (Forumlar İçin)</label>
+                    <div class="input-row">
+                        <input type="text" id="linkBb" readonly>
+                        <button class="btn-copy" onclick="copyValue('linkBb')">Kopyala</button>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <button class="select-btn" style="padding: 0.8rem 2rem; font-size: 1rem;" onclick="resetUI()">Yeni Resim Yükle</button>
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- Auth Modal -->
-    <div class="modal-overlay" id="authModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeAuthModal()">×</button>
-            <div class="auth-tab-group">
-                <button class="auth-tab active" id="tabL" onclick="switchAuth('login')">Giriş Yap</button>
-                <button class="auth-tab" id="tabR" onclick="switchAuth('register')">Kayıt Ol</button>
+        <div class="stats-banner">
+            <div class="stat-item">
+                <div class="stat-value">2025</div>
+                <div class="stat-label">Kuruluş</div>
             </div>
-            
-            <div id="formLogin">
-                <input type="text" id="authEmail" class="form-input" placeholder="E-posta veya Kullanıcı Adı">
-                <input type="password" id="authPass" class="form-input" placeholder="Şifre">
-                <button class="btn-auth-submit" onclick="doLogin()">Giriş Yap</button>
+            <div class="stat-item">
+                <div class="stat-value" id="statMembers">1,241</div>
+                <div class="stat-label">Kayıtlı Üye</div>
             </div>
-            
-            <div id="formRegister" style="display:none;">
-                <input type="text" id="regUser" class="form-input" placeholder="Kullanıcı Adı">
-                <input type="email" id="regEmail" class="form-input" placeholder="E-posta Adresi">
-                <input type="password" id="regPass" class="form-input" placeholder="Şifre">
-                <button class="btn-auth-submit" onclick="doRegister()">Kayıt Ol</button>
+            <div class="stat-item">
+                <div class="stat-value" id="statMedia">15.4K+</div>
+                <div class="stat-label">Yüklenen Medya</div>
             </div>
         </div>
     </div>
 
-    <footer style="background:var(--bg-secondary); border-top:1px solid var(--border); padding:4rem 0 2rem; margin-top:4rem; color:var(--text-secondary);">
-        <div class="container">
-            <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:4rem;">
-                <h3 style="font-family:'Orbitron', sans-serif; color:var(--text-primary); margin-bottom:1rem;">ASIACONSOLE MEDYA</h3>
-                <p style="max-width:800px; font-size:0.9rem; line-height:1.6;">
-                    2025 yılında kurulan çevrimiçi hızlı resim yükleme ve hızlı resim paylaşma sitesi. 
-                    AsiaConsole ile tamamen ücretsiz şekilde resim yüklemesi yapabilir, 
-                    Google Cloud altyapısı sayesinde dünyanın en hızlı paylaşım deneyimini yaşayabilirsiniz.
-                </p>
-            </div>
-
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:3rem; margin-bottom:4rem; text-align:left;">
-                <div>
-                    <h4 style="color:var(--text-primary); margin-bottom:1.5rem; font-size:1rem;">Sayfalar</h4>
-                    <ul style="list-style:none; padding:0; font-size:0.85rem; line-height:2;">
-                        <li><a href="index.html" style="color:inherit; text-decoration:none;">Ana Sayfa</a></li>
-                        <li><a href="medya.html" style="color:inherit; text-decoration:none;">Hızlı Resim Yükle</a></li>
-                        <li><a href="kullanim-sartlari.html" style="color:inherit; text-decoration:none;">Kullanım Koşulları</a></li>
-                        <li><a href="gizlilik-politikasi.html" style="color:inherit; text-decoration:none;">Gizlilik Politikası</a></li>
-                    </ul>
+    <!-- Modals -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAuthModal()">×</button>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h3 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem;">Giriş Yap</h3>
+                <input type="text" id="loginEmail" class="form-input" placeholder="E-posta veya Kullanıcı Adı">
+                <input type="password" id="loginPass" class="form-input" placeholder="Şifre">
+                <button class="btn-submit" onclick="doLogin()">Giriş Yap</button>
+                
+                <div style="margin: 1.5rem 0; display: flex; align-items: center; text-align: center; color: var(--text-muted);">
+                    <div style="flex-grow: 1; height: 1px; background: var(--border);"></div>
+                    <span style="padding: 0 1rem; font-size: 0.85rem; text-transform: uppercase;">veya</span>
+                    <div style="flex-grow: 1; height: 1px; background: var(--border);"></div>
                 </div>
-                <div>
-                    <h4 style="color:var(--text-primary); margin-bottom:1.5rem; font-size:1rem;">Topluluk</h4>
-                    <ul style="list-style:none; padding:0; font-size:0.85rem; line-height:2;">
-                        <li><a href="forum.html" style="color:inherit; text-decoration:none;">Forum Tartışmaları</a></li>
-                        <li><a href="teknoloji.html" style="color:inherit; text-decoration:none;">Teknoloji Haberleri</a></li>
-                        <li><a href="oyun.html" style="color:inherit; text-decoration:none;">Oyun Dünyası</a></li>
-                        <li><a href="javascript:void(0)" onclick="openAuthModal('login')" style="color:inherit; text-decoration:none;">Üye Girişi</a></li>
-                    </ul>
+                
+                <!-- OFFICIAL GOOGLE LOGIN CONTAINER -->
+                <div class="google-login-container" style="display: flex; justify-content: center; width: 100%;"></div>
+                
+                <div class="auth-switch">
+                    Hesabın yok mu? <a href="#" onclick="switchAuth('register'); return false;">Kayıt Ol</a>
                 </div>
             </div>
-
-            <div style="border-top:1px solid var(--border); padding-top:2rem; text-align:center; font-size:0.8rem; color:var(--text-muted);">
-                <p style="margin-bottom:1rem;">AsiaConsole Medya ücretsiz resim barındırma sitesidir. Kullanıcılar yükledikleri resimlerden kendileri sorumludur.</p>
-                <p>Copyright © 2025 - 2026 AsiaConsole.Net • Tüm Hakları Saklıdır.</p>
+            
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <h3 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem;">Kayıt Ol</h3>
+                <input type="text" id="regUser" class="form-input" placeholder="Kullanıcı Adı">
+                <input type="email" id="regEmail" class="form-input" placeholder="E-posta Adresi">
+                <input type="password" id="regPass" class="form-input" placeholder="Şifre">
+                <button class="btn-submit" onclick="doRegister()">Kayıt Ol</button>
+                
+                <div class="auth-switch">
+                    Zaten hesabın var mı? <a href="#" onclick="switchAuth('login'); return false;">Giriş Yap</a>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
 
     <script src="js/firebase.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/google-auth.js"></script>
+    
     <script>
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const resultBox = document.getElementById('resultBox');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
-        const previewImg = document.getElementById('previewImg');
-        
-        let currentUrls = {};
+        const resultBox = document.getElementById('resultBox');
+        const optionsRow = document.getElementById('optionsRow');
 
-        // Auth Logic
-        function checkAuthState() {
-            const user = JSON.parse(localStorage.getItem('asia_user') || 'null');
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                checkAuthStatus();
+                initGoogleAuth();
+                updateStats();
+            }, 100);
+        });
+
+        // Authentication & Sync Logic
+        function checkAuthStatus() {
+            const user = typeof Auth !== 'undefined' ? Auth.currentUser() : null;
+            
             if (user) {
-                document.getElementById('headerAuth').style.display = 'none';
-                document.getElementById('headerUser').style.display = 'flex';
-                document.getElementById('headerUname').innerText = user.username;
+                document.getElementById('navAuth').style.display = 'none';
+                document.getElementById('navProfile').style.display = 'flex';
+                document.getElementById('displayUsername').textContent = user.username || 'Kullanıcı';
             } else {
-                document.getElementById('headerAuth').style.display = 'flex';
-                document.getElementById('headerUser').style.display = 'none';
+                document.getElementById('navAuth').style.display = 'flex';
+                document.getElementById('navProfile').style.display = 'none';
             }
         }
 
-        function openAuthModal(mode) {
-            document.getElementById('authModal').style.display = 'flex';
-            switchAuth(mode);
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').style.display = 'none';
-        }
-
-        function switchAuth(mode) {
-            document.getElementById('tabL').classList.toggle('active', mode === 'login');
-            document.getElementById('tabR').classList.toggle('active', mode === 'register');
-            document.getElementById('formLogin').style.display = mode === 'login' ? 'block' : 'none';
-            document.getElementById('formRegister').style.display = mode === 'register' ? 'block' : 'none';
+        function initGoogleAuth() {
+            if (typeof GoogleAuth !== 'undefined') {
+                GoogleAuth.init(null, (user) => {
+                    checkAuthStatus();
+                    closeAuthModal();
+                    if (window.showToast) showToast('Hoş geldiniz!', 'success');
+                    else alert('Hoş geldiniz!');
+                });
+            }
         }
 
         async function doLogin() {
-            const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPass').value;
-            const users = DB.get('users') || [];
-            const found = users.find(u => (u.email === email || u.username === email) && u.password === pass);
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            if (!email || !pass) return alert('Lütfen tüm alanları doldurun.');
             
-            if (found) {
-                localStorage.setItem('asia_user', JSON.stringify(found));
-                checkAuthState();
+            if (typeof Auth !== 'undefined' && await Auth.login(email, pass)) {
+                checkAuthStatus();
                 closeAuthModal();
-                if (window.showAdminToast) showAdminToast('Hoş geldin!', 'success');
-            } else alert('Hatalı giriş bilgileri.');
+            } else {
+                alert('Hatalı giriş bilgileri.');
+            }
         }
 
         async function doRegister() {
@@ -497,45 +549,45 @@
             const users = DB.get('users') || [];
             users.push(newUser);
             DB.set('users', users);
-            localStorage.setItem('asia_user', JSON.stringify(newUser));
-            checkAuthState();
+            
+            DB.set('user_session', { id: newUser.id, username: newUser.username, email: newUser.email });
+            
+            checkAuthStatus();
             closeAuthModal();
-            alert('Kayıt başarılı!');
+            alert('Kayıt başarılı! Hoş geldiniz.');
         }
 
         function handleLogout() {
-            localStorage.removeItem('asia_user');
-            checkAuthState();
-        }
-
-        // URL Check (Viewer Mode)
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewId = urlParams.get('id');
-        const viewUrl = urlParams.get('v');
-
-        window.addEventListener('load', async () => {
-            FirebaseDB.init();
-            checkAuthState();
-            if (viewId) {
-                FirebaseDB.onReady(async () => {
-                    const doc = await FirebaseDB.db.collection('short_urls').doc(viewId).get();
-                    if (doc.exists) enableViewerMode(doc.data().url, viewId);
-                    else alert('Görsel bulunamadı.');
-                });
-            } else if (viewUrl) {
-                enableViewerMode(viewUrl);
+            if (typeof Auth !== 'undefined') {
+                Auth.logout();
+            } else {
+                localStorage.removeItem('tc_user_session');
             }
-        });
-
-        function enableViewerMode(url, id) {
-            document.getElementById('pageBody').classList.add('viewer-mode');
-            document.getElementById('mainTitle').innerText = 'Görsel İzleyici';
-            document.getElementById('mainDesc').innerText = 'AsiaConsole Medya Paylaşım';
-            generateLinks(url, id);
-            previewImg.src = url;
-            document.getElementById('downloadBtn').onclick = () => window.open(url, '_blank');
+            checkAuthStatus();
+            window.location.reload();
         }
 
+        // Modal Logic
+        function openAuthModal(mode) {
+            const modal = document.getElementById('authModal');
+            modal.classList.add('active');
+            switchAuth(mode);
+            
+            if (typeof GoogleAuth !== 'undefined' && GoogleAuth.renderOfficial) {
+                setTimeout(() => GoogleAuth.renderOfficial(), 100);
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function switchAuth(mode) {
+            document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = mode === 'register' ? 'block' : 'none';
+        }
+
+        // Upload Logic
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFiles(e.target.files);
         
@@ -546,9 +598,15 @@
             dropZone.classList.remove('dragover');
             handleFiles(e.dataTransfer.files);
         };
+        
+        document.addEventListener('paste', (e) => {
+            if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+                handleFiles(e.clipboardData.files);
+            }
+        });
 
         function generateShortId(length = 7) {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
             for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
             return result;
@@ -557,17 +615,18 @@
         async function handleFiles(files) {
             if (!files.length) return;
             const file = files[0];
+            if (!file.type.startsWith('image/')) return alert('Lütfen sadece resim dosyası seçin.');
             
             if (!window.FirebaseDB || !FirebaseDB.storage) {
-                alert('Sistem henüz hazır değil...');
-                return;
+                return alert('Sistem henüz hazır değil, lütfen sayfayı yenileyin.');
             }
 
             const retention = document.getElementById('retentionSelect').value;
             progressContainer.style.display = 'block';
             dropZone.style.display = 'none';
+            optionsRow.style.display = 'none';
 
-            const storageRef = FirebaseDB.storage.ref(`public/${Date.now()}_${file.name}`);
+            const storageRef = FirebaseDB.storage.ref(`public/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`);
             const uploadTask = storageRef.put(file);
 
             uploadTask.on('state_changed', 
@@ -575,60 +634,64 @@
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                     progressBar.style.width = progress + '%';
                 }, 
-                (error) => { alert('Hata: ' + error.message); resetUI(); }, 
+                (error) => { alert('Yükleme hatası: ' + error.message); resetUI(); }, 
                 async () => {
                     const url = await uploadTask.snapshot.ref.getDownloadURL();
                     const shortId = generateShortId();
                     
-                    // Save to Firestore
-                    const uploadData = {
-                        url: url,
-                        name: file.name,
-                        ts: Date.now(),
-                        retention: retention
-                    };
-
-                    // Link to user if logged in
-                    const user = JSON.parse(localStorage.getItem('asia_user') || 'null');
+                    const uploadData = { url: url, name: file.name, ts: Date.now(), retention: retention };
+                    
+                    const user = typeof Auth !== 'undefined' ? Auth.currentUser() : null;
                     if (user && user.id) {
                         uploadData.owner = user.id;
-                        // Add to user's gallery in Firestore
-                        await FirebaseDB.db.collection('users').doc(user.id).collection('uploads').doc(shortId).set(uploadData);
+                        try {
+                            await FirebaseDB.db.collection('users').doc(user.id).collection('uploads').doc(shortId).set(uploadData);
+                        } catch(e) {}
                     }
-
-                    await FirebaseDB.db.collection('short_urls').doc(shortId).set(uploadData);
+                    
+                    try {
+                        await FirebaseDB.db.collection('short_urls').doc(shortId).set(uploadData);
+                    } catch(e) {}
 
                     generateLinks(url, shortId);
-                    previewImg.src = url;
-                    document.getElementById('downloadBtn').onclick = () => window.open(url, '_blank');
+                    document.getElementById('previewImg').src = url;
+                    
                     progressContainer.style.display = 'none';
                     resultBox.style.display = 'block';
                 }
             );
         }
 
-        function generateLinks(directUrl, shortId = null) {
-            const pageUrl = window.location.origin + window.location.pathname + (shortId ? '?id=' + shortId : '?v=' + encodeURIComponent(directUrl));
+        function generateLinks(directUrl, shortId) {
+            const pageUrl = window.location.origin + window.location.pathname.replace('medya.html', '') + '?img=' + shortId;
             
             document.getElementById('linkPage').value = pageUrl;
             document.getElementById('linkDirect').value = directUrl;
-            document.getElementById('linkHtml').value = `<a href="${pageUrl}"><img src="${directUrl}" alt="AsiaConsole"></a>`;
             document.getElementById('linkBb').value = `[url=${pageUrl}][img]${directUrl}[/img][/url]`;
-            document.getElementById('linkMd').value = `[![AsiaConsole](${directUrl})](${pageUrl})`;
         }
 
         function copyValue(id) {
             const input = document.getElementById(id);
             input.select();
             document.execCommand('copy');
-            if (window.showAdminToast) showAdminToast('Kopyalandı!', 'success');
+            if (window.showToast) showToast('Bağlantı kopyalandı!', 'success');
             else alert('Kopyalandı!');
         }
 
         function resetUI() {
             dropZone.style.display = 'block';
+            optionsRow.style.display = 'flex';
             progressContainer.style.display = 'none';
             resultBox.style.display = 'none';
+            progressBar.style.width = '0%';
+            fileInput.value = '';
+        }
+
+        function updateStats() {
+            const users = DB.get('users') || [];
+            if (users.length > 0) {
+                document.getElementById('statMembers').innerText = users.length.toLocaleString('tr-TR');
+            }
         }
     </script>
 </body>

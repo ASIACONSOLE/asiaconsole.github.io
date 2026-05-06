@@ -623,25 +623,40 @@
             optionsRow.style.display = 'none';
             progressBar.style.width = '15%';
             
-            try {
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-                const res = await fetch(proxyUrl);
-                if (!res.ok) throw new Error('Resim çekilemedi.');
-                
-                const blob = await res.blob();
-                if (!blob.type.startsWith('image/')) {
-                    throw new Error('URL geçerli bir resim formatında değil.');
+            const proxies = [
+                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+                'https://corsproxy.io/?' + encodeURIComponent(url),
+                'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+            ];
+            
+            let blob = null;
+            
+            for (let proxy of proxies) {
+                try {
+                    const res = await fetch(proxy);
+                    if (res.ok) {
+                        const tempBlob = await res.blob();
+                        if (tempBlob.type.startsWith('image/')) {
+                            blob = tempBlob;
+                            break;
+                        }
+                    }
+                } catch(e) {
+                    console.log("[Proxy Bypass] Başarısız:", proxy);
                 }
-                
-                let filename = url.split('/').pop().split('?')[0];
-                if (!filename || !filename.includes('.')) filename = 'url_image.' + blob.type.split('/')[1];
-                
-                const file = new File([blob], filename, { type: blob.type });
-                handleFiles([file]);
-            } catch(e) {
-                alert('Hata: Resim alınamadı. Güvenlik (CORS) duvarı veya geçersiz link olabilir.');
-                resetUI();
             }
+            
+            if (!blob) {
+                alert('Hata: Resim korumalı olduğu için hiçbir aracı sunucudan alınamadı.');
+                resetUI();
+                return;
+            }
+            
+            let filename = url.split('/').pop().split('?')[0];
+            if (!filename || !filename.includes('.')) filename = 'url_image.' + blob.type.split('/')[1];
+            
+            const file = new File([blob], filename, { type: blob.type });
+            handleFiles([file]);
         }
 
         async function handleFiles(files) {

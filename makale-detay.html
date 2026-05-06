@@ -380,6 +380,119 @@
             opacity: 1;
             text-decoration: underline;
         }
+        /* Audio Assistant Styling */
+        .audio-player-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            z-index: 10000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .audio-player-bar.active {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .audio-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .audio-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.1);
+        }
+
+        .audio-btn.play-btn {
+            background: var(--accent-blue);
+            font-size: 1.5rem;
+        }
+
+        .audio-info {
+            flex: 1;
+        }
+
+        .audio-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .audio-status {
+            font-size: 0.7rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+        }
+
+        .audio-speed-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .btn-listen {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .btn-listen:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
     </style>
 
     <!-- Social Media Meta Tags -->
@@ -431,6 +544,7 @@
                         <span class="badge" id="artCategoryBadge" style="font-size:0.85rem;">💻 Teknoloji</span>
                         <span class="reading-time">⏱️ <span id="readingTime">5</span> dk okuma</span>
                         <span class="reading-time">👁️ <span id="artViews">0</span> görüntülenme</span>
+                        <button class="audio-speed-badge" style="background:var(--accent-blue); border:none; color:white; padding: 0.1rem 0.5rem;" onclick="startAudioAssistant()">🎧 Sesli Dinle</button>
                     </div>
 
                     <h1 class="article-title-main" id="artTitle">Makale başlığı</h1>
@@ -533,6 +647,23 @@
             </div>
         </div>
     </footer>
+
+    <!-- Audio Assistant Player Bar -->
+    <div id="audioPlayerBar" class="audio-player-bar">
+        <div class="audio-controls">
+            <button class="audio-btn" onclick="audioAssistant.stop()" title="Durdur">⏹️</button>
+            <button class="audio-btn play-btn" id="audioMainBtn" onclick="audioAssistant.toggle()" title="Oynat/Duraklat">▶️</button>
+        </div>
+        <div class="audio-info">
+            <div class="audio-title" id="audioPlayerTitle">Makale Seslendiriliyor...</div>
+            <div class="audio-status" id="audioPlayerStatus">Hazır</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0.25rem;">
+            <div class="audio-speed-badge" id="audioSpeedBtn" onclick="audioAssistant.cycleSpeed()">1.0x</div>
+            <span style="font-size:0.6rem; color:var(--text-muted);">HIZ</span>
+        </div>
+        <button class="audio-btn" onclick="audioAssistant.hide()" style="font-size:1rem; width:30px; height:30px;">✕</button>
+    </div>
 
     <script src="js/matrix.js" defer></script>
     <script src="js/firebase.js" defer></script>
@@ -751,6 +882,132 @@
                     renderComments();
                 }
             });
+        }
+
+        // --- Audio Assistant Logic ---
+        const audioAssistant = {
+            synth: window.speechSynthesis,
+            utterance: null,
+            sentences: [],
+            currentIndex: 0,
+            isPlaying: false,
+            isPaused: false,
+            speed: 1.0,
+            
+            init(title, desc, bodyHtml) {
+                this.stop();
+                
+                // Clean HTML from body
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = bodyHtml;
+                const cleanBody = tempDiv.innerText;
+                
+                const fullText = `${title}. ${desc}. ${cleanBody}`;
+                
+                // Split into chunks (sentences) for better stability
+                this.sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 3);
+                this.currentIndex = 0;
+                this.updateUI('Oynatılmaya Hazır');
+                document.getElementById('audioPlayerTitle').textContent = title;
+            },
+            
+            speak() {
+                if (this.currentIndex >= this.sentences.length) {
+                    this.stop();
+                    return;
+                }
+                
+                this.utterance = new SpeechSynthesisUtterance(this.sentences[this.currentIndex]);
+                this.utterance.lang = 'tr-TR';
+                this.utterance.rate = this.speed;
+                this.utterance.pitch = 1.0;
+                
+                this.utterance.onend = () => {
+                    if (this.isPlaying && !this.isPaused) {
+                        this.currentIndex++;
+                        this.speak();
+                    }
+                };
+                
+                this.utterance.onerror = (e) => {
+                    console.error('Speech error:', e);
+                    this.stop();
+                };
+                
+                this.synth.speak(this.utterance);
+                this.updateUI('Okunuyor...');
+            },
+            
+            toggle() {
+                if (!this.isPlaying) {
+                    this.isPlaying = true;
+                    this.isPaused = false;
+                    this.speak();
+                } else if (this.isPaused) {
+                    this.isPaused = false;
+                    this.synth.resume();
+                    this.updateUI('Okunuyor...');
+                } else {
+                    this.isPaused = true;
+                    this.synth.pause();
+                    this.updateUI('Duraklatıldı');
+                }
+            },
+            
+            stop() {
+                this.synth.cancel();
+                this.isPlaying = false;
+                this.isPaused = false;
+                this.currentIndex = 0;
+                this.updateUI('Hazır');
+            },
+            
+            cycleSpeed() {
+                const speeds = [1.0, 1.25, 1.5, 2.0, 0.75];
+                let idx = speeds.indexOf(this.speed);
+                this.speed = speeds[(idx + 1) % speeds.length];
+                document.getElementById('audioSpeedBtn').textContent = this.speed + 'x';
+                
+                if (this.isPlaying) {
+                    // Restart current sentence with new speed
+                    this.synth.cancel();
+                    this.speak();
+                }
+            },
+            
+            updateUI(status) {
+                const btn = document.getElementById('audioMainBtn');
+                const statusLabel = document.getElementById('audioPlayerStatus');
+                
+                statusLabel.textContent = status;
+                
+                if (this.isPlaying && !this.isPaused) {
+                    btn.textContent = '⏸️';
+                    btn.classList.add('playing');
+                } else {
+                    btn.textContent = '▶️';
+                    btn.classList.remove('playing');
+                }
+            },
+            
+            show() {
+                document.getElementById('audioPlayerBar').classList.add('active');
+            },
+            
+            hide() {
+                this.stop();
+                document.getElementById('audioPlayerBar').classList.remove('active');
+            }
+        };
+
+        function startAudioAssistant() {
+            const title = document.getElementById('artTitle').textContent;
+            const desc = document.getElementById('artDesc').textContent;
+            const body = document.getElementById('artBody').innerHTML;
+            
+            audioAssistant.init(title, desc, body);
+            audioAssistant.show();
+            audioAssistant.toggle();
         }
 
         document.addEventListener('DOMContentLoaded', () => {

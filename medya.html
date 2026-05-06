@@ -3,212 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resim Yükle & Paylaş - AsiaConsole Medya</title>
+    <title>Resim Yükle - AsiaConsole Medya</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .medya-hero {
-            padding: 8rem 0 4rem;
-            background: var(--gradient-hero);
-            text-align: center;
-            border-bottom: 1px solid var(--border);
+        :root {
+            --bg-darker: #080b10;
+            --bg-card-dark: #12171e;
         }
-        .upload-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 3rem;
-            max-width: 800px;
-            margin: -4rem auto 4rem;
-            backdrop-filter: blur(20px);
-            box-shadow: var(--shadow-card);
-            position: relative;
-            z-index: 10;
+        body {
+            background: var(--bg-darker);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        /* Minimal Header */
+        .medya-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+        }
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            text-decoration: none;
+            text-shadow: 0 0 20px var(--accent-blue);
+        }
+        .header-auth {
+            display: flex;
+            gap: 1.5rem;
+            margin-left: auto;
+        }
+        .auth-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .auth-link:hover { color: var(--accent-blue); }
+
+        /* Main Container */
+        .medya-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            margin-top: 60px;
+        }
+        .upload-wrapper {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
         }
         .drop-zone {
+            padding: 5rem 2rem;
             border: 2px dashed var(--border);
-            border-radius: 15px;
-            padding: 4rem 2rem;
-            transition: all 0.3s;
+            border-radius: 24px;
+            background: var(--bg-card-dark);
             cursor: pointer;
-            background: rgba(79, 142, 247, 0.02);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
         .drop-zone:hover, .drop-zone.dragover {
             border-color: var(--accent-blue);
-            background: rgba(79, 142, 247, 0.08);
-            transform: scale(1.01);
+            background: rgba(79, 142, 247, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
-        .upload-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
+        .cloud-icon {
+            font-size: 5rem;
             display: block;
+            margin-bottom: 1.5rem;
             filter: drop-shadow(0 0 15px var(--accent-blue));
+            animation: float 3s ease-in-out infinite;
         }
-        .result-box {
-            margin-top: 2rem;
-            display: none;
-            text-align: left;
-            animation: fadeIn 0.5s ease;
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
-        .share-tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+        .upload-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
         }
-        .share-tab {
-            padding: 0.4rem 0.8rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.75rem;
-            cursor: pointer;
+        .upload-subtitle {
             color: var(--text-secondary);
+            font-size: 1rem;
         }
-        .share-tab.active {
-            background: var(--accent-blue);
-            color: white;
-            border-color: var(--accent-blue);
+
+        /* Result Section */
+        .result-section {
+            display: none;
+            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .link-group {
-            background: rgba(0,0,0,0.2);
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+            background: var(--bg-card-dark);
+            padding: 2.5rem;
+            border-radius: 24px;
             border: 1px solid var(--border);
-            border-radius: 10px;
+            text-align: left;
+        }
+        .preview-box img {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .link-list {
             display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .link-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .link-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .link-input-group {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
         }
         .link-input {
+            flex: 1;
             background: none;
             border: none;
+            padding: 0.75rem;
             color: var(--text-primary);
-            flex: 1;
-            padding: 0.5rem;
-            font-family: monospace;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
             outline: none;
         }
-        .copy-btn {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-        .social-share {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-        .social-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .btn-copy {
             background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: all 0.3s;
+            border: none;
+            border-left: 1px solid var(--border);
+            color: var(--accent-blue);
+            padding: 0 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
         }
-        .social-btn:hover { transform: translateY(-3px); background: var(--accent-blue); color: white; }
-        
-        .viewer-mode .upload-card { margin-top: 2rem; }
-        .viewer-mode .medya-hero { padding: 4rem 0 2rem; }
-        .viewer-mode #dropZone, .viewer-mode .features-grid { display: none !important; }
-        .viewer-mode .result-box { display: block !important; }
+        .btn-copy:hover { background: var(--accent-blue); color: white; }
+
+        #progressContainer {
+            display: none;
+            margin-top: 2rem;
+        }
+        .progress-bar-bg {
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 15px var(--accent-blue);
+        }
+
+        .viewer-mode .medya-header { position: relative; margin-bottom: -40px; }
+        .viewer-mode .drop-zone { display: none; }
+        .viewer-mode .result-section { display: block; }
+
+        @media (max-width: 768px) {
+            .result-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .header-auth { display: none; }
+        }
     </style>
 </head>
 <body id="pageBody">
-    <nav class="navbar nav-style-neon">
-        <a href="index.html" class="navbar-brand"><span class="site-name">AsiaConsole</span></a>
-        <ul class="navbar-nav">
-            <li><a href="index.html">🏠 Ana Sayfa</a></li>
-            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
-            <li><a href="oyun.html">🎮 Oyun</a></li>
-            <li><a href="uygulama.html">📱 Uygulama</a></li>
-            <li><a href="projeler.html">🚀 Projeler</a></li>
-            <li><a href="medya.html" class="active">📸 Medya</a></li>
-        </ul>
-    </nav>
-
-    <div class="medya-hero">
-        <div class="container">
-            <h1 class="anim-glow" id="mainTitle">AsiaConsole Medya Paylaşım</h1>
-            <p id="mainDesc" style="color:var(--text-secondary); margin-top:1rem;">Resimlerinizi Google Cloud hızında yükleyin ve anında paylaşın.</p>
+    <header class="medya-header">
+        <a href="index.html" class="header-center">ASIACONSOLE</a>
+        <div class="header-auth">
+            <a href="uye-panel.html" class="auth-link">👤 Giriş Yap</a>
+            <a href="uye-panel.html" class="auth-link">✨ Kayıt Ol</a>
         </div>
-    </div>
+    </header>
 
-    <div class="container">
-        <div class="upload-card">
+    <main class="medya-main">
+        <div class="upload-wrapper">
+            <!-- Upload Area -->
             <div class="drop-zone" id="dropZone">
-                <span class="upload-icon">☁️</span>
-                <h2>Dosyayı Buraya Sürükleyin</h2>
-                <p style="color:var(--text-secondary);">veya tıklayarak seçin (PNG, JPG, WEBP, GIF)</p>
+                <span class="cloud-icon">☁️</span>
+                <h2 class="upload-title" id="mainTitle">Resim Yükle</h2>
+                <p class="upload-subtitle" id="mainDesc">Yüklemek istediğiniz resimleri sürükleyip bırakın</p>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem;">PNG, JPG, WEBP, GIF • Max 10MB</p>
                 <input type="file" id="fileInput" hidden accept="image/*">
             </div>
 
+            <!-- Progress -->
             <div id="progressContainer">
-                <div id="progressBar"></div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <p style="margin-top:0.5rem; font-size:0.8rem; color:var(--accent-blue);">Dosya yükleniyor...</p>
             </div>
 
-            <div class="result-box" id="resultBox">
-                <div style="text-align:center; margin-bottom:2rem;">
-                    <img id="previewImg" style="max-width:100%; border-radius:12px; border:1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-                </div>
-
-                <h4 style="margin-bottom:1rem; color:var(--accent-blue);">🔗 Resim Bağlantıları</h4>
-                
-                <div class="share-tabs">
-                    <div class="share-tab active" onclick="switchLink('direct')">Doğrudan</div>
-                    <div class="share-tab" onclick="switchLink('page')">İzleyici (URL)</div>
-                    <div class="share-tab" onclick="switchLink('html')">HTML</div>
-                    <div class="share-tab" onclick="switchLink('bbcode')">BBCode (Forum)</div>
-                    <div class="share-tab" onclick="switchLink('md')">Markdown</div>
-                </div>
-
-                <div class="link-group">
-                    <input type="text" id="shareLink" class="link-input" readonly>
-                    <button class="copy-btn" onclick="copyLink('shareLink')">Kopyala</button>
-                </div>
-
-                <div class="social-share">
-                    <a href="#" id="shareWa" class="social-btn" target="_blank" title="WhatsApp">📱</a>
-                    <a href="#" id="shareTw" class="social-btn" target="_blank" title="Twitter">𝕏</a>
-                    <a href="#" id="shareFb" class="social-btn" target="_blank" title="Facebook">📘</a>
-                </div>
-
-                <div style="text-align:center; margin-top:2rem;">
-                    <button class="topbar-btn secondary" onclick="window.location.href='medya.html'">🔄 Yeni Resim Yükle</button>
+            <!-- Result Section -->
+            <div class="result-section" id="resultBox">
+                <div class="result-grid">
+                    <div class="preview-box">
+                        <img id="previewImg" alt="Önizleme">
+                        <div style="margin-top:1.5rem; display:flex; gap:1rem;">
+                            <button class="topbar-btn" style="flex:1;" onclick="location.href='medya.html'">➕ Yeni Yükle</button>
+                            <button class="topbar-btn secondary" style="flex:1;" id="downloadBtn">📥 İndir</button>
+                        </div>
+                    </div>
+                    
+                    <div class="link-list">
+                        <div class="link-item">
+                            <label class="link-label">Resim Sayfası</label>
+                            <div class="link-input-group">
+                                <input type="text" id="linkPage" class="link-input" readonly>
+                                <button class="btn-copy" onclick="copyValue('linkPage')">Kopyala</button>
+                            </div>
+                        </div>
+                        <div class="link-item">
+                            <label class="link-label">Doğrudan Link</label>
+                            <div class="link-input-group">
+                                <input type="text" id="linkDirect" class="link-input" readonly>
+                                <button class="btn-copy" onclick="copyValue('linkDirect')">Kopyala</button>
+                            </div>
+                        </div>
+                        <div class="link-item">
+                            <label class="link-label">Web Siteleri : HTML</label>
+                            <div class="link-input-group">
+                                <input type="text" id="linkHtml" class="link-input" readonly>
+                                <button class="btn-copy" onclick="copyValue('linkHtml')">Kopyala</button>
+                            </div>
+                        </div>
+                        <div class="link-item">
+                            <label class="link-label">Forumlar : BBCode</label>
+                            <div class="link-input-group">
+                                <input type="text" id="linkBb" class="link-input" readonly>
+                                <button class="btn-copy" onclick="copyValue('linkBb')">Kopyala</button>
+                            </div>
+                        </div>
+                        <div class="link-item">
+                            <label class="link-label">Dökümanlar : Markdown</label>
+                            <div class="link-input-group">
+                                <input type="text" id="linkMd" class="link-input" readonly>
+                                <button class="btn-copy" onclick="copyValue('linkMd')">Kopyala</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <span class="feature-icon">⚡</span>
-                <h3>Işık Hızında</h3>
-                <p style="color:var(--text-secondary); font-size:0.9rem;">Google Cloud altyapısı sayesinde resimleriniz saniyeler içinde yüklenir ve açılır.</p>
-            </div>
-            <div class="feature-card">
-                <span class="feature-icon">💎</span>
-                <h3>Orijinal Kalite</h3>
-                <p style="color:var(--text-secondary); font-size:0.9rem;">Resimlerinizi sıkıştırmıyoruz. Yüklediğiniz kalitede, pırıl pırıl saklıyoruz.</p>
-            </div>
-            <div class="feature-card">
-                <span class="feature-icon">🔒</span>
-                <h3>Güvenli & Kalıcı</h3>
-                <p style="color:var(--text-secondary); font-size:0.9rem;">Resimleriniz silinme riski olmadan AsiaConsole güvencesiyle sonsuza dek kalır.</p>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <script src="js/firebase.js"></script>
     <script src="js/main.js"></script>
@@ -218,10 +295,9 @@
         const resultBox = document.getElementById('resultBox');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
-        const shareLink = document.getElementById('shareLink');
         const previewImg = document.getElementById('previewImg');
         
-        let currentUrls = { direct: '', page: '', html: '', bbcode: '', md: '' };
+        let currentUrls = {};
 
         // URL Check (Viewer Mode)
         const urlParams = new URLSearchParams(window.location.search);
@@ -230,41 +306,41 @@
 
         window.addEventListener('load', async () => {
             FirebaseDB.init();
-            
             if (viewId) {
-                // Wait for Firebase
                 FirebaseDB.onReady(async () => {
                     const doc = await FirebaseDB.db.collection('short_urls').doc(viewId).get();
-                    if (doc.exists) {
-                        enableViewerMode(doc.data().url);
-                    } else {
-                        alert('Görsel bulunamadı veya silinmiş.');
-                    }
+                    if (doc.exists) enableViewerMode(doc.data().url, viewId);
+                    else alert('Görsel bulunamadı.');
                 });
             } else if (viewUrl) {
                 enableViewerMode(viewUrl);
             }
         });
 
-        function enableViewerMode(url) {
+        function enableViewerMode(url, id) {
             document.getElementById('pageBody').classList.add('viewer-mode');
-            document.getElementById('mainTitle').innerText = 'AsiaConsole Medya İzleyici';
-            document.getElementById('mainDesc').innerText = 'Bu görsel AsiaConsole Medya Paylaşım servisi ile barındırılmaktadır.';
-            generateLinks(url, viewId);
+            document.getElementById('mainTitle').innerText = 'Görsel İzleyici';
+            document.getElementById('mainDesc').innerText = 'AsiaConsole Medya Paylaşım';
+            generateLinks(url, id);
             previewImg.src = url;
-            resultBox.style.display = 'block';
+            document.getElementById('downloadBtn').onclick = () => window.open(url, '_blank');
         }
 
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFiles(e.target.files);
         
-        // Helper: Generate Random ID
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        };
+
         function generateShortId(length = 7) {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
-            for (let i = 0; i < length; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
             return result;
         }
 
@@ -278,7 +354,6 @@
             }
 
             progressContainer.style.display = 'block';
-            resultBox.style.display = 'none';
             dropZone.style.display = 'none';
 
             const storageRef = FirebaseDB.storage.ref(`public/${Date.now()}_${file.name}`);
@@ -289,23 +364,18 @@
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                     progressBar.style.width = progress + '%';
                 }, 
-                (error) => {
-                    alert('Hata: ' + error.message);
-                    resetUI();
-                }, 
+                (error) => { alert('Hata: ' + error.message); resetUI(); }, 
                 async () => {
                     const url = await uploadTask.snapshot.ref.getDownloadURL();
                     const shortId = generateShortId();
                     
-                    // Save to Firestore
                     await FirebaseDB.db.collection('short_urls').doc(shortId).set({
-                        url: url,
-                        name: file.name,
-                        ts: Date.now()
+                        url: url, name: file.name, ts: Date.now()
                     });
 
                     generateLinks(url, shortId);
                     previewImg.src = url;
+                    document.getElementById('downloadBtn').onclick = () => window.open(url, '_blank');
                     progressContainer.style.display = 'none';
                     resultBox.style.display = 'block';
                 }
@@ -314,46 +384,26 @@
 
         function generateLinks(directUrl, shortId = null) {
             const pageUrl = window.location.origin + window.location.pathname + (shortId ? '?id=' + shortId : '?v=' + encodeURIComponent(directUrl));
-            currentUrls = {
-                direct: directUrl,
-                page: pageUrl,
-                html: `<img src="${directUrl}" alt="AsiaConsole Image">`,
-                bbcode: `[img]${directUrl}[/img]`,
-                md: `![AsiaConsole Image](${directUrl})`
-            };
-            switchLink(shortId || !viewUrl ? 'page' : 'direct');
             
-            // Social Links
-            document.getElementById('shareWa').href = `https://api.whatsapp.com/send?text=Görsele bak: ${encodeURIComponent(pageUrl)}`;
-            document.getElementById('shareTw').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=AsiaConsole Medya`;
-            document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+            document.getElementById('linkPage').value = pageUrl;
+            document.getElementById('linkDirect').value = directUrl;
+            document.getElementById('linkHtml').value = `<a href="${pageUrl}"><img src="${directUrl}" alt="AsiaConsole"></a>`;
+            document.getElementById('linkBb').value = `[url=${pageUrl}][img]${directUrl}[/img][/url]`;
+            document.getElementById('linkMd').value = `[![AsiaConsole](${directUrl})](${pageUrl})`;
         }
 
-        function switchLink(type) {
-            document.querySelectorAll('.share-tab').forEach(t => t.classList.remove('active'));
-            const tab = [...document.querySelectorAll('.share-tab')].find(t => {
-                const txt = t.innerText.toLowerCase();
-                if (type === 'page' && txt.includes('izleyici')) return true;
-                if (type === 'direct' && txt.includes('doğrudan')) return true;
-                return txt.includes(type);
-            });
-            if (tab) tab.classList.add('active');
-            shareLink.value = currentUrls[type] || currentUrls['direct'];
+        function copyValue(id) {
+            const input = document.getElementById(id);
+            input.select();
+            document.execCommand('copy');
+            if (window.showAdminToast) showAdminToast('Kopyalandı!', 'success');
+            else alert('Kopyalandı!');
         }
 
         function resetUI() {
             dropZone.style.display = 'block';
             progressContainer.style.display = 'none';
             resultBox.style.display = 'none';
-            progressBar.style.width = '0%';
-        }
-
-        function copyLink(id) {
-            const input = document.getElementById(id);
-            input.select();
-            document.execCommand('copy');
-            if (window.showAdminToast) showAdminToast('Link kopyalandı! 🚀', 'success');
-            else alert('Link kopyalandı! 🚀');
         }
     </script>
 </body>

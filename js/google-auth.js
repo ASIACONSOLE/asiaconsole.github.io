@@ -55,7 +55,6 @@ const GoogleAuth = (function () {
 
     function _initGSI() {
         if (!window.google || !window.google.accounts) {
-            // retry up to 15 times (~4.5 seconds)
             if ((_initGSI._retries || 0) < 15) {
                 _initGSI._retries = (_initGSI._retries || 0) + 1;
                 setTimeout(_initGSI, 300);
@@ -64,16 +63,18 @@ const GoogleAuth = (function () {
             }
             return;
         }
+        if (_initGSI._isFullyDone) return; // Prevent double init
         try {
             google.accounts.id.initialize({
                 client_id: _clientId,
                 callback: _handleCredential,
                 auto_select: false,
-                use_fedcm_for_prompt: false // Set to false for broader compatibility unless fully configured
+                use_fedcm_for_prompt: false
             });
             _renderOfficialButtons();
             _showGoogleButtons();
             _initialized = true;
+            _initGSI._isFullyDone = true; // Mark as done
         } catch (e) {
             console.error('[GoogleAuth] Initialization error:', e);
         }
@@ -104,7 +105,14 @@ const GoogleAuth = (function () {
             console.log('[GoogleAuth] Credential parsed:', googleUser.email);
 
             // Register or find user
-            let users = JSON.parse(localStorage.getItem('tc_users') || '[]');
+            let users = [];
+            if (typeof DB !== 'undefined') {
+                users = DB.get('users') || [];
+            } else {
+                try {
+                    users = JSON.parse(localStorage.getItem('tc_users') || '[]');
+                } catch(e) { users = []; }
+            }
             let existing = users.find(u => u.email === googleUser.email);
             if (!existing) {
                 console.log('[GoogleAuth] Creating new user...');

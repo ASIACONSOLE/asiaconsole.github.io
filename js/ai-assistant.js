@@ -59,20 +59,21 @@ const AIAssistant = (() => {
             .ai-chat-window {
                 width: 320px;
                 height: 450px;
-                background: rgba(13, 17, 23, 0.95);
-                backdrop-filter: blur(15px);
+                background: var(--bg-nav);
+                backdrop-filter: blur(var(--nav-blur, 15px));
+                -webkit-backdrop-filter: blur(var(--nav-blur, 15px));
                 border: 1px solid var(--border);
                 border-radius: 20px;
                 display: none;
                 flex-direction: column;
                 overflow: hidden;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+                box-shadow: var(--shadow-card);
             }
             .ai-chat-window.active { display: flex; }
             
             .ai-header {
                 padding: 1rem 1.25rem;
-                background: rgba(255,255,255,0.03);
+                background: rgba(var(--accent-blue-rgb, 79, 142, 247), 0.05);
                 border-bottom: 1px solid var(--border);
                 display: flex;
                 align-items: center;
@@ -83,6 +84,7 @@ const AIAssistant = (() => {
                 height: 8px;
                 border-radius: 50%;
                 background: #10b981;
+                box-shadow: 0 0 8px #10b981;
             }
             .ai-header-name {
                 font-weight: 700;
@@ -100,16 +102,18 @@ const AIAssistant = (() => {
             }
             .msg {
                 max-width: 85%;
-                padding: 0.65rem 0.85rem;
-                border-radius: 12px;
-                font-size: 0.875rem;
-                line-height: 1.4;
+                padding: 0.75rem 1rem;
+                border-radius: 15px;
+                font-size: 0.9rem;
+                line-height: 1.5;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
             .msg-assistant {
                 align-self: flex-start;
-                background: rgba(255,255,255,0.05);
-                color: var(--text-secondary);
+                background: var(--bg-secondary);
+                color: var(--text-primary);
                 border-bottom-left-radius: 2px;
+                border: 1px solid var(--border);
             }
             .msg-user {
                 align-self: flex-end;
@@ -123,23 +127,34 @@ const AIAssistant = (() => {
                 border-top: 1px solid var(--border);
                 display: flex;
                 gap: 0.5rem;
+                background: var(--bg-secondary);
             }
             .ai-input {
                 flex: 1;
-                background: rgba(255,255,255,0.05);
+                background: var(--bg-primary);
                 border: 1px solid var(--border);
-                border-radius: 8px;
-                padding: 0.5rem 0.75rem;
-                color: white;
-                font-size: 0.85rem;
+                border-radius: 10px;
+                padding: 0.6rem 0.8rem;
+                color: var(--text-primary);
+                font-size: 0.9rem;
                 outline: none;
+                transition: border-color 0.3s;
             }
+            .ai-input:focus { border-color: var(--accent-blue); }
             .ai-submit {
-                background: none;
+                background: var(--accent-blue);
+                color: white;
                 border: none;
-                color: var(--accent-blue);
-                font-size: 1.2rem;
+                border-radius: 10px;
+                width: 38px;
+                height: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: transform 0.2s;
             }
+            .ai-submit:hover { transform: scale(1.05); }
             .typing {
                 display: flex;
                 gap: 4px;
@@ -148,7 +163,7 @@ const AIAssistant = (() => {
             .dot {
                 width: 6px;
                 height: 6px;
-                background: var(--text-muted);
+                background: var(--accent-blue);
                 border-radius: 50%;
                 animation: ai-bounce 1.4s infinite ease-in-out both;
             }

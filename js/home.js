@@ -286,11 +286,25 @@ function initHomeFilters() {
             searchQuery = e.target.value.trim();
             debouncedRender();
         });
+        // Handle Enter key
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                searchQuery = searchInput.value.trim();
+                lastRenderedHash = ""; // Force render
+                renderHome();
+                searchInput.blur();
+            }
+        });
     }
     if (searchBtn) {
         searchBtn.onclick = () => {
             searchQuery = (searchInput ? searchInput.value : '').trim();
+            lastRenderedHash = ""; // Force render
             renderHome();
+            
+            // Visual feedback
+            searchBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => searchBtn.style.transform = '', 100);
         };
     }
 

@@ -30,7 +30,8 @@ window.FirebaseDB = {
         // Load Firebase compat SDKs sequentially to prevent race conditions
         const scripts = [
             'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
-            'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js'
+            'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js',
+            'https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js'
         ];
 
         // TIMEOUT: If Firebase SDK doesn't load in 15 seconds, give up gracefully
@@ -73,10 +74,11 @@ window.FirebaseDB = {
                 firebase.initializeApp(FIREBASE_CONFIG);
             }
             this.db = firebase.firestore();
+            this.storage = firebase.storage();
 
             this._ready = true;
             this._triggerConnectionEvent('connected');
-            console.log('[Firebase] Connected to Firestore ✓');
+            console.log('[Firebase] Connected to Firestore & Storage ✓');
             // Run pending callbacks
             this._readyCallbacks.forEach(cb => cb());
             this._readyCallbacks = [];

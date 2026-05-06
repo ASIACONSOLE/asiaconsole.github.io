@@ -128,6 +128,51 @@
     <script src="../js/main.js"></script>
     <script src="../js/admin.js"></script>
     <script>
+        function showJourney(ip) {
+            const logs = DB.get('visitor_logs') || [];
+            const userLogs = logs.filter(l => l.ip === ip).sort((a,b) => b.ts - a.ts);
+            
+            let html = `
+                <div style="margin-bottom: 1.5rem; display:flex; align-items:center; gap:10px;">
+                    <div style="background:var(--accent-blue); color:white; padding:5px 12px; border-radius:20px; font-family:monospace; font-weight:700;">${ip}</div>
+                    <span style="color:var(--text-secondary); font-size:0.85rem;">için Kullanıcı Yolculuğu</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:1rem; max-height: 400px; overflow-y:auto; padding-right:10px;">
+            `;
+
+            userLogs.forEach(l => {
+                const time = new Date(l.ts).toLocaleString('tr-TR');
+                html += `
+                    <div style="border-left: 2px solid var(--accent-blue); padding-left: 15px; position:relative;">
+                        <div style="width:10px; height:10px; background:var(--accent-blue); border-radius:50%; position:absolute; left:-6px; top:5px; box-shadow:0 0 8px var(--accent-blue);"></div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">${time}</div>
+                        <div style="font-weight:600; font-size:0.95rem; margin:2px 0;">${l.path}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary);">Referans: ${l.ref || 'Direkt'}</div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            showModal('Kullanıcı Detayları', html);
+        }
+
+        function showModal(title, content) {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1.5rem;';
+            
+            overlay.innerHTML = `
+                <div class="admin-card" style="width:100%; max-width:600px; position:relative; animation: slideInUp 0.3s ease;">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title">${title}</div>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">&times;</button>
+                    </div>
+                    <div style="padding:1.5rem;">${content}</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
         function renderVisitors() {
             const logs = DB.get('visitor_logs') || [];
             const tbody = document.getElementById('visitorsBody');
@@ -142,13 +187,13 @@
 
             // Stats
             const total = logs.length;
-            const uniqueIps = new Set(logs.map(l => l.ip)).size;
+            const uniqueIpsCount = new Set(logs.map(l => l.ip)).size;
             
             const today = new Date().toLocaleDateString('tr-TR');
             const todayCount = logs.filter(l => new Date(l.ts).toLocaleDateString('tr-TR') === today).length;
 
             document.getElementById('totalVisits').textContent = total;
-            document.getElementById('uniqueIps').textContent = uniqueIps;
+            document.getElementById('uniqueIps').textContent = uniqueIpsCount;
             document.getElementById('todayVisits').textContent = todayCount;
 
             // Table (Sorted by newest first)
@@ -156,10 +201,15 @@
             tbody.innerHTML = sortedLogs.map(l => {
                 const date = new Date(l.ts).toLocaleString('tr-TR');
                 return `
-                    <tr>
-                        <td style="font-family:monospace; font-weight:600; color:var(--accent-blue);">${l.ip}</td>
+                    <tr style="cursor:pointer;" onclick="showJourney('${l.ip}')">
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-family:monospace; font-weight:700; color:var(--accent-blue);">${l.ip}</span>
+                                <span style="font-size:0.6rem; background:rgba(79, 142, 247, 0.1); color:var(--accent-blue); padding:2px 6px; border-radius:4px;">DETAY</span>
+                            </div>
+                        </td>
                         <td style="font-size:0.85rem;">${date}</td>
-                        <td style="font-size:0.8rem; color:var(--text-secondary);">${l.path || '/'}</td>
+                        <td style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">${l.path || '/'}</td>
                         <td style="font-size:0.75rem; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${l.ua}">${l.ua}</td>
                     </tr>
                 `;

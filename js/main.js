@@ -1377,6 +1377,36 @@ const UserTiers = {
 };
 
 // ---- INIT ----
+async function logVisitor() {
+    try {
+        if (window.location.pathname.includes('/admin/')) return;
+        const lastLog = sessionStorage.getItem('last_visit_log');
+        const now = Date.now();
+        if (lastLog && (now - parseInt(lastLog)) < 15000) return;
+
+        let ip = localStorage.getItem('visitor_ip');
+        if (!ip) {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const data = await res.json();
+            ip = data.ip || 'Unknown';
+            localStorage.setItem('visitor_ip', ip);
+        }
+
+        const logs = DB.get('visitor_logs') || [];
+        logs.push({
+            ip: ip,
+            ts: now,
+            path: window.location.pathname + window.location.search,
+            ua: navigator.userAgent,
+            ref: document.referrer || 'Direct'
+        });
+
+        if (logs.length > 1000) logs.shift();
+        DB.set('visitor_logs', logs);
+        sessionStorage.setItem('last_visit_log', now.toString());
+    } catch (e) {}
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     DB.init();
     applySettings();
@@ -1386,6 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateNavAuth();
     renderHeroProjects();
     setTimeout(initScrollAnimations, 100);
+    setTimeout(logVisitor, 1500);
 });
 
 /* ================================================

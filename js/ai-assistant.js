@@ -268,6 +268,8 @@ const AIAssistant = (() => {
         return 'Sorunuzu aldım! Şu an yapay zeka sunucularımızda anlık bir yoğunluk olsa da size yardımcı olmaktan mutluluk duyarım. Teknoloji, oyun, uygulama ve topluluk projelerimiz hakkında dilediğinizi sorabilirsiniz.';
     };
 
+
+
     const _getLatestSettings = () => {
         try {
             return (window.DB && window.DB.get('settings')) || JSON.parse(localStorage.getItem('tc_settings') || '{}');
@@ -279,11 +281,11 @@ const AIAssistant = (() => {
      */
     const _robustAIRequest = async (systemPrompt, userPrompt, options = {}) => {
         const s = _getLatestSettings();
-        const { onProgress, maxTokens = 2000, modelGroq = 'llama-3.3-70b-versatile', modelMistral = 'mistral-small-latest' } = options;
+        const { onProgress, maxTokens = 2000, modelMistral = 'mistral-small-latest' } = options;
 
         const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
 
-        // Helper: OpenAI-compatible fetch
+        // Helper: OpenAI-compatible fetch with detailed error parsing
         const callOpenAI = async (url, key, model, sys, usr, tokens) => {
             const resp = await fetch(url, {
                 method: 'POST',
@@ -298,7 +300,16 @@ const AIAssistant = (() => {
                     temperature: 0.7, max_tokens: tokens
                 })
             });
-            if (!resp.ok) throw new Error(`API_${resp.status}`);
+            if (!resp.ok) {
+                let errDetails = `API_${resp.status}`;
+                try {
+                    const errJson = await resp.json();
+                    if (errJson && errJson.error && errJson.error.message) {
+                        errDetails = `${errJson.error.message} (${resp.status})`;
+                    }
+                } catch (_) {}
+                throw new Error(errDetails);
+            }
             const data = await resp.json();
             return data.choices?.[0]?.message?.content || null;
         };
@@ -321,20 +332,41 @@ const AIAssistant = (() => {
             } catch (e) { console.warn('[AsiaBot] Gemini Exception:', e.message); }
         }
 
-        // 2. TRY GROQ POOL (Tier 2 - Rotating Keys)
-        const groqKeys = Object.keys(s)
+        // 2. TRY GROQ POOL (Tier 2 - Rotating Keys & Active Models)
+        let groqKeys = Object.keys(s)
             .filter(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10)
-            .map(k => s[k]);
-        
+            .map(k => s[k].trim())
+            .filter(k => !k.includes('V6F7v8W9') && !k.includes('X1Y2Z3A4')); // Exclude placeholders
+
+
+        const GROQ_MODELS = [
+            'openai/gpt-oss-120b',
+            'qwen/qwen3.8-27b',
+            'openai/gpt-oss-20b',
+            'llama-3.3-70b-versatile',
+            'llama-3.1-8b-instant'
+        ];
+
         if (groqKeys.length > 0) {
-            if (onProgress) onProgress(`Groq API havuzu taranıyor (${groqKeys.length} anahtar)...`);
+            if (onProgress) onProgress(`Groq API havuzu devrede (${groqKeys.length} anahtar)...`);
             for (let i = 0; i < groqKeys.length; i++) {
-                try {
-                    const res = await callOpenAI('https://api.groq.com/openai/v1/chat/completions', groqKeys[i], modelGroq, systemPrompt, userPrompt, maxTokens);
-                    if (res) return res;
-                } catch (e) {
-                    console.warn(`[AsiaBot] Groq Key ${i+1} failed:`, e.message);
-                    continue;
+                const key = groqKeys[i];
+                for (let m = 0; m < GROQ_MODELS.length; m++) {
+                    const modelToTry = GROQ_MODELS[m];
+                    try {
+                        const res = await callOpenAI('https://api.groq.com/openai/v1/chat/completions', key, modelToTry, systemPrompt, userPrompt, maxTokens);
+                        if (res) return res;
+                    } catch (e) {
+                        const errMsg = e.message || '';
+                        const isModelMissing = errMsg.includes('does not exist') || errMsg.includes('model_not_found') || errMsg.includes('404');
+                        if (isModelMissing) {
+                            // Try next model for this same key
+                            continue;
+                        }
+                        console.warn(`[AsiaBot] Groq Key ${i+1} (${modelToTry}) failed:`, errMsg);
+                        // Likely quota/auth error, break to next key
+                        break;
+                    }
                 }
             }
         }
@@ -423,10 +455,88 @@ const AIAssistant = (() => {
         return await _robustAIRequest(systemPrompt, userPrompt, { onProgress, maxTokens: 4000 });
     };
 
+    const hasKeys = () => {
+        const s = _getLatestSettings();
+        return !!(s.geminiApiKey || s.openrouterApiKey || s.mistralApiKey || 
+            Object.keys(s).some(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10 && !s[k].includes('V6F7v8W9')));
+    };
+
+    const testAllAPIs = async (logFn = console.log) => {
+        const s = _getLatestSettings();
+        const groqKeys = Object.keys(s)
+            .filter(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10)
+            .map(k => s[k].trim())
+            .filter(k => !k.includes('V6F7v8W9') && !k.includes('X1Y2Z3A4'));
+
+        logFn('🔍 Yapay Zeka API Havuz Testi Başlatılıyor...', 'info');
+        if (groqKeys.length === 0) {
+            logFn('⚠️ Henüz yapılandırılmış aktif bir Groq anahtarı bulunamadı. Lütfen Site Ayarlarından anahtarlarınızı yükleyin.', 'warning');
+        }
+
+        let successCount = 0;
+        let totalCount = 0;
+
+        // Test Groq Keys
+        for (let i = 0; i < groqKeys.length; i++) {
+            totalCount++;
+            const k = groqKeys[i];
+            const masked = k.slice(0, 7) + '...' + k.slice(-4);
+            logFn(`⏳ Groq Anahtar #${i + 1} (${masked}) test ediliyor...`, 'info');
+            try {
+                const startTime = Date.now();
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'openai/gpt-oss-120b',
+                        messages: [{ role: 'user', content: 'Ping' }],
+                        max_tokens: 5
+                    })
+                });
+                const elapsed = Date.now() - startTime;
+                if (res.ok) {
+                    successCount++;
+                    logFn(`✅ Groq Anahtar #${i + 1}: AKTİF (${elapsed}ms) - Model: openai/gpt-oss-120b`, 'success');
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    logFn(`❌ Groq Anahtar #${i + 1}: HATA (${res.status} - ${err.error?.message || 'Bilinmiyor'})`, 'error');
+                }
+            } catch (err) {
+                logFn(`❌ Groq Anahtar #${i + 1}: Bağlantı hatası (${err.message})`, 'error');
+            }
+        }
+
+        // Test Gemini if present
+        if (s.geminiApiKey && s.geminiApiKey.length > 10) {
+            totalCount++;
+            logFn('⏳ Google Gemini API test ediliyor...', 'info');
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Ping" }] }] })
+                });
+                if (res.ok) {
+                    successCount++;
+                    logFn('✅ Google Gemini 2.0 Flash: AKTİF', 'success');
+                } else {
+                    logFn(`❌ Gemini Hatası (${res.status})`, 'error');
+                }
+            } catch (err) {
+                logFn(`❌ Gemini Bağlantı hatası: ${err.message}`, 'error');
+            }
+        }
+
+        logFn(`🏁 Test tamamlandı: ${successCount}/${totalCount} API motoru başarıyla yanıt verdi!`, successCount > 0 ? 'success' : 'error');
+        return { successCount, totalCount };
+    };
+
     return { 
         init, 
         generateGame, 
         rewriteArticle, 
+        hasKeys,
+        testAllAPIs,
         ask: async (text, onProgress) => {
             const s = _getLatestSettings();
             const ctx = `You are AsiaBot of AsiaConsole. Help user with tech/gaming/site info. Always Turkish.`;

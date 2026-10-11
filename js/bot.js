@@ -910,7 +910,9 @@ window.BotEngine = (function () {
         }
 
         const settings = DB.get('settings') || {};
-        if (!settings.geminiApiKey && !settings.groqApiKey && !settings.openrouterApiKey && !settings.mistralApiKey) {
+        const hasCustomGroq = Object.keys(settings).some(k => k.startsWith('groqApiKey') && settings[k] && settings[k].length > 10 && !settings[k].includes('V6F7v8W9'));
+        const hasAnyKey = settings.geminiApiKey || hasCustomGroq || settings.openrouterApiKey || settings.mistralApiKey || (window.AIAssistant && AIAssistant.hasKeys && AIAssistant.hasKeys());
+        if (!hasAnyKey) {
             showAdminToast("API Anahtarı eksik! Bot çalışamaz. Site Ayarlarından en az 1 AI API Anahtarı girin.", "error");
             return;
         }
@@ -1065,7 +1067,14 @@ window.BotEngine = (function () {
         loadConfig,
         clearLogs,
         copyLogs,
-        resetBotData
+        resetBotData,
+        testApis: async function () {
+            if (window.AIAssistant && AIAssistant.testAllAPIs) {
+                await AIAssistant.testAllAPIs((msg, type) => logTerminal(msg, type));
+            } else {
+                logTerminal('AI Asistanı yüklenemedi.', 'error');
+            }
+        }
     };
 
     window.BotEngine = exports;

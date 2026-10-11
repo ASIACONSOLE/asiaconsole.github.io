@@ -100,7 +100,6 @@ function renderHome() {
         // --- PORTAL RENDER (Slider & Side Content) ---
         const portalSlider = document.getElementById('portalSlider');
         const portalSide = document.getElementById('portalSideItems');
-        const videoGrid = document.getElementById('videoHighlightGrid');
 
         if (portalSlider && articles.length > 0) {
             const sliderArticles = articles.slice(0, 5);

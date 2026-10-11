@@ -550,6 +550,36 @@ h6 {
   gap: 0.75rem;
 }
 
+.btn-theme-toggle {
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.btn-theme-toggle:hover {
+  border-color: var(--accent-blue);
+  transform: rotate(15deg) scale(1.1);
+}
+
+.btn-theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+[data-theme="light"] .sun-icon { display: none !important; }
+[data-theme="light"] .moon-icon { display: block !important; }
+[data-theme="space"] .sun-icon { display: block !important; }
+[data-theme="space"] .moon-icon { display: none !important; }
+
 .btn-nav-login {
   padding: 0.45rem 1.1rem;
   background: transparent;

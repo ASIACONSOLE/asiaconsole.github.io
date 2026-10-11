@@ -8,12 +8,16 @@
     <meta name="keywords" content="resim yükle, hızlı resim, resim upload, fotoğraf yükle, ücretsiz resim yükleme, resim url al, hizli resim, resim linki alma, image upload">
     <meta name="author" content="AsiaConsole">
     <link rel="canonical" href="https://asiaconsole.com/medya.html">
+    <link rel="icon" href="favicon.png" type="image/png">
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AsiaConsole">
     <meta property="og:url" content="https://asiaconsole.com/medya.html">
-    <meta property="og:title" content="Hızlı Resim Yükle - Ücretsiz Resim Upload">
-    <meta property="og:description" content="Hızlı resim yükle, internette anında paylaş. Sınırsız ve güvenli resim upload servisi.">
+    <meta property="og:title" content="Hızlı Resim Yükle - Ücretsiz Resim Upload | AsiaConsole">
+    <meta property="og:description" content="Hızlı resim yükle, internette anında paylaş. Ücretsiz ve güvenli resim upload servisi.">
+    <meta property="og:image" content="https://asiaconsole.com/img/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -353,22 +357,55 @@
 </head>
 <body>
 
-    <header class="minimal-header">
-        <a href="index.html" class="minimal-logo">Asia<span>Console</span></a>
-        
-        <div class="auth-block" id="navAuth">
-            <button class="btn-minimal" onclick="openAuthModal('login')">Giriş Yap</button>
-            <button class="btn-minimal-primary" onclick="openAuthModal('register')">Kayıt Ol</button>
+    <!-- NAVBAR -->
+    <nav class="navbar nav-style-neon">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon">
+                <img src="img/logo.png" alt="AsiaConsole Logo" width="40" height="40" fetchpriority="high"
+                    style="height: 40px; width: auto; display: block;">
+            </div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="projeler.html">🚀 Projeler</a></li>
+            <li><a href="medya.html" class="active">📸 Medya</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <button class="btn-theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
+                <svg class="sun-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm0-9a1 1 0 0 0 1-1V4a1 1 0 0 0-2 0v1a1 1 0 0 0 1 1zm0 12a1 1 0 0 0-1 1v1a1 1 0 0 0 2 0v-1a1 1 0 0 0-1-1zm10-7h-1a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2zm-18 0H3a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2zm14.22-4.62a1 1 0 1 0 1.41-1.41l-.7-.7a1 1 0 0 0-1.41 1.41zm-11.71 11.71a1 1 0 1 0 1.41-1.41l-.7-.7a1 1 0 0 0-1.41 1.41zm11.71 0a1 1 0 1 0-1.41-1.41l-.7.7a1 1 0 0 0 1.41 1.41zm-11.71-11.71a1 1 0 1 0-1.41-1.41l-.7.7a1 1 0 0 0 1.41 1.41z"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" style="display:none;"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9zm0 16a7 7 0 1 1 7-7 7 7 0 0 1-7 7z"/></svg>
+            </button>
+            <div id="navAuth" style="display: flex; gap: 0.5rem;">
+                <button class="btn-minimal" onclick="openAuthModal('login')">Giriş Yap</button>
+                <button class="btn-minimal-primary" onclick="openAuthModal('register')">Kayıt Ol</button>
+            </div>
+            <div id="navProfile" style="display: none; align-items: center; gap: 0.75rem;">
+                <a href="profil.html" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>👤</span>
+                    <span id="displayUsername" style="font-weight: 600;">Kullanıcı</span>
+                </a>
+                <button class="btn-minimal" onclick="handleLogout()">Çıkış</button>
+            </div>
         </div>
-        
-        <div class="auth-block" id="navProfile" style="display: none; align-items: center;">
-            <a href="profil.html" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem;">
-                <span style="font-size: 1.2rem;">👤</span>
-                <span id="displayUsername" style="font-weight: 600;">Kullanıcı</span>
-            </a>
-            <button class="btn-minimal" onclick="handleLogout()">Çıkış</button>
-        </div>
-    </header>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav nav-style-neon" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="projeler.html">🚀 Projeler</a>
+        <a href="medya.html" class="active">📸 Medya</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
 
     <div class="container">
         <div class="upload-card">
@@ -460,6 +497,54 @@
         </div>
     </div>
 
+    <!-- FOOTER -->
+    <footer class="footer" style="margin-top: auto; border-top: 1px solid var(--border);">
+        <div class="container" style="max-width: 1200px;">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3 class="site-name">AsiaConsole</h3>
+                    <p>Teknoloji, oyun ve uygulama dünyasındaki en güncel haberleri ve topluluk tartışmalarını keşfedin.</p>
+                    <div class="social-links" style="margin-top:1rem;">
+                        <a class="social-link social-twitter" href="#" title="Twitter">𝕏</a>
+                        <a class="social-link social-github" href="#" title="GitHub">⌥</a>
+                        <a class="social-link social-youtube" href="#" title="YouTube">▶</a>
+                        <a class="social-link social-discord" href="#" title="Discord">◈</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Sayfalar</h4>
+                    <ul>
+                        <li><a href="teknoloji.html">Teknoloji</a></li>
+                        <li><a href="oyun.html">Oyun</a></li>
+                        <li><a href="uygulama.html">Uygulama</a></li>
+                        <li><a href="projeler.html">Projeler</a></li>
+                        <li><a href="medya.html">Medya</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Hesap</h4>
+                    <ul>
+                        <li><a href="uye-panel.html">Giriş Yap</a></li>
+                        <li><a href="uye-panel.html">Kayıt Ol</a></li>
+                        <li><a href="uye-panel.html">Profilim</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Diğer</h4>
+                    <ul>
+                        <li><a href="contact.html">İletişim</a></li>
+                        <li><a href="gizlilik-politikasi.html">Gizlilik Politikası</a></li>
+                        <li><a href="kullanim-sartlari.html">Kullanım Şartları</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-text">© 2026 AsiaConsole. Tüm hakları saklıdır.</p>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Sevgiyle yapıldı 💙</p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Modals -->
     <div class="modal-overlay" id="authModal">
         <div class="modal-content">
@@ -518,6 +603,7 @@
                 checkAuthStatus();
                 initGoogleAuth();
                 updateStats();
+                checkUrlParams();
             }, 100);
         });
 
@@ -739,11 +825,66 @@
         }
 
         function generateLinks(directUrl, shortId) {
-            const pageUrl = window.location.origin + window.location.pathname.replace('medya.html', '') + '?img=' + shortId;
+            const pageUrl = window.location.origin + window.location.pathname.split('?')[0] + '?img=' + shortId;
             
             document.getElementById('linkPage').value = pageUrl;
             document.getElementById('linkDirect').value = directUrl;
             document.getElementById('linkBb').value = `[url=${pageUrl}][img]${directUrl}[/img][/url]`;
+        }
+
+        async function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const imgId = params.get('img');
+            if (!imgId) return;
+
+            // Show loading state
+            dropZone.style.display = 'none';
+            optionsRow.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '60%';
+
+            const fetchFromDb = async () => {
+                if (window.FirebaseDB && FirebaseDB.db) {
+                    try {
+                        const doc = await FirebaseDB.db.collection('short_urls').doc(imgId).get();
+                        if (doc.exists) {
+                            const data = doc.data();
+                            if (data && data.url) {
+                                showLoadedImage(data.url, imgId, data.name || 'Paylaşılan Görsel');
+                                return true;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Medya] Firestore doc fetch error:', e);
+                    }
+                }
+                return false;
+            };
+
+            const found = await fetchFromDb();
+            if (!found && window.FirebaseDB) {
+                FirebaseDB.onReady(async () => {
+                    const secondTry = await fetchFromDb();
+                    if (!secondTry) {
+                        progressContainer.style.display = 'none';
+                        dropZone.style.display = 'block';
+                        optionsRow.style.display = 'flex';
+                        alert('Belirtilen görsel bulunamadı veya süresi dolmuş olabilir.');
+                    }
+                });
+            }
+        }
+
+        function showLoadedImage(url, shortId, name) {
+            dropZone.style.display = 'none';
+            optionsRow.style.display = 'none';
+            progressContainer.style.display = 'none';
+            const preview = document.getElementById('previewImg');
+            if (preview) preview.src = url;
+            generateLinks(url, shortId);
+            resultBox.style.display = 'block';
+            const titleEl = document.querySelector('.upload-title');
+            if (titleEl) titleEl.textContent = name || 'Paylaşılan Görsel';
         }
 
         function copyValue(id) {

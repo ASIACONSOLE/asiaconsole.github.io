@@ -223,6 +223,51 @@ const AIAssistant = (() => {
         messages.push({ role, text });
     };
 
+    const addTypingIndicator = () => {
+        const container = document.getElementById('aiMessages');
+        if (!container) return null;
+        const id = 'typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.id = id;
+        typingDiv.className = 'msg msg-assistant typing';
+        typingDiv.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+        container.appendChild(typingDiv);
+        container.scrollTop = container.scrollHeight;
+        return id;
+    };
+
+    const removeTypingIndicator = (id) => {
+        if (!id) return;
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    };
+
+    const getLocalResponse = (query) => {
+        const q = (query || '').toLowerCase();
+        if (q.includes('merhaba') || q.includes('selam')) {
+            return 'Merhaba! AsiaConsole\'a hoş geldiniz. Size teknoloji, oyun ve mobil uygulama dünyasındaki en güncel haberlerle nasıl yardımcı olabilirim?';
+        }
+        if (q.includes('oyun')) {
+            return 'AsiaConsole Oyun bölümümüzde en yeni oyun incelemeleri, çıkış tarihleri ve oyuncu projeleri yer alıyor. Menüden Oyun sekmesini ziyaret edebilirsiniz!';
+        }
+        if (q.includes('teknoloji') || q.includes('yapay zeka') || q.includes('ai')) {
+            return 'Teknoloji kategorimizde yapay zeka gelişmeleri, donanım incelemeleri ve yazılım haberleri bulunmaktadır.';
+        }
+        if (q.includes('uygulama') || q.includes('app')) {
+            return 'Uygulama sayfamızda iOS, Android ve web platformları için en popüler ve faydalı uygulamaları derliyoruz.';
+        }
+        if (q.includes('proje')) {
+            return 'Topluluk Projeleri sayfamızda üyelerimizin geliştirdiği interaktif oyunları ve uygulamaları doğrudan tarayıcınızda deneyimleyebilirsiniz!';
+        }
+        if (q.includes('iletişim') || q.includes('iletisim')) {
+            return 'Bizimle iletişime geçmek için iletişim sayfamızı kullanabilir veya Discord/X topluluklarımıza katılabilirsiniz.';
+        }
+        if (q.includes('kimsin') || q.includes('asiabot')) {
+            return 'Ben AsiaBot! AsiaConsole platformunun yapay zeka destekli asistanıyım. Sitenin tüm içerikleri ve teknoloji konularında size rehberlik etmek için buradayım.';
+        }
+        return 'Sorunuzu aldım! Şu an yapay zeka sunucularımızda anlık bir yoğunluk olsa da size yardımcı olmaktan mutluluk duyarım. Teknoloji, oyun, uygulama ve topluluk projelerimiz hakkında dilediğinizi sorabilirsiniz.';
+    };
+
     const _getLatestSettings = () => {
         try {
             return (window.DB && window.DB.get('settings')) || JSON.parse(localStorage.getItem('tc_settings') || '{}');

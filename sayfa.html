@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -22,10 +22,58 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&family=Press+Start+2P&family=Playfair+Display:wght@700;900&family=Michroma&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta property="og:site_name" content="AsiaConsole">
+    <meta property="og:title" content="Sayfa - AsiaConsole">
+    <meta property="og:image" content="https://asiaconsole.com/img/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="description" content="AsiaConsole özel sayfaları ve detaylı platform rehberleri.">
 </head>
 
 <body>
-    <div id="navbar-container"></div>
+    <!-- NAVBAR -->
+    <nav class="navbar nav-style-neon">
+        <a href="index.html" class="navbar-brand">
+            <div class="brand-icon">
+                <img src="img/logo.png" alt="AsiaConsole Logo" width="40" height="40" fetchpriority="high"
+                    style="height: 40px; width: auto; display: block;">
+            </div>
+            <span class="site-name">AsiaConsole</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="index.html">🏠 Ana Sayfa</a></li>
+            <li><a href="teknoloji.html">💻 Teknoloji</a></li>
+            <li><a href="oyun.html">🎮 Oyun</a></li>
+            <li><a href="uygulama.html">📱 Uygulama</a></li>
+            <li><a href="projeler.html">🚀 Projeler</a></li>
+            <li><a href="medya.html">📸 Medya</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <button class="btn-theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
+                <svg class="sun-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm0-9a1 1 0 0 0 1-1V4a1 1 0 0 0-2 0v1a1 1 0 0 0 1 1zm0 12a1 1 0 0 0-1 1v1a1 1 0 0 0 2 0v-1a1 1 0 0 0-1-1zm10-7h-1a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2zm-18 0H3a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2zm14.22-4.62a1 1 0 1 0 1.41-1.41l-.7-.7a1 1 0 0 0-1.41 1.41zm-11.71 11.71a1 1 0 1 0 1.41-1.41l-.7-.7a1 1 0 0 0-1.41 1.41zm11.71 0a1 1 0 1 0-1.41-1.41l-.7.7a1 1 0 0 0 1.41 1.41zm-11.71-11.71a1 1 0 1 0-1.41-1.41l-.7.7a1 1 0 0 0 1.41 1.41z"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" style="display:none;"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9zm0 16a7 7 0 1 1 7-7 7 7 0 0 1-7 7z"/></svg>
+            </button>
+            <a href="uye-panel.html" class="btn-nav-login" id="navLoginBtn">Giriş Yap</a>
+            <a href="uye-panel.html" class="btn-nav-register" id="navRegisterBtn">Kayıt Ol</a>
+            <div id="navUserMenu" style="display:none; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.875rem; color:var(--text-secondary);">👤 <span id="navUsername"></span></span>
+            </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menü">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav nav-style-neon" id="mobileNav">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="teknoloji.html">💻 Teknoloji</a>
+        <a href="oyun.html">🎮 Oyun</a>
+        <a href="uygulama.html">📱 Uygulama</a>
+        <a href="projeler.html">🚀 Projeler</a>
+        <a href="medya.html">📸 Medya</a>
+        <a href="uye-panel.html">👤 Üye Paneli</a>
+    </div>
 
     <main class="page-container" style="padding-top: 100px; min-height: 80vh;">
         <div class="container" style="max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem;">
@@ -38,7 +86,38 @@
         </div>
     </main>
 
-    <div id="footer-container"></div>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3 class="site-name">AsiaConsole</h3>
+                    <p>Teknoloji, oyun ve uygulama dünyasındaki en güncel haberleri ve topluluk tartışmalarını keşfedin.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Sayfalar</h4>
+                    <ul>
+                        <li><a href="teknoloji.html">Teknoloji</a></li>
+                        <li><a href="oyun.html">Oyun</a></li>
+                        <li><a href="uygulama.html">Uygulama</a></li>
+                        <li><a href="projeler.html">Projeler</a></li>
+                        <li><a href="medya.html">Medya</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Diğer</h4>
+                    <ul>
+                        <li><a href="contact.html">İletişim</a></li>
+                        <li><a href="gizlilik-politikasi.html">Gizlilik Politikası</a></li>
+                        <li><a href="kullanim-sartlari.html">Kullanım Şartları</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-text">© 2026 AsiaConsole. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/firebase.js" defer></script>
     <script src="js/main.js" defer></script>

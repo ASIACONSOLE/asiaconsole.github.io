@@ -731,11 +731,16 @@ window.BotEngine = (function () {
         };
 
         articles.unshift(newArticle); // Add to top
-          DB.set('articles', articles);
-
-          // SOCIAL MEDIA AUTOMATION HOOK
-          triggerSocialShare(newArticle);
         DB.set('articles', articles);
+
+        // SOCIAL MEDIA AUTOMATION HOOK (Safe Execution)
+        if (typeof triggerSocialShare === 'function') {
+            try {
+                triggerSocialShare(newArticle);
+            } catch (socErr) {
+                console.warn('[Bot] triggerSocialShare hatası:', socErr);
+            }
+        }
 
         logTerminal(`[BAŞARILI] '${finalTitle}' yayına alındı!`, 'success');
     }

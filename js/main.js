@@ -667,6 +667,32 @@ var DB = {
         }
         this.set('settings', { ...defaultSettings, ...currentSettings }, false);
 
+        // --- SON 3 GÜNE AİT MAKALELERİ TAMAMEN KALDIR (10-11-12 EKİM 2026) ---
+        const purgeFlag = 'tc_purge_last_3_days_articles_v1';
+        if (localStorage.getItem(purgeFlag) !== 'done') {
+            localStorage.removeItem('tc_articles');
+            if (typeof MediaDB !== 'undefined') MediaDB.delete('articles');
+            this._cache['articles'] = null;
+            localStorage.setItem(purgeFlag, 'done');
+        }
+
+        let currentArts = this.get('articles');
+        if (Array.isArray(currentArts) && currentArts.length > 0) {
+            const filteredArts = currentArts.filter(a => {
+                const d = (a.date || '').toLowerCase();
+                if (d.includes('10 eki') || d.includes('11 eki') || d.includes('12 eki') || 
+                    d.includes('10 oct') || d.includes('11 oct') || d.includes('12 oct') ||
+                    d.includes('eki 2026') || d.includes('oct 2026')) {
+                    return false;
+                }
+                return true;
+            });
+            if (filteredArts.length !== currentArts.length) {
+                currentArts = filteredArts.length > 0 ? filteredArts : null;
+                this.set('articles', currentArts, false);
+            }
+        }
+
         // --- SEED PROTECTION ---
         // Only seed defaults if NOT in cache (IndexedDB) AND NOT in localStorage, OR if it's an empty array
         const hasArticles = this.get('articles');

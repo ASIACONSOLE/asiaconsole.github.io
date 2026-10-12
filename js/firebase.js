@@ -27,44 +27,41 @@ window.FirebaseDB = {
 
     // Initialize Firebase & Firestore
     init() {
-        // Load Firebase compat SDKs sequentially to prevent race conditions
-        const scripts = [
-            'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
+        // Load Firebase compat SDKs: app first, then firestore & storage in parallel
+        const baseScript = 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js';
+        const subScripts = [
             'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js',
             'https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js'
         ];
 
-        // TIMEOUT: If Firebase SDK doesn't load in 15 seconds, give up gracefully
+        // TIMEOUT: If Firebase SDK doesn't load in 10 seconds, give up gracefully
         const loadTimeout = setTimeout(() => {
             if (!this._ready) {
-                console.warn('[Firebase] SDK load timeout after 15s');
-                this._triggerConnectionEvent('error', 'SDK yükleme zaman aşımı (15s)');
+                console.warn('[Firebase] SDK load timeout after 10s');
+                this._triggerConnectionEvent('error', 'SDK yükleme zaman aşımı (10s)');
             }
-        }, 15000);
+        }, 10000);
 
-        let index = 0;
-        const loadNext = () => {
-            if (index < scripts.length) {
-                const s = document.createElement('script');
-                s.src = scripts[index];
-                s.onload = () => {
-                    index++;
-                    loadNext();
-                };
-                s.onerror = (err) => {
-                    console.warn('[Firebase] Could not load SDK from', scripts[index]);
-                    clearTimeout(loadTimeout);
-                    this._triggerConnectionEvent('error', `SDK yüklenemedi: ${scripts[index]}`);
-                };
-                document.head.appendChild(s);
-            } else {
-                // All scripts loaded
+        const loadScript = (src) => new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = true;
+            s.onload = resolve;
+            s.onerror = () => reject(new Error(`SDK yüklenemedi: ${src}`));
+            document.head.appendChild(s);
+        });
+
+        loadScript(baseScript)
+            .then(() => Promise.all(subScripts.map(loadScript)))
+            .then(() => {
                 clearTimeout(loadTimeout);
                 this._initialize();
-            }
-        };
-
-        loadNext();
+            })
+            .catch((err) => {
+                clearTimeout(loadTimeout);
+                console.warn('[Firebase] SDK error:', err.message);
+                this._triggerConnectionEvent('error', err.message);
+            });
     },
 
     _initialize() {
@@ -76,9 +73,18 @@ window.FirebaseDB = {
             this.db = firebase.firestore();
             this.storage = firebase.storage();
 
+            // ULTRA-FAST PERSISTENCE: Enable multi-tab offline cache for zero-latency instant reads
+            try {
+                this.db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+                    if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
+                        console.warn('[Firebase] Persistence note:', err.code);
+                    }
+                });
+            } catch(e) {}
+
             this._ready = true;
             this._triggerConnectionEvent('connected');
-            console.log('[Firebase] Connected to Firestore & Storage ✓');
+            console.log('[Firebase] Connected to Firestore & Storage (Ultra-Fast Engine) ✓');
             // Run pending callbacks
             this._readyCallbacks.forEach(cb => cb());
             this._readyCallbacks = [];

@@ -234,7 +234,7 @@ const AIAssistant = (() => {
      */
     const _robustAIRequest = async (systemPrompt, userPrompt, options = {}) => {
         const s = _getLatestSettings();
-        const { onProgress, maxTokens = 2000, modelGroq = 'llama-3.3-70b-versatile', modelMistral = 'mistral-small-latest' } = options;
+        const { onProgress, maxTokens = 2000, modelMistral = 'mistral-small-latest' } = options;
 
         const fullPrompt = `SYSTEM: ${systemPrompt}\n\nUSER: ${userPrompt}`;
 
@@ -258,7 +258,29 @@ const AIAssistant = (() => {
             return data.choices?.[0]?.message?.content || null;
         };
 
-        // 1. TRY GEMINI (Tier 1)
+        // 1. TRY GROQ POOL (Tier 1 - Ultra Fast 120B & 27B Models)
+        const groqKeys = Object.keys(s)
+            .filter(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10)
+            .map(k => s[k]);
+
+        const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'llama-3.3-70b-versatile'];
+
+        if (groqKeys.length > 0) {
+            if (onProgress) onProgress(`Groq Yüksek Hızlı AI motoru devrede (${groqKeys.length} anahtar)...`);
+            for (const model of groqModels) {
+                for (let i = 0; i < groqKeys.length; i++) {
+                    try {
+                        const res = await callOpenAI('https://api.groq.com/openai/v1/chat/completions', groqKeys[i], model, systemPrompt, userPrompt, maxTokens);
+                        if (res) return res;
+                    } catch (e) {
+                        console.warn(`[AsiaBot] Groq Model ${model} / Key ${i+1} failed:`, e.message);
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // 2. TRY GEMINI (Tier 2)
         if (s.geminiApiKey && s.geminiApiKey.length > 10) {
             try {
                 if (onProgress) onProgress('Gemini API motoru aktif ediliyor...');
@@ -274,24 +296,6 @@ const AIAssistant = (() => {
                 }
                 console.warn('[AsiaBot] Gemini failed or quota hit, failing over...');
             } catch (e) { console.warn('[AsiaBot] Gemini Exception:', e.message); }
-        }
-
-        // 2. TRY GROQ POOL (Tier 2 - Rotating Keys)
-        const groqKeys = Object.keys(s)
-            .filter(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10)
-            .map(k => s[k]);
-        
-        if (groqKeys.length > 0) {
-            if (onProgress) onProgress(`Groq API havuzu taranıyor (${groqKeys.length} anahtar)...`);
-            for (let i = 0; i < groqKeys.length; i++) {
-                try {
-                    const res = await callOpenAI('https://api.groq.com/openai/v1/chat/completions', groqKeys[i], modelGroq, systemPrompt, userPrompt, maxTokens);
-                    if (res) return res;
-                } catch (e) {
-                    console.warn(`[AsiaBot] Groq Key ${i+1} failed:`, e.message);
-                    continue;
-                }
-            }
         }
 
         // 3. TRY OPENROUTER (Tier 3)

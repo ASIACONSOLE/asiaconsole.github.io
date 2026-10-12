@@ -549,7 +549,7 @@ var DB = {
             }, 200); // 1000ms'den 200ms'ye çekilerek Ultra Hızlı Gerçek Zamanlı senkronizasyon sağlandı
         }
     },
-    // NEW: Sync all local data to cloud (Force Sync)
+    // ULTRA-FAST: Sync all local data to cloud in parallel
     async syncToCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = [
@@ -558,13 +558,13 @@ var DB = {
             'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
             'pending_articles', 'bot_queue', 'bot_drafts'
         ];
-        for (const key of keys) {
+        await Promise.all(keys.map(async (key) => {
             const val = this.get(key);
             if (val) await FirebaseDB.set('site_data', key, { data: val });
-        }
-        console.log('[Firebase] All data synced to cloud ✓');
+        }));
+        console.log('[Firebase] All data synced to cloud (Parallel Fast Sync) ✓');
     },
-    // NEW: Load from cloud to local (with chunked article support)
+    // ULTRA-FAST: Load from cloud to local in parallel (with chunked article support)
     async loadFromCloud() {
         if (typeof FirebaseDB === 'undefined' || !FirebaseDB._ready) return;
         const keys = [
@@ -573,25 +573,30 @@ var DB = {
             'site_logo_base64', 'bot_config', 'scraped_urls', 'messages',
             'pending_articles', 'bot_queue', 'bot_drafts'
         ];
-        for (const key of keys) {
-            const remote = await FirebaseDB.get('site_data', key);
-            if (remote && remote.data) {
-                // Handle generic chunked loading
-                if (remote.data === '__CHUNKED__' && remote.chunkCount) {
-                    let allItems = [];
-                    for (let i = 0; i < remote.chunkCount; i++) {
-                        const chunk = await FirebaseDB.get('site_data', `${key}_chunk_${i}`);
-                        if (chunk && Array.isArray(chunk.data)) {
-                            allItems = allItems.concat(chunk.data);
+        await Promise.all(keys.map(async (key) => {
+            try {
+                const remote = await FirebaseDB.get('site_data', key);
+                if (remote && remote.data) {
+                    if (remote.data === '__CHUNKED__' && remote.chunkCount) {
+                        const chunkPromises = [];
+                        for (let i = 0; i < remote.chunkCount; i++) {
+                            chunkPromises.push(FirebaseDB.get('site_data', `${key}_chunk_${i}`));
                         }
+                        const chunkResults = await Promise.all(chunkPromises);
+                        let allItems = [];
+                        chunkResults.forEach(chunk => {
+                            if (chunk && Array.isArray(chunk.data)) allItems = allItems.concat(chunk.data);
+                        });
+                        DB.set(key, allItems, false);
+                    } else {
+                        DB.set(key, remote.data, false);
                     }
-                    DB.set(key, allItems, false);
-                    console.log(`[Firebase] Loaded ${key} (${allItems.length} items) from ${remote.chunkCount} chunks`);
-                } else {
-                    DB.set(key, remote.data, false);
                 }
+            } catch(e) {
+                console.warn(`[Firebase] Parallel load error for ${key}:`, e.message);
             }
-        }
+        }));
+        console.log('[Firebase] Cloud data loaded instantly (Parallel Engine) ✓');
     },
     // SECURITY: Sensitive keys that should be obfuscated in localStorage
     _sensitiveKeys: ['users', 'user_session', 'messages', 'profiles', 'bot_config'],

@@ -671,9 +671,9 @@ var DB = {
             geminiApiKey: '',
             groqApiKey: '',
             openrouterApiKey: '',
-            mimoApiKey: '',
-            mimoModel: 'mimo-v2-flash',
-            mimoApiUrl: 'https://api.mimo.xiaomi.com/v1/chat/completions',
+            mimoApiKey: 'sk-sgdmti8v043poes2w7efhvpk32poawyi3o0y6ryas9dtx5gk',
+            mimoModel: 'mimo-v2.6-flash',
+            mimoApiUrl: 'https://api.xiaomimimo.com/v1/chat/completions',
             siteFont: "'Inter', sans-serif",
             brandAnim: 'none',
             brandAnimSpeed: 2.0,
@@ -696,8 +696,14 @@ var DB = {
         if (!currentSettings.openrouterApiKey && defaultSettings.openrouterApiKey) {
             currentSettings.openrouterApiKey = defaultSettings.openrouterApiKey;
         }
-        if (!currentSettings.mimoApiKey && defaultSettings.mimoApiKey) {
+        if ((!currentSettings.mimoApiKey || currentSettings.mimoApiKey.length < 10) && defaultSettings.mimoApiKey) {
             currentSettings.mimoApiKey = defaultSettings.mimoApiKey;
+        }
+        if (!currentSettings.mimoModel) {
+            currentSettings.mimoModel = defaultSettings.mimoModel;
+        }
+        if (!currentSettings.mimoApiUrl || currentSettings.mimoApiUrl.includes('mimo.xiaomi.com')) {
+            currentSettings.mimoApiUrl = defaultSettings.mimoApiUrl;
         }
         if (!currentSettings.googleClientId && defaultSettings.googleClientId) {
             currentSettings.googleClientId = defaultSettings.googleClientId;

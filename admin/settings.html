@@ -365,14 +365,16 @@
                                     <div class="form-group">
                                         <label>Model Seçimi</label>
                                         <select id="mimoModel" style="width:100%; padding:0.6rem; background:var(--bg-glass); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.85rem;">
-                                            <option value="mimo-v2-flash">MiMo-V2-Flash (Önerilen - Ultra Hızlı)</option>
-                                            <option value="mimo-v2.6-flash">MiMo-V2.6-Flash (1M Bağlam & Reasoning)</option>
-                                            <option value="mimo-code">MiMo-Code (Gelişmiş Kodlama & Ajan)</option>
+                                            <option value="mimo-v2.6-flash" selected>mimo-v2.6-flash (En Yeni & Ultra Hızlı)</option>
+                                            <option value="mimo-v2.5">mimo-v2.5 (Kararlı Temel Model)</option>
+                                            <option value="mimo-v2.5-pro">mimo-v2.5-pro (Güçlü Akıl Yürütme)</option>
+                                            <option value="mimo-v2.6-pro">mimo-v2.6-pro (Amiral Gemisi MoE)</option>
+                                            <option value="mimo-v2.6-pro-ultraspeed">mimo-v2.6-pro-ultraspeed (Ultra Hızlı Pro)</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label>API Endpoint (Gelişmiş)</label>
-                                        <input type="text" id="mimoApiUrl" placeholder="https://api.mimo.xiaomi.com/v1/chat/completions" style="font-family:monospace; font-size:0.8rem;">
+                                        <input type="text" id="mimoApiUrl" placeholder="https://api.xiaomimimo.com/v1/chat/completions" style="font-family:monospace; font-size:0.8rem;">
                                     </div>
                                 </div>
                                 <div style="margin-top:0.75rem;">
@@ -805,8 +807,8 @@
 
         async function testMimoKey() {
             const key = document.getElementById('mimoApiKey').value.trim();
-            const model = document.getElementById('mimoModel').value || 'mimo-v2-flash';
-            const url = document.getElementById('mimoApiUrl').value.trim() || 'https://api.mimo.xiaomi.com/v1/chat/completions';
+            const model = document.getElementById('mimoModel').value || 'mimo-v2.6-flash';
+            const url = document.getElementById('mimoApiUrl').value.trim() || 'https://api.xiaomimimo.com/v1/chat/completions';
             
             if (!key) {
                 if (typeof showAdminToast === 'function') showAdminToast('⚠️ Lütfen önce bir Xiaomi MiMo API anahtarı girin!', 'error');
@@ -945,9 +947,9 @@
                 document.getElementById('groqApiKey5').value = s.groqApiKey5 || '';
             document.getElementById('openrouterApiKey').value = s.openrouterApiKey || '';
             document.getElementById('mistralApiKey').value = s.mistralApiKey || '';
-            document.getElementById('mimoApiKey').value = s.mimoApiKey || '';
-            document.getElementById('mimoModel').value = s.mimoModel || 'mimo-v2-flash';
-            document.getElementById('mimoApiUrl').value = s.mimoApiUrl || 'https://api.mimo.xiaomi.com/v1/chat/completions';
+            document.getElementById('mimoApiKey').value = s.mimoApiKey || 'sk-sgdmti8v043poes2w7efhvpk32poawyi3o0y6ryas9dtx5gk';
+            document.getElementById('mimoModel').value = s.mimoModel || 'mimo-v2.6-flash';
+            document.getElementById('mimoApiUrl').value = s.mimoApiUrl || 'https://api.xiaomimimo.com/v1/chat/completions';
 
             document.getElementById('tickerEnabled').checked = !!s.tickerEnabled;
             document.getElementById('tickerText').value = s.tickerText || '';

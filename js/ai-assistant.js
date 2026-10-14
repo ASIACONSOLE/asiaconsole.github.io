@@ -260,8 +260,8 @@ const AIAssistant = (() => {
 
         // 1. TRY XIAOMI MIMO (Tier 1 Priority - When configured)
         if (s.mimoApiKey && s.mimoApiKey.length > 5) {
-            const mimoUrl = s.mimoApiUrl || 'https://api.mimo.xiaomi.com/v1/chat/completions';
-            const mimoModel = s.mimoModel || 'mimo-v2-flash';
+            const mimoUrl = s.mimoApiUrl || 'https://api.xiaomimimo.com/v1/chat/completions';
+            const mimoModel = s.mimoModel || 'mimo-v2.6-flash';
             try {
                 if (onProgress) onProgress(`Xiaomi MiMo (${mimoModel}) yüksek akıl yürütme motoru devrede...`);
                 const res = await callOpenAI(mimoUrl, s.mimoApiKey, mimoModel, systemPrompt, userPrompt, maxTokens);
@@ -406,8 +406,8 @@ const AIAssistant = (() => {
         },
         askMimo: async (text, options = {}) => {
             const s = _getLatestSettings();
-            const mimoUrl = s.mimoApiUrl || 'https://api.mimo.xiaomi.com/v1/chat/completions';
-            const mimoModel = s.mimoModel || 'mimo-v2-flash';
+            const mimoUrl = s.mimoApiUrl || 'https://api.xiaomimimo.com/v1/chat/completions';
+            const mimoModel = s.mimoModel || 'mimo-v2.6-flash';
             const { systemPrompt = 'You are Xiaomi MiMo AI assistant in AsiaConsole. Always Turkish.', maxTokens = 2000 } = options;
             if (!s.mimoApiKey) throw new Error('Xiaomi MiMo API anahtarı ayarlanmamış.');
             return await callOpenAI(mimoUrl, s.mimoApiKey, mimoModel, systemPrompt, text, maxTokens);

@@ -404,6 +404,25 @@ var DB = {
         }
         return null;
     },
+    // Son 4 güne (10-14 Ekim 2026) ait makaleleri tespit eden filtreleyici
+    isRecentArticle(a) {
+        if (!a) return false;
+        // ID timestamp kontrolü (10-15 Ekim 2026 aralığı veya 1791500000000 üzeri)
+        if (typeof a.id === 'number' && a.id >= 1791500000000) return true;
+        if (typeof a.id === 'string' && Number(a.id) >= 1791500000000) return true;
+        // Tarih dizesi kontrolü
+        const d = (a.date || '').toLowerCase();
+        const recentDays = [
+            '10 eki', '11 eki', '12 eki', '13 eki', '14 eki', '15 eki',
+            '10 oct', '11 oct', '12 oct', '13 oct', '14 oct', '15 oct',
+            '10.10.2026', '11.10.2026', '12.10.2026', '13.10.2026', '14.10.2026',
+            'eki 2026', 'oct 2026'
+        ];
+        if (recentDays.some(pat => d.includes(pat))) return true;
+        if (a.timestamp && typeof a.timestamp === 'number' && a.timestamp >= 1791500000000) return true;
+        if (a.createdAt && typeof a.createdAt === 'number' && a.createdAt >= 1791500000000) return true;
+        return false;
+    },
     _cache: {},
     set(key, val, syncToCloud = true) {
         // TRIPLE-GUARD: Ensure incoming 'val' is NOT already wrapped (MAX 10 depth)
@@ -587,9 +606,16 @@ var DB = {
                         chunkResults.forEach(chunk => {
                             if (chunk && Array.isArray(chunk.data)) allItems = allItems.concat(chunk.data);
                         });
+                        if (key === 'articles' && Array.isArray(allItems)) {
+                            allItems = allItems.filter(a => !DB.isRecentArticle(a));
+                        }
                         DB.set(key, allItems, false);
                     } else {
-                        DB.set(key, remote.data, false);
+                        let finalRemoteData = remote.data;
+                        if (key === 'articles' && Array.isArray(finalRemoteData)) {
+                            finalRemoteData = finalRemoteData.filter(a => !DB.isRecentArticle(a));
+                        }
+                        DB.set(key, finalRemoteData, false);
                     }
                 }
             } catch(e) {
@@ -672,8 +698,8 @@ var DB = {
         }
         this.set('settings', { ...defaultSettings, ...currentSettings }, false);
 
-        // --- SON 3 GÜNE AİT MAKALELERİ TAMAMEN KALDIR (10-11-12 EKİM 2026) ---
-        const purgeFlag = 'tc_purge_last_3_days_articles_v1';
+        // --- SON 4 GÜNE AİT MAKALELERİ TAMAMEN KALDIR (10-11-12-13-14 EKİM 2026) ---
+        const purgeFlag = 'tc_purge_last_4_days_articles_v2';
         if (localStorage.getItem(purgeFlag) !== 'done') {
             localStorage.removeItem('tc_articles');
             if (typeof MediaDB !== 'undefined') MediaDB.delete('articles');
@@ -683,20 +709,23 @@ var DB = {
 
         let currentArts = this.get('articles');
         if (Array.isArray(currentArts) && currentArts.length > 0) {
-            const filteredArts = currentArts.filter(a => {
-                const d = (a.date || '').toLowerCase();
-                if (d.includes('10 eki') || d.includes('11 eki') || d.includes('12 eki') || 
-                    d.includes('10 oct') || d.includes('11 oct') || d.includes('12 oct') ||
-                    d.includes('eki 2026') || d.includes('oct 2026')) {
-                    return false;
-                }
-                return true;
-            });
+            const filteredArts = currentArts.filter(a => !this.isRecentArticle(a));
             if (filteredArts.length !== currentArts.length) {
                 currentArts = filteredArts.length > 0 ? filteredArts : null;
                 this.set('articles', currentArts, false);
             }
         }
+
+        // Bekleyen ve taslak makaleleri de son 4 günden arındır
+        ['pending_articles', 'bot_queue', 'bot_drafts'].forEach(k => {
+            const items = this.get(k);
+            if (Array.isArray(items) && items.length > 0) {
+                const cleaned = items.filter(item => !this.isRecentArticle(item));
+                if (cleaned.length !== items.length) {
+                    this.set(k, cleaned, false);
+                }
+            }
+        });
 
         // --- SEED PROTECTION ---
         // Only seed defaults if NOT in cache (IndexedDB) AND NOT in localStorage, OR if it's an empty array
@@ -1593,6 +1622,17 @@ if (typeof FirebaseDB !== 'undefined') {
         try {
             await DB.loadFromCloud();
             console.log('[Firebase] Initial cloud data loaded ✓');
+            // Son 4 güne ait makalelerin buluttan gelmesi durumunda hemen temizle ve bulutu güncelle
+            const currentArts = DB.get('articles');
+            if (Array.isArray(currentArts)) {
+                const cleaned = currentArts.filter(a => !DB.isRecentArticle(a));
+                if (cleaned.length !== currentArts.length) {
+                    DB.set('articles', cleaned, false);
+                    if (FirebaseDB._ready) {
+                        FirebaseDB.set('site_data', 'articles', { data: cleaned, lastSync: Date.now() });
+                    }
+                }
+            }
             // settings are applied via the listen loop or explicitly when needed
         } catch (e) {
             console.warn('[Firebase] Initial cloud load failed:', e);
@@ -1658,6 +1698,10 @@ if (typeof FirebaseDB !== 'undefined') {
                              return;
                         }
 
+                        if (key === 'articles' && Array.isArray(allItems)) {
+                            allItems = allItems.filter(a => !DB.isRecentArticle(a));
+                        }
+
                         DB.set(key, allItems, false);
                         console.log(`[Firebase] Loaded ${allItems.length} items for ${key} from ${remote.chunkCount} cloud chunks (Listener)`);
                         document.dispatchEvent(new CustomEvent('dbUpdated', { detail: { key: key } }));
@@ -1681,12 +1725,15 @@ if (typeof FirebaseDB !== 'undefined') {
                     }
                 }
 
-                // Clean any accidental nesting in remoteData before comparison (MAX 10 depth)
                 let cleanRemote = remoteData;
                 let crDepth = 0;
                 while (cleanRemote && typeof cleanRemote === 'object' && 'data' in cleanRemote && cleanRemote.data !== undefined && crDepth < 10) {
                     cleanRemote = cleanRemote.data;
                     crDepth++;
+                }
+
+                if (key === 'articles' && Array.isArray(cleanRemote)) {
+                    cleanRemote = cleanRemote.filter(a => !DB.isRecentArticle(a));
                 }
 
                 const currentLocalData = DB.get(key);

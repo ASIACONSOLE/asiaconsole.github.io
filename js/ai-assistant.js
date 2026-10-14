@@ -258,7 +258,20 @@ const AIAssistant = (() => {
             return data.choices?.[0]?.message?.content || null;
         };
 
-        // 1. TRY GROQ POOL (Tier 1 - Ultra Fast 120B & 27B Models)
+        // 1. TRY XIAOMI MIMO (Tier 1 Priority - When configured)
+        if (s.mimoApiKey && s.mimoApiKey.length > 5) {
+            const mimoUrl = s.mimoApiUrl || 'https://api.mimo.xiaomi.com/v1/chat/completions';
+            const mimoModel = s.mimoModel || 'mimo-v2-flash';
+            try {
+                if (onProgress) onProgress(`Xiaomi MiMo (${mimoModel}) yüksek akıl yürütme motoru devrede...`);
+                const res = await callOpenAI(mimoUrl, s.mimoApiKey, mimoModel, systemPrompt, userPrompt, maxTokens);
+                if (res) return res;
+            } catch (e) {
+                console.warn(`[AsiaBot] Xiaomi MiMo (${mimoModel}) failed, failing over:`, e.message);
+            }
+        }
+
+        // 2. TRY GROQ POOL (Tier 2 - Ultra Fast 120B & 27B Models)
         const groqKeys = Object.keys(s)
             .filter(k => k.startsWith('groqApiKey') && s[k] && s[k].length > 10)
             .map(k => s[k]);
@@ -280,7 +293,7 @@ const AIAssistant = (() => {
             }
         }
 
-        // 2. TRY GEMINI (Tier 2)
+        // 3. TRY GEMINI (Tier 3)
         if (s.geminiApiKey && s.geminiApiKey.length > 10) {
             try {
                 if (onProgress) onProgress('Gemini API motoru aktif ediliyor...');
@@ -365,7 +378,7 @@ const AIAssistant = (() => {
         return code.trim();
     };
 
-    const rewriteArticle = async (articleData, onProgress) => {
+    const rewriteArticle = async (articleData, onProgress, options = {}) => {
         const truncateContent = (content, maxChars = 12000) => {
             if (!content || content.length <= maxChars) return content;
             const truncated = content.substring(0, maxChars);
@@ -379,7 +392,7 @@ const AIAssistant = (() => {
         const systemPrompt = `Sen AsiaConsole baş editörüsün. Haberi SIFIRDAN profesyonelce yaz. HTML kullan. [RESiM-X] yer tutucularını kullan. En başa [KATEGORİ: teknoloji/oyun/uygulama] ekle.`;
         const userPrompt = `BAŞLIK: ${articleData.title}\nMEDYA:\n${mediaContext}\nİÇERİK:\n${truncateContent(articleData.content)}`;
 
-        return await _robustAIRequest(systemPrompt, userPrompt, { onProgress, maxTokens: 4000 });
+        return await _robustAIRequest(systemPrompt, userPrompt, { onProgress, maxTokens: 4000, ...options });
     };
 
     return { 
@@ -390,6 +403,14 @@ const AIAssistant = (() => {
             const s = _getLatestSettings();
             const ctx = `You are AsiaBot of AsiaConsole. Help user with tech/gaming/site info. Always Turkish.`;
             return await _robustAIRequest(ctx, text, { onProgress, maxTokens: 2000 });
+        },
+        askMimo: async (text, options = {}) => {
+            const s = _getLatestSettings();
+            const mimoUrl = s.mimoApiUrl || 'https://api.mimo.xiaomi.com/v1/chat/completions';
+            const mimoModel = s.mimoModel || 'mimo-v2-flash';
+            const { systemPrompt = 'You are Xiaomi MiMo AI assistant in AsiaConsole. Always Turkish.', maxTokens = 2000 } = options;
+            if (!s.mimoApiKey) throw new Error('Xiaomi MiMo API anahtarı ayarlanmamış.');
+            return await callOpenAI(mimoUrl, s.mimoApiKey, mimoModel, systemPrompt, text, maxTokens);
         }
     };
 })();

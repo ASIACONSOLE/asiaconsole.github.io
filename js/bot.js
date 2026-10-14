@@ -30,6 +30,9 @@ window.BotEngine = (function () {
             const delayEl = document.getElementById('botPublishDelay');
             if (delayEl) delayEl.value = config.publishDelay;
         }
+        if (config.aiEngine && document.getElementById('botAiEngine')) {
+            document.getElementById('botAiEngine').value = config.aiEngine;
+        }
         return config;
     }
 
@@ -45,7 +48,8 @@ window.BotEngine = (function () {
         const config = {
             sources: sources,
             interval: parseInt(document.getElementById('botInterval').value, 10),
-            publishDelay: parseInt(document.getElementById('botPublishDelay')?.value || '60', 10)
+            publishDelay: parseInt(document.getElementById('botPublishDelay')?.value || '60', 10),
+            aiEngine: document.getElementById('botAiEngine')?.value || 'auto'
         };
         DB.set('bot_config', config);
         return config;
@@ -842,10 +846,10 @@ window.BotEngine = (function () {
             }
 
             try {
-                logTerminal(`💡 AI Özgünleştirme başlatılıyor...`);
+                const engine = config.aiEngine || 'auto';
                 const rewrittenHtml = await AIAssistant.rewriteArticle(articleData, (msg) => {
-                    if (msg.includes("API")) logTerminal(msg, "info");
-                });
+                    logTerminal(msg, "info");
+                }, { preferredEngine: engine });
 
                 let finalHtml = rewrittenHtml.trim();
                 if (finalHtml.startsWith("```html")) finalHtml = finalHtml.substring(7);
@@ -905,8 +909,8 @@ window.BotEngine = (function () {
         }
 
         const settings = DB.get('settings') || {};
-        if (!settings.geminiApiKey && !settings.groqApiKey && !settings.openrouterApiKey && !settings.mistralApiKey) {
-            showAdminToast("API Anahtarı eksik! Bot çalışamaz. Site Ayarlarından en az 1 AI API Anahtarı girin.", "error");
+        if (!settings.geminiApiKey && !settings.groqApiKey && !settings.openrouterApiKey && !settings.mistralApiKey && !settings.mimoApiKey) {
+            showAdminToast("API Anahtarı eksik! Bot çalışamaz. Site Ayarlarından Xiaomi MiMo veya Groq API anahtarınızı girin.", "error");
             return;
         }
 

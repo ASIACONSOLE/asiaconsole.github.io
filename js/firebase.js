@@ -6,7 +6,13 @@
 // =====================================================
 
 // ---- FIREBASE CONFIG ----
-const FIREBASE_CONFIG = {
+let customFirebaseConfig = null;
+try {
+    const rawConfig = localStorage.getItem('tc_custom_firebase_config');
+    if (rawConfig) customFirebaseConfig = JSON.parse(rawConfig);
+} catch (e) { }
+
+const FIREBASE_CONFIG = customFirebaseConfig || {
     apiKey: "AIzaSyBhpI-7c08eB6VN_LhS5jNIrSQ_NDvFbYA",
     authDomain: "asia-console.firebaseapp.com",
     projectId: "asia-console",
@@ -116,8 +122,13 @@ window.FirebaseDB = {
                     this._triggerConnectionEvent('connected');
                     resolve(true);
                 } catch (e) {
-                    console.warn('[Firebase] Write error:', e);
-                    this._triggerConnectionEvent('error', `Yazma hatası: ${e.message}`);
+                    if (e.code === 'resource-exhausted' || (e.message && e.message.toLowerCase().includes('quota'))) {
+                        this._isQuotaExceeded = true;
+                        this._triggerConnectionEvent('quota', 'Firebase günlük kotası doldu — Yerel depolama aktif');
+                    } else {
+                        console.warn('[Firebase] Write error:', e);
+                        this._triggerConnectionEvent('error', `Yazma hatası: ${e.message}`);
+                    }
                     resolve(false);
                 }
             });
@@ -133,8 +144,13 @@ window.FirebaseDB = {
                     this._triggerConnectionEvent('connected');
                     resolve(doc.exists ? doc.data() : null);
                 } catch (e) {
-                    console.warn('[Firebase] Read error:', e);
-                    this._triggerConnectionEvent('error', `Okuma hatası: ${e.message}`);
+                    if (e.code === 'resource-exhausted' || (e.message && e.message.toLowerCase().includes('quota'))) {
+                        this._isQuotaExceeded = true;
+                        this._triggerConnectionEvent('quota', 'Firebase günlük kotası doldu — Yerel depolama aktif');
+                    } else {
+                        console.warn('[Firebase] Read error:', e);
+                        this._triggerConnectionEvent('error', `Okuma hatası: ${e.message}`);
+                    }
                     resolve(null);
                 }
             });
